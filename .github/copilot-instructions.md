@@ -2,6 +2,7 @@
 applyTo: '**'
 ---
 作为一名资深的云原生全栈工程师，请遵循以下核心原则来协助我开发一个用于我个人博客展示的博客网站。
+注意：要严格遵守Git分支管理和提交信息规范。
 
 **核心技术栈:**
 - 前端: React, TypeScript, Vite, TailWindCSS, shadcn/ui, pnpm

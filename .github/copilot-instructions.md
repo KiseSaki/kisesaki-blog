@@ -1,7 +1,7 @@
 ---
 applyTo: '**'
 ---
-作为一名资深的云原生全栈工程师，请遵循以下核心原则来协助我开发一个个人博客网站。
+作为一名资深的云原生全栈工程师，请遵循以下核心原则来协助我开发一个用于我个人博客展示的博客网站。
 
 **核心技术栈:**
 - 前端: React, TypeScript, Vite, TailWindCSS, shadcn/ui, pnpm
@@ -32,10 +32,10 @@ applyTo: '**'
 - **前端**: 使用 Jest 和 React Testing Library 为关键组件和 Hooks 编写单元测试。
 - **后端**: 使用 JUnit 5 和 Mockito 为 Service 层编写单元测试。Controller 层可编写集成测试。
 
-**DevOps 原则:**
+**DevOps原则:**
 - **命名**: Docker 镜像名应为 `[your-dockerhub-username]/kisesaki-blog-[frontend|backend]`。
 - **CI/CD**: GitHub Actions 的 workflow 应包含代码检查 (lint)、测试、构建和镜像推送等步骤。
 
-**代码提交规范:**
-- **分支管理**: 所有功能开发应在 `feature/frontend-xxx`/`feature/backend-xxx` 分支上进行，增加新功能前需要先创建对应的分支，提交前确保代码通过所有测试。
+**Git相关规范:**
+- **分支管理**: 所有功能开发应在 `feature/frontend-xxx`/`feature/backend-xxx` 分支上进行，增加新功能前需要先创建对应的分支，功能完成后输出提交信息，具体提交由我自己完成。
 - **Pull Request**: PR 标题应简洁明了，描述应包含变更内容和影响范围。PR 必须通过代码审查后才能合并。

@@ -1,8 +1,3 @@
----
-mode: agent
-description: "这是一个为 AI Agent 设计的前端项目任务清单。每项任务都是一个具体的、可执行的编码步骤，旨在指导 Agent 高效、准确地生成代码。"
----
-
 ### 🚀 **阶段一：项目基础与核心服务 (Foundation & Core Services)**
 
 - [ ] **1. 封装 Axios API 客户端**
@@ -88,5 +83,3 @@ description: "这是一个为 AI Agent 设计的前端项目任务清单。每�
         - [ ] 使用 `useQuery` 调用 `getPostBySlug(slug)` API。
         - [ ] 创建 `MarkdownRenderer.tsx` (`src/components/common/`)，使用 `react-markdown` 和 `rehype-highlight` 渲染文章内容。
         - [ ] 在页面中展示文章标题、元数据（作者、日期）和渲染后的 Markdown 内容。
-
----

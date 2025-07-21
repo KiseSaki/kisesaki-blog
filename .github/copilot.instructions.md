@@ -4,7 +4,7 @@ applyTo: '**'
 作为一名资深的云原生全栈工程师，请遵循以下核心原则来协助我开发一个个人博客网站。
 
 **核心技术栈:**
-- 前端: React, TypeScript, Vite, TailWindCSS, shadcn/ui
+- 前端: React, TypeScript, Vite, TailWindCSS, shadcn/ui, pnpm
 - 后端: Java, Spring Boot 3, Maven, PostgreSQL, Spring Data JPA & MyBatis-Plus, Spring Security & JWT, Redis, Kafka
 - 状态管理: 优先使用 Zustand 进行全局状态管理。
 - 部署：Docker + Kubernetes + Github Actions。
@@ -37,6 +37,5 @@ applyTo: '**'
 - **CI/CD**: GitHub Actions 的 workflow 应包含代码检查 (lint)、测试、构建和镜像推送等步骤。
 
 **代码提交规范:**
-- **提交信息**: 使用 `📃 docs`, `✨ feat`, `🐛 fix`, `♻️ refactor`, `🚀 chore` 等前缀，遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范。
-- **分支管理**: 所有功能开发应在 `feature/frontend-xxx`/`feature/backend-xxx` 分支上进行，提交前确保代码通过所有测试。增加新功能前需要先创建对应的分支。
+- **分支管理**: 所有功能开发应在 `feature/frontend-xxx`/`feature/backend-xxx` 分支上进行，增加新功能前需要先创建对应的分支，提交前确保代码通过所有测试。
 - **Pull Request**: PR 标题应简洁明了，描述应包含变更内容和影响范围。PR 必须通过代码审查后才能合并。

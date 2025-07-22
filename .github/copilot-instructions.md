@@ -11,14 +11,18 @@ applyTo: '**'
 - 部署：Docker + Kubernetes + Github Actions。
 
 **前端核心架构原则:**
-1. **结构**: 严格遵循我提供的目录结构 (api/, components/, hooks/, pages/ 等)。
-2. **组件化**: 遵循原子设计理念。`components/ui` 是原子，`components/common` 是业务组件。
-3. **类型安全**: 必须使用严格的 TypeScript，严禁 `any` 类型。API 类型定义在 `src/types`。
-4. **API调用**: 所有后端API请求都必须通过 `src/api/` 目录下的服务函数进行封装。
-5. **状态管理**: 优先使用 Zustand 进行全局状态管理，避免不必要的 prop drilling。
-6. **样式**: 使用 TailwindCSS 进行样式设计，优先复用 shadcn/ui 组件。自定义样式应保持简洁。
-7. **错误处理**: 在 API 服务或 React Hooks 中统一处理 API 错误，并使用 toast 或特定错误组件向用户反馈。
-8. **代码注释**: 对复杂的业务逻辑、自定义 Hooks 和公共组件，应添加 TSDoc 注释。
+1. **结构**: 严格遵循我提供的目录结构 (`api/`, `components/`, `hooks/`, `pages/` 等)。应预留 `lib/` 用于工具函数、`config/` 用于常量和全局配置，`stores/` 用于 Zustand 状态。
+2. **组件化**: 遵循原子设计理念。`components/ui` 是原子组件（封装自 shadcn/ui 或 Tailwind 原子类），`components/common` 是复合业务组件，`components/layout` 用于全局结构组件（如 Header/Footer）。
+3. **类型安全**: 必须使用严格的 TypeScript，**禁用 any（通过 tsconfig 限制）**。所有后端接口响应、DTO 定义应集中在 `src/types/api.ts` 等文件中维护。
+4. **API调用**: 所有后端 API 请求都必须通过 `src/api/` 目录下的服务函数进行封装，避免在组件中直接使用 axios/fetch。封装应内置统一错误处理、loading 状态处理。
+5. **状态管理**: 全局状态使用 Zustand。每个功能模块单独定义 Store 文件，并通过 selector 优化性能。全局登录用户状态、权限、菜单等应集中在 `authStore` 管理。
+6. **路由权限控制**: 页面级权限控制必须通过全局 `PrivateRoute` 组件封装，结合 Zustand 中的 `user.roles[]` 判断权限，支持嵌套路由拦截与重定向。
+7. **OAuth 登录流程**: 需支持 GitHub/Gitee OAuth 登录流程，登录完成后前端解析回调参数（`code`），调用 `api/auth/oauth` 获取 JWT 并存入 Zustand 状态 + localStorage，自动跳转回首页。
+8. **样式设计**: 使用 TailwindCSS 原子类设计 UI，优先复用 shadcn/ui 组件库。如需扩展样式，建议写入 `src/styles/utilities.css`，不得写入全局样式覆盖。
+9. **错误处理**: API 层必须内置错误提示逻辑，默认使用 `toast`（来自 shadcn/toaster）展示错误信息。可为严重错误（如 403, 500）定义全局错误边界组件。
+10. **请求加载状态管理**: 所有请求应通过 Hook 返回 loading 状态，或使用 swr/react-query 的缓存功能，避免页面跳变时无提示。
+11. **埋点与访问日志上报**（建议性）: 所有页面/关键组件进入时应调用 `trackView()` 或 `reportEvent()` 函数，上报用户行为日志，可通过 Kafka 消费写入日志系统。
+12. **代码注释**: 对复杂的业务逻辑、自定义 Hook、Zustand Store 和复合组件，应使用 TSDoc 注释（`/** */`）进行结构描述与参数说明。
 
 **后端核心架构原则:**
 1. **分层架构**: 严格遵守 Controller -> Service -> Repository/Mapper 的分层结构。Controller 必须保持"薄"。
@@ -28,6 +32,14 @@ applyTo: '**'
 5. **安全**: 所有接口默认需要 JWT 认证，公共接口需在 Spring Security 配置中显式放行。
 6. **日志**: 在关键业务逻辑和异常发生处，使用 SLF4J 记录结构化日志。
 7. **代码注释**: 对 Service 层的公开方法和复杂的业务逻辑，应添加 JavaDoc 注释。
+8. **异步事件机制**: 所有具有副作用的操作（如邮件通知、行为日志记录、点赞计数等）应通过 Kafka 发布事件，由异步消费者处理。提前在基础设施中封装 Kafka 发布与订阅工具。
+9. **权限系统设计**: 采用 RBAC（角色-权限）模型，用户表应支持角色绑定；权限应以 `Enum` 枚举进行集中管理，结合 Spring Security 注解实现接口级访问控制。
+10. **OAuth2 登录集成**: 后台与前台登录系统应支持 GitHub、Gitee 等 OAuth2 登录方式。建议使用 Spring Security OAuth2 Client 实现，统一封装登录与回调流程。
+11. **缓存架构预设**: 明确 Redis 缓存使用场景并建立统一的缓存 Key 命名规范（如：`blog:article:{id}`）。缓存策略需预设过期时间、预热机制和更新策略。
+12. **统一接口文档生成**: 所有后端接口应通过 SpringDoc OpenAPI 或 Knife4j 自动生成文档。必须配置分组、接口分类标签和字段说明。
+13. **配置多环境支持**: 项目结构中应区分 dev、prod 等环境配置文件（如 `application-dev.yml`），配置中应避免硬编码外部依赖地址。
+14. **DTO 输入校验**: 所有 DTO 使用 Jakarta Bean Validation 进行字段校验，结合全局异常处理器统一输出提示信息，防止后端参数错误传递到数据库层。
+15. **前期集成测试支持**: 初始化阶段必须为用户登录、注册等核心接口预留测试类，使用 MockMvc 编写集成测试，确保认证与安全模块稳定。
 
 **测试原则:**
 - **前端**: 使用 Jest 和 React Testing Library 为关键组件和 Hooks 编写单元测试。

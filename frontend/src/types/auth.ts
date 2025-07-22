@@ -8,6 +8,7 @@ export interface User {
   nickname?: string;
   avatar?: string;
   role: string;
+  roles: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -18,6 +19,7 @@ export interface User {
 export interface AuthState {
   user: User | null;
   token: string | null;
+  roles: string[];
   setUserAndToken: (user: User, token: string) => void;
   logout: () => void;
 }

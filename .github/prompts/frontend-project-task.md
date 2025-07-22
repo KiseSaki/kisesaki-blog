@@ -1,12 +1,12 @@
 ## 前端项目任务流
 ### 🚀 **阶段一：项目基础与核心服务 (Foundation &amp; Core Services)**
 
-* [ ] **1. 项目初始化与目录结构搭建**
+* [X] **1. 项目初始化与目录结构搭建**
   * **任务**:
-    * [ ] 使用 `pnpm create vite` 初始化 React + TypeScript 项目。
-    * [ ] 安装核心依赖: `tailwindcss`, `shadcn/ui`, `zustand`, `axios`, `react-router-dom`。
-    * [ ] 按照规范创建初始目录结构: `src/api`, `src/components/ui`, `src/components/common`, `src/components/layout`, `src/hooks`, `src/pages`, `src/stores`, `src/lib`, `src/config`, `src/types`。
-    * [ ] 配置 `tsconfig.json`，设置严格模式并**禁止** **`any`** **类型**。
+    * [X] 使用 `pnpm create vite` 初始化 React + TypeScript 项目。
+    * [X] 安装核心依赖: `tailwindcss`, `shadcn/ui`, `zustand`, `axios`, `react-router-dom`。
+    * [X] 按照规范创建初始目录结构: `src/api`, `src/components/ui`, `src/components/common`, `src/components/layout`, `src/hooks`, `src/pages`, `src/stores`, `src/lib`, `src/config`, `src/types`。
+    * [X] 配置 `tsconfig.json`，设置严格模式并**禁止** **`any`** **类型**。
 * [ ] **2. 封装 Axios API 客户端**
   * **文件**: `src/api/client.ts`
   * **任务**:

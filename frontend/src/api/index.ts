@@ -18,3 +18,6 @@ export const testApiClient = async () => {
 
 // 导出客户端供其他模块使用
 export { default } from './client';
+
+// 导出 API 工具函数
+export * from '../lib/api';

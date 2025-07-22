@@ -11,27 +11,33 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+      roles: [],
       
       /**
        * 设置用户信息和 token
        */
       setUserAndToken: (user: User, token: string) => {
-        set({ user, token });
+        set({ 
+          user, 
+          token, 
+          roles: user.roles || [user.role] // 兼容单个角色或多个角色
+        });
       },
       
       /**
        * 退出登录，清除用户信息和 token
        */
       logout: () => {
-        set({ user: null, token: null });
+        set({ user: null, token: null, roles: [] });
       },
     }),
     {
       name: 'auth-storage', // localStorage 中的键名
       partialize: (state) => ({ 
         token: state.token, 
-        user: state.user 
-      }), // 只持久化 token 和 user
+        user: state.user,
+        roles: state.roles
+      }), // 持久化 token、user 和 roles
     }
   )
 );

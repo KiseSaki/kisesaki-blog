@@ -48,8 +48,8 @@ client.interceptors.request.use(
  * 统一处理响应数据和错误
  */
 client.interceptors.response.use(
-  <T>(response: AxiosResponse<ApiResponse<T>>) => {
-    // 成功响应，直接返回 data 字段
+  <T>(response: AxiosResponse<ApiResponse<T>>): T => {
+    // 成功响应，直接返回 data 字段，剥离外层封装
     return response.data.data;
   },
   (error: AxiosError<ApiResponse>) => {
@@ -65,11 +65,14 @@ client.interceptors.response.use(
     // 使用 sonner 显示错误提示
     toast.error(errorMessage);
     
-    // 如果是 401 错误，清除认证信息
+    // 特殊状态码处理
     if (error.response?.status === 401) {
+      // 401 未授权：清除认证信息并重定向到登录页
       useAuthStore.getState().logout();
-      // 可以在这里添加重定向到登录页的逻辑
-      // window.location.href = '/login';
+      window.location.href = '/login';
+    } else if (error.response?.status === 403) {
+      // 403 权限不足：重定向到403页面
+      window.location.href = '/403';
     }
     
     return Promise.reject(error);

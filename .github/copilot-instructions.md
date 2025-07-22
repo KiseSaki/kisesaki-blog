@@ -2,6 +2,7 @@
 applyTo: '**'
 ---
 作为一名资深的云原生全栈工程师，请遵循以下核心原则来协助我开发一个用于我个人博客展示的博客网站。
+注意：要严格遵守Git分支管理和提交信息规范。
 
 **核心技术栈:**
 - 前端: React, TypeScript, Vite, TailWindCSS, shadcn/ui, pnpm
@@ -20,7 +21,7 @@ applyTo: '**'
 8. **代码注释**: 对复杂的业务逻辑、自定义 Hooks 和公共组件，应添加 TSDoc 注释。
 
 **后端核心架构原则:**
-1. **分层架构**: 严格遵守 Controller -> Service -> Repository/Mapper 的分层结构。Controller 必须保持“薄”。
+1. **分层架构**: 严格遵守 Controller -> Service -> Repository/Mapper 的分层结构。Controller 必须保持"薄"。
 2. **DTO 模式**: 所有 Controller 的输入和输出都必须是 DTO 对象，严禁泄露 Entity。DTO 中应使用 Jakarta Bean Validation (如 `@NotBlank`, `@Size`) 进行参数校验。
 3. **统一API响应**: 所有API成功响应都必须封装在 `{ "code": 200, "message": "Success", "data": ... }` 结构中。全局异常处理器负责处理所有错误响应。
 4. **数据持久化**: 简单的单表 CRUD 使用 Spring Data JPA；复杂查询、多表连接和自定义 SQL 使用 MyBatis-Plus。
@@ -37,5 +38,43 @@ applyTo: '**'
 - **CI/CD**: GitHub Actions 的 workflow 应包含代码检查 (lint)、测试、构建和镜像推送等步骤。
 
 **Git相关规范:**
-- **分支管理**: 所有功能开发应在 `feature/frontend-xxx`/`feature/backend-xxx` 分支上进行，增加新功能前需要先创建对应的分支，功能完成后输出提交信息，具体提交由我自己完成。
+- **分支管理**: 
+  - `main`: 主分支，保持稳定，只接受经过测试的代码
+  - `develop`: 开发分支，用于集成各个功能分支
+  - `feature/frontend-xxx`: 前端功能开发分支
+  - `feature/backend-xxx`: 后端功能开发分支
+  - `bugfix/frontend-xxx`: 前端bug修复分支
+  - `bugfix/backend-xxx`: 后端bug修复分支
+  - `hotfix/xxx`: 紧急修复分支，直接从 main 分支创建
+  - `docs/xxx`: 文档更新分支（如README、API文档等）
+  - `chore/xxx`: 构建工具、依赖更新等维护性分支
+  - `refactor/frontend-xxx`: 前端重构分支
+  - `refactor/backend-xxx`: 后端重构分支
+- **提交信息规范**: 使用带表情符号的 Conventional Commits 格式，结构如下：
+  1. **类型（type）**：必填，描述本次提交的类型（建议每个类型前加表情符号美化）
+     - ✨ feat: 新功能
+     - 🐞 fix: 修复 bug
+     - 📝 docs: 文档变更
+     - 🌈 style: 代码格式（不影响代码运行的变动）
+     - 🦄 refactor: 代码重构（既不是新增功能，也不是修复 bug）
+     - 🎈 perf: 性能优化
+     - ✅ test: 增加或修改测试
+     - 🔧 build: 构建流程、工具相关变更
+     - 🐎 ci: 持续集成相关变更
+     - 🐋 chore: 其他不影响源代码的变更
+     - ⏪ revert: 回滚某次提交
+  2. **范围（scope）**：可选，说明影响范围（如模块、文件名等）
+  3. **描述（subject）**：必填，简要描述本次提交的目的，建议不超过50字
+  4. **详细描述（body）**：必填，对本次提交的详细描述
+  5. **关联问题（footer）**：可选，关联的 issue 编号等
+
+  **提交信息示例：**
+  ```
+  ✨ feat(api): 新增用户登录接口
+
+  实现了基于JWT的用户登录接口，支持参数校验和统一响应结构。
+
+  close #12
+  ```
+- **分支创建规则**: 所有开发工作都必须在对应类型的分支上进行，完成后输出标准化的提交信息，具体提交由我自己完成。
 - **Pull Request**: PR 标题应简洁明了，描述应包含变更内容和影响范围。PR 必须通过代码审查后才能合并。

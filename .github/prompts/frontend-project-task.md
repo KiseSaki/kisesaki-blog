@@ -7,15 +7,15 @@
     * [X] 安装核心依赖: `tailwindcss`, `shadcn/ui`, `zustand`, `axios`, `react-router-dom`。
     * [X] 按照规范创建初始目录结构: `src/api`, `src/components/ui`, `src/components/common`, `src/components/layout`, `src/hooks`, `src/pages`, `src/stores`, `src/lib`, `src/config`, `src/types`。
     * [X] 配置 `tsconfig.json`，设置严格模式并**禁止** **`any`** **类型**。
-* [ ] **2. 封装 Axios API 客户端**
+* [X] **2. 封装 Axios API 客户端**
   * **文件**: `src/api/client.ts`
   * **任务**:
-    * [ ] 初始化 Axios 实例，`baseURL` 从环境变量 `import.meta.env.VITE_API_URL` 获取。
-    * [ ] **请求拦截器**: 从 `authStore` 获取 JWT token，附加到 `Authorization` 请求头。
-    * [ ] **响应拦截器**:
+    * [X] 初始化 Axios 实例，`baseURL` 从环境变量 `import.meta.env.VITE_API_URL` 获取。
+    * [X] **请求拦截器**: 从 `authStore` 获取 JWT token，附加到 `Authorization` 请求头。
+    * [X] **响应拦截器**:
       * 成功时 (2xx): 直接返回 `response.data.data`，剥离外层封装。
       * 失败时: 使用 `sonner` (来自 shadcn/ui) 显示 `error.response.data.message` 错误提示，并 `Promise.reject(error)`。
-    * [ ] **请求加载状态**: 封装的 API 服务函数应能返回 `loading` 状态，或考虑使用 `swr`/`react-query`。
+    * [X] **请求加载状态**: 封装的 API 服务函数应能返回 `loading` 状态，或考虑使用 `swr`/`react-query`。
 * [ ] **3. 创建用户认证 Store (Zustand)**
   * **文件**: `src/stores/authStore.ts`
   * **任务**:

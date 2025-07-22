@@ -16,13 +16,13 @@
       * 成功时 (2xx): 直接返回 `response.data.data`，剥离外层封装。
       * 失败时: 使用 `sonner` (来自 shadcn/ui) 显示 `error.response.data.message` 错误提示，并 `Promise.reject(error)`。
     * [X] **请求加载状态**: 封装的 API 服务函数应能返回 `loading` 状态，或考虑使用 `swr`/`react-query`。
-* [ ] **3. 创建用户认证 Store (Zustand)**
+* [X] **3. 创建用户认证 Store (Zustand)**
   * **文件**: `src/stores/authStore.ts`
   * **任务**:
-    * [ ] 定义 `AuthState` 接口，包含 `user: User | null`, `token: string | null`, `roles: string[]`。
-    * [ ] 使用 Zustand 创建 `useAuthStore`，包含上述状态。
-    * [ ] 创建 `login(user: User, token: string)` 和 `logout()` action。`login` action 需要同时设置用户信息、token 和角色。
-    * [ ] 使用 Zustand 的 `persist` 中间件将 `token` 和 `user` 信息持久化到 `localStorage`。
+    * [X] 定义 `AuthState` 接口，包含 `user: User | null`, `token: string | null`, `roles: string[]`。
+    * [X] 使用 Zustand 创建 `useAuthStore`，包含上述状态。
+    * [X] 创建 `login(user: User, token: string)` 和 `logout()` action。`login` action 需要同时设置用户信息、token 和角色。
+    * [X] 使用 Zustand 的 `persist` 中间件将 `token` 和 `user` 信息持久化到 `localStorage`。
 * [ ] **4. 配置路由与权限控制**
   * **文件**: `src/router/index.tsx`
   * **任务**:

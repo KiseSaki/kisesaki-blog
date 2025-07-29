@@ -63,5 +63,27 @@
         "peekViewEditor.background": "#1e1e1e",
         "peekViewResult.background": "#252526",
         "peekViewTitle.background": "#3c3c3c"
-    }
+    },
+    // 工作区文件搜索配置
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/target": true,
+        "**/.git": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/*.log": true
+    },
+    // 文件监视排除
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/target/**": true,
+        "**/.git/**": true,
+        "**/dist/**": true,
+        "**/build/**": true
+    },
+    // 工作区推荐的文件夹折叠
+    "explorer.compactFolders": false,
+    // 多项目支持
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.suggest.autoImports": true
 }

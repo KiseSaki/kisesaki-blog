@@ -173,6 +173,37 @@
                     "endsPattern": "^.*ready in.*$"
                 }
             }
+        },
+        {
+            "label": "🚀 启动全栈开发环境",
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "Spring Boot: 启动应用",
+                "前端: 启动开发服务器"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "🏗️ 全项目构建",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Maven: 清理项目",
+                "Maven: 编译项目",
+                "前端: 安装依赖"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
         }
     ]
 }

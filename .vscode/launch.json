@@ -77,5 +77,15 @@
             "cwd": "${workspaceFolder}/backend",
             "vmArgs": "-Xms256M -Xmx1024M"
         }
+    ],
+    "compounds": [
+        {
+            "name": "🚀 启动全栈应用",
+            "configurations": [
+                "启动 Spring Boot 应用"
+            ],
+            "preLaunchTask": "前端: 启动开发服务器",
+            "stopAll": true
+        }
     ]
 }

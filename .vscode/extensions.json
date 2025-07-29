@@ -1,0 +1,47 @@
+{
+    "recommendations": [
+        // 前端开发相关（React + TypeScript + Vite）
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-playwright.playwright",
+        "usernamehw.errorlens",
+        "yoavbls.pretty-ts-errors",
+        // 数据库相关
+        "cweijan.vscode-postgresql-client2",
+        "cweijan.vscode-redis-client",
+        "ms-ossdata.vscode-postgresql",
+        // Spring Boot 和 Java 开发增强
+        "vmware.vscode-spring-boot",
+        "vscjava.vscode-spring-initializr",
+        "vscjava.vscode-spring-boot-dashboard",
+        "gabrielbb.vscode-lombok",
+        "sonarsource.sonarlint-vscode",
+        "shengchen.vscode-checkstyle",
+        // Docker 和 Kubernetes
+        "ms-azuretools.vscode-docker",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        // API 开发和测试
+        "humao.rest-client",
+        "42crunch.vscode-openapi",
+        "rangav.vscode-thunder-client",
+        // 代码质量和协作
+        "streetsidesoftware.code-spell-checker",
+        "aaron-bond.better-comments",
+        "ms-vscode.vscode-todo-highlight",
+        "alefragnani.bookmarks",
+        // 文档和注释
+        "yzane.markdown-pdf",
+        "bierner.markdown-mermaid",
+        "ms-vscode.live-server",
+        // 工作流和效率工具
+        "formulahendry.code-runner",
+        "ms-vscode.remote-containers",
+        "github.vscode-github-actions",
+        // 主题和界面美化（可选）
+        "pkief.material-icon-theme",
+        "dracula-theme.theme-dracula",
+        "github.github-vscode-theme"
+    ]
+}

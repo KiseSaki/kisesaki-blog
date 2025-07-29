@@ -1,0 +1,81 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "启动 Spring Boot 应用",
+            "request": "launch",
+            "mainClass": "com.kisesaki.blog.BlogApplication",
+            "projectName": "kisesaki-blog-backend",
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "dev"
+            },
+            "args": "--spring.profiles.active=dev",
+            "vmArgs": "-Xms512M -Xmx2048M -Djps.track.ap.dependencies=false -Dspring-boot.run.fork=false -Dspring.profiles.active=dev",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "java",
+            "name": "启动 Spring Boot 应用 (生产环境)",
+            "request": "launch",
+            "mainClass": "com.kisesaki.blog.BlogApplication",
+            "projectName": "kisesaki-blog-backend",
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "prod"
+            },
+            "args": "--spring.profiles.active=prod",
+            "vmArgs": "-Xms1G -Xmx4G -Djps.track.ap.dependencies=false -Dspring-boot.run.fork=false -Dspring.profiles.active=prod",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "java",
+            "name": "调试 Spring Boot 应用",
+            "request": "launch",
+            "mainClass": "com.kisesaki.blog.BlogApplication",
+            "projectName": "kisesaki-blog-backend",
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "dev"
+            },
+            "args": "--spring.profiles.active=dev",
+            "vmArgs": "-Xms512M -Xmx2048M -Djps.track.ap.dependencies=false -Dspring-boot.run.fork=false -Dspring.profiles.active=dev -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "java",
+            "name": "运行单元测试",
+            "request": "launch",
+            "mainClass": "",
+            "projectName": "kisesaki-blog-backend",
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "test"
+            },
+            "args": "--spring.profiles.active=test",
+            "vmArgs": "-Xms256M -Xmx1024M -Dspring.profiles.active=test",
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "java",
+            "name": "附加到远程 JVM",
+            "request": "attach",
+            "hostName": "localhost",
+            "port": 5005,
+            "projectName": "kisesaki-blog-backend"
+        },
+        {
+            "type": "java",
+            "name": "运行当前 Java 文件",
+            "request": "launch",
+            "mainClass": "${file}",
+            "projectName": "kisesaki-blog-backend",
+            "cwd": "${workspaceFolder}/backend",
+            "vmArgs": "-Xms256M -Xmx1024M"
+        }
+    ]
+}

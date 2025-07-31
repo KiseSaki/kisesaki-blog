@@ -1,5 +1,89 @@
 {
     "github.copilot.chat.commitMessageGeneration.instructions": [
-        {"file": "/guidance/commit-message.md"}
+        {
+            "file": "/guidance/commit-message.md"
+        }
     ],
+    // Java 开发相关配置
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "disabled",
+    "java.format.settings.url": "backend/.vscode/eclipse-java-google-style.xml",
+    "java.format.settings.profile": "GoogleStyle",
+    "java.import.maven.enabled": true,
+    "java.maven.downloadSources": true,
+    "java.debug.settings.hotCodeReplace": "auto",
+    "java.test.config": {
+        "workingDirectory": "${workspaceFolder}/backend"
+    },
+    "java.project.sourcePaths": [
+        "backend/src/main/java"
+    ],
+    "java.project.outputPath": "backend/target/classes",
+    "java.project.referencedLibraries": [
+        "backend/lib/**/*.jar"
+    ],
+    // Java 性能优化配置
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx8G -Xms1G -Xlog:disable",
+    "java.autobuild.enabled": false,
+    "java.debug.settings.forceBuildBeforeLaunch": false,
+    "java.debug.settings.onBuildFailureProceed": true,
+    "java.compile.onSave": true,
+    "java.dependency.packagePresentation": "hierarchical",
+    // Maven 配置
+    "maven.view": "hierarchical",
+    // Spring Boot 相关配置
+    "spring-boot.ls.java.vmargs": "-Xmx1024m -XX:TieredStopAtLevel=1",
+    "spring-boot.ls.java.home": "",
+    // 编辑器优化配置
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "editor.unusedImports.severity": "ignore",
+    "editor.showUnused": false,
+    "problems.decorations.enabled": false,
+    // 自动保存配置
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    // Java 特定格式化配置
+    "[java]": {
+        "editor.defaultFormatter": "redhat.java",
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+    },
+    // 文件关联配置
+    "files.associations": {
+        "*.yml": "yaml",
+        "*.yaml": "yaml",
+        "application*.properties": "spring-boot-properties"
+    },
+    // 代码窥视视图颜色配置
+    "workbench.colorCustomizations": {
+        "peekView.border": "#FF0000",
+        "peekViewEditor.background": "#1e1e1e",
+        "peekViewResult.background": "#252526",
+        "peekViewTitle.background": "#3c3c3c"
+    },
+    // 工作区文件搜索配置
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/target": true,
+        "**/.git": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/*.log": true
+    },
+    // 文件监视排除
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/target/**": true,
+        "**/.git/**": true,
+        "**/dist/**": true,
+        "**/build/**": true
+    },
+    // 工作区推荐的文件夹折叠
+    "explorer.compactFolders": false,
+    // 多项目支持
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.suggest.autoImports": true
 }

@@ -1,19 +1,13 @@
-import './App.css'
 import { Toaster } from 'sonner'
+import { RouterProvider } from 'react-router';
+import routes from './router';
 
 function App() {
 
   return (
     <>
       {/* 页面内容 */}
-      <div className="min-h-screen bg-background">
-        <h1 className="text-2xl font-bold text-center py-8">
-          Kisesaki Blog
-        </h1>
-        <p className="text-center text-muted-foreground">
-          API 客户端已配置完成
-        </p>
-      </div>
+      <RouterProvider router={routes}/>
       
       {/* Toast 通知组件 */}
       <Toaster richColors position="top-right" />

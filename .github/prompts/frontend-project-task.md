@@ -23,13 +23,13 @@
     * [X] 使用 Zustand 创建 `useAuthStore`，包含上述状态。
     * [X] 创建 `login(user: User, token: string)` 和 `logout()` action。`login` action 需要同时设置用户信息、token 和角色。
     * [X] 使用 Zustand 的 `persist` 中间件将 `token` 和 `user` 信息持久化到 `localStorage`。
-* [ ] **4. 配置路由与权限控制**
+* [X] **4. 配置路由与权限控制**
   * **文件**: `src/router/index.tsx`
   * **任务**:
-    * [ ] 使用 `createBrowserRouter` 创建路由。
-    * [ ] 创建 `MainLayout.tsx` (`src/components/layout/`) 作为根布局，包含 `Header`、`Footer` 和 `<Outlet />`。
-    * [ ] 创建 `PrivateRoute.tsx` (`src/router/`)，检查 `useAuthStore` 中的 `token` 和 `user.roles`，若不满足权限要求则重定向到 `/login` 或 `/403` 页面。
-    * [ ] 定义路由结构，使用 `PrivateRoute` 包裹需要认证和特定角色的路由。
+    * [X] 使用 `createBrowserRouter` 创建路由。
+    * [X] 创建 `MainLayout.tsx` (`src/components/layout/`) 作为根布局，包含 `Header`、`Footer` 和 `<Outlet />`。
+    * [X] 创建 `PrivateRoute.tsx` (`src/router/`)，检查 `useAuthStore` 中的 `token` 和 `user.roles`，若不满足权限要求则重定向到 `/login` 或 `/403` 页面。
+    * [X] 定义路由结构，使用 `PrivateRoute` 包裹需要认证和特定角色的路由。
 * [ ] **5. 实现全局错误边界与提示**
   * **文件**: `src/components/common/GlobalErrorBoundary.tsx`
   * **任务**:

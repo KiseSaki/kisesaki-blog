@@ -1,4 +1,7 @@
-/**
- * 网站底部组件
- * 包含版权信息、友情链接、联系方式等
- */
+export const Footer = () => {
+    return (
+        <footer>
+            <p>© 2024 Kisesaki Blog. All rights reserved.</p>
+        </footer>
+    );
+};

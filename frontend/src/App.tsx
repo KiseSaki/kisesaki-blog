@@ -1,5 +1,7 @@
-import './App.css'
+import { RouterProvider } from 'react-router'
 import { Toaster } from 'sonner'
+import './App.css'
+import { router } from './router'
 
 function App() {
 
@@ -7,14 +9,10 @@ function App() {
     <>
       {/* 页面内容 */}
       <div className="min-h-screen bg-background">
-        <h1 className="text-2xl font-bold text-center py-8">
-          Kisesaki Blog
-        </h1>
-        <p className="text-center text-muted-foreground">
-          API 客户端已配置完成
-        </p>
+        <RouterProvider router={router}>
+        </RouterProvider>
       </div>
-      
+
       {/* Toast 通知组件 */}
       <Toaster richColors position="top-right" />
     </>

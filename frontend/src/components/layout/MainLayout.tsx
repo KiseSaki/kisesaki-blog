@@ -1,4 +1,15 @@
-/**
- * 主布局组件
- * 包含页面整体布局结构，集成 Header、Footer、Sidebar 等布局组件
- */
+import { Outlet } from "react-router";
+import { Footer } from "./Footer";
+import { Header } from "./Header";
+
+export const MainLayout = () => {
+    return (
+        <div>
+            <Header />
+            <main>
+                <Outlet />
+            </main>
+            <Footer />
+        </div>
+    );
+};

@@ -13,7 +13,7 @@ import React from 'react';
  * });
  * ```
  */
-export function WithErrorBoundary<P extends object>(
+export function withErrorBoundary<P extends object>(
     Component: React.ComponentType<P>,
     errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
 ) {

@@ -3,4 +3,4 @@ export type { ErrorBoundaryProps } from './ErrorBoundary';
 export { default as Loading } from './Loading';
 export * from './Pagination';
 export * from './SuspenseWrapper';
-export * from './WithErrorBoundary';
+export * from '../../lib/withErrorBoundary';

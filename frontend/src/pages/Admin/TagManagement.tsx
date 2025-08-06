@@ -2,3 +2,10 @@
  * 标签管理页面
  * 管理员用于创建、编辑、删除博客标签的页面
  */
+const TagManagement = () => {
+    return (
+        <div>TagManagement</div>
+    )
+}
+
+export default TagManagement;

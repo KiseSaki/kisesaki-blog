@@ -2,3 +2,10 @@
  * 系统设置页面
  * 管理员用于配置网站设置、SEO、系统参数等
  */
+const SettingsPage = () => {
+    return (
+        <div>SettingsPage</div>
+    )
+}
+
+export default SettingsPage;

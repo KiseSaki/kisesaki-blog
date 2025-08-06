@@ -2,3 +2,10 @@
  * 用户收藏页面
  * 用户收藏的文章列表和管理
  */
+const FavoritesPage = () => {
+    return (
+        <div>FavoritesPage</div>
+    )
+}
+
+export default FavoritesPage;

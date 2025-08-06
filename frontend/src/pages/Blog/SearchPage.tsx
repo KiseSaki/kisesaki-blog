@@ -2,3 +2,10 @@
  * 博客搜索页面
  * 文章搜索功能，支持关键词搜索和高级筛选
  */
+const SearchPage = () => {
+    return (
+        <div>SearchPage</div>
+    )
+}
+
+export default SearchPage;

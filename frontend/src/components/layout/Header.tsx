@@ -1,4 +1,7 @@
-/**
- * 网站头部导航组件
- * 包含网站 Logo、主导航菜单、用户登录状态显示和操作按钮
- */
+export const Header = () => {
+    return (
+        <header>
+            <h1>Kisesaki Blog</h1>
+        </header>
+    );
+};

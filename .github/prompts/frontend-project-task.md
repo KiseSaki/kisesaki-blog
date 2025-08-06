@@ -48,17 +48,18 @@
   * [X] `Header.tsx` - 导航头部
   * [X] `Footer.tsx` - 页脚信息
 
-### 🚧 **3. 全局错误处理与用户体验**
+### ✅ **3. 全局错误处理与用户体验**
+> **状态**: 已完成 ✓
 
 * **🛡️ 错误边界** (`src/components/common/ErrorBoundary.tsx`):
-  * [ ] React Error Boundary 实现
-  * [ ] 优雅的错误展示界面
-  * [ ] 错误日志上报机制
+  * [X] React Error Boundary 实现
+  * [X] 优雅的错误展示界面
+  * [X] 错误日志上报机制
 
 * **⏳ 加载与提示** (`src/components/common/`):
   * [X] `Loading.tsx` - 加载状态组件
-  * [ ] `SuspenseWrapper.tsx` - Suspense 包装器
-  * [ ] 全局 Toast 提示集成 (shadcn/ui Toaster)
+  * [X] `SuspenseWrapper.tsx` - Suspense 包装器
+  * [X] 全局 Toast 提示集成 (shadcn/ui Toaster)
 
 * **📄 分页组件** (`src/components/common/Pagination.tsx`):
   * [X] 基础分页组件框架

@@ -1,0 +1,58 @@
+# KiseSaki Blog 后端应用主配置文件
+# 主要配置激活的环境和通用配置
+
+spring:
+  application:
+    name: kisesaki-blog-backend
+  
+  # 默认激活开发环境
+  profiles:
+    active: dev
+  
+  # 通用配置
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+  
+  # Jackson 序列化配置
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: NON_NULL
+    serialization:
+      write-dates-as-timestamps: false
+  
+  # 国际化配置
+  messages:
+    basename: messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+# Actuator 监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# 日志配置
+logging:
+  level:
+    com.kisesaki.blog: INFO
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -10,7 +10,7 @@
             ],
             "group": "build",
             "options": {
-                "cwd": "${workspaceFolder}/backend"
+                "cwd": "${workspaceFolder}/backend/blog-backend"
             },
             "presentation": {
                 "echo": true,
@@ -32,7 +32,7 @@
                 "isDefault": true
             },
             "options": {
-                "cwd": "${workspaceFolder}/backend"
+                "cwd": "${workspaceFolder}/backend/blog-backend"
             },
             "presentation": {
                 "echo": true,
@@ -52,7 +52,7 @@
             ],
             "group": "build",
             "options": {
-                "cwd": "${workspaceFolder}/backend"
+                "cwd": "${workspaceFolder}/backend/blog-backend"
             },
             "presentation": {
                 "echo": true,
@@ -71,7 +71,7 @@
             ],
             "group": "test",
             "options": {
-                "cwd": "${workspaceFolder}/backend"
+                "cwd": "${workspaceFolder}/backend/blog-backend"
             },
             "presentation": {
                 "echo": true,
@@ -90,7 +90,7 @@
             ],
             "group": "build",
             "options": {
-                "cwd": "${workspaceFolder}/backend",
+                "cwd": "${workspaceFolder}/backend/blog-backend",
                 "env": {
                     "SPRING_PROFILES_ACTIVE": "dev"
                 }

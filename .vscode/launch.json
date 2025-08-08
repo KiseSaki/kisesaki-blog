@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "BlogBackendApplication",
+            "request": "launch",
+            "mainClass": "com.kisesaki.blog.blog_backend.BlogBackendApplication",
+            "projectName": "blog-backend"
+        },
+        {
+            "type": "java",
             "name": "启动 Spring Boot 应用",
             "request": "launch",
             "mainClass": "com.kisesaki.blog.BlogApplication",

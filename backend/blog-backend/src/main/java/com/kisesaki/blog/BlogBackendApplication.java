@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
 /**
  * KiseSaki Blog 后端应用启动类
  * 
@@ -20,6 +22,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class BlogBackendApplication {
 
     public static void main(String[] args) {
+        // 加载 .env 文件到环境变量中
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+        dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
+
         SpringApplication.run(BlogBackendApplication.class, args);
     }
 }

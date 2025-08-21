@@ -49,5 +49,8 @@
         <setting id="org.eclipse.jdt.core.formatter.use_on_off_tags" value="false"/>
         <setting id="org.eclipse.jdt.core.formatter.wrap_before_or_operator_multicatch" value="true"/>
         <setting id="org.eclipse.jdt.core.formatter.wrap_outer_expressions_when_nested" value="true"/>
+        <!-- 让枚举常量每个独占一行 -->
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_enum_constants" value="insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_enum_constant" value="insert"/>
     </profile>
 </profiles>

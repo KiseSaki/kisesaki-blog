@@ -20,26 +20,7 @@
     │   ├── AuthController.java
     │   ├── AuthService.java
     │   ├── dto                      # 认证相关 DTO
-    ---
-
-## 🔄 **开发规范提醒**
-
-- ✨ **按功能划分包结构** (每个业务模块独立管理)
-- 🔷 **严格遵循分层架构** (Controller -> Service -> Mapper)
-- 📝 **所有接口使用 DTO 进行数据传输**
-- 🎨 **使用 Jakarta Bean Validation 进行参数校验**
-- 🔐 **统一异常处理和日志记录**
-- 🧪 **核心功能需要编写单元测试**
-- 📊 **重要操作需要添加 Kafka 事件发布**
-- 🛡️ **敏感操作需要权限验证**
-- 🗄️ **MyBatis-Plus 数据访问规范**:
-  - 简单 CRUD 使用 `BaseMapper` 提供的基础方法
-  - 复杂查询使用 `QueryWrapper` 或 `LambdaQueryWrapper`
-  - 多表关联查询编写自定义 XML 映射文件
-  - 分页查询使用 MyBatis-Plus 分页插件
-  - 所有 Mapper 接口继承 `BaseMapper<Entity>`
-  - Service 层可选择继承 `ServiceImpl<Mapper, Entity>` 获得基础服务方法
-- 🏗️ **每个功能模块内部保持高内聚，模块之间保持低耦合**y                   # 角色权限实体
+    │   ├── entity                   # 角色权限实体
     │   ├── mapper                   # 认证相关数据访问
     │   └── security                 # Security 配置
     ├── user                         # 用户管理模块
@@ -117,29 +98,29 @@
 
 - **📦 Maven 依赖配置** (`pom.xml`):
 
-  - [ ] Spring Boot 3.x 核心依赖
-  - [ ] Spring Security 6.x + OAuth2 Client
-  - [ ] MyBatis-Plus (纯MyBatis-Plus，无Spring Data JPA)
-  - [ ] PostgreSQL Driver + HikariCP
-  - [ ] Redis + Spring Data Redis
-  - [ ] Kafka + Spring Kafka
-  - [ ] SpringDoc OpenAPI (Swagger UI)
-  - [ ] JWT 依赖 (jjwt-api, jjwt-impl, jjwt-jackson)
-  - [ ] 邮件发送 (spring-boot-starter-mail)
-  - [ ] 文件上传 (commons-fileupload)
-  - [ ] 测试依赖 (JUnit 5, Mockito, TestContainers)
+  - [X] Spring Boot 3.x 核心依赖
+  - [X] Spring Security 6.x + OAuth2 Client
+  - [X] MyBatis-Plus (纯MyBatis-Plus，无Spring Data JPA)
+  - [X] PostgreSQL Driver + HikariCP
+  - [X] Redis + Spring Data Redis
+  - [X] Kafka + Spring Kafka
+  - [X] SpringDoc OpenAPI (Swagger UI)
+  - [X] JWT 依赖 (jjwt-api, jjwt-impl, jjwt-jackson)
+  - [X] 邮件发送 (spring-boot-starter-mail)
+  - [X] 文件上传 (commons-fileupload)
+  - [X] 测试依赖 (JUnit 5, Mockito, TestContainers)
 - **⚙️ 多环境配置**:
 
-  - [ ] `application.yml` - 主配置文件
-  - [ ] `application-dev.yml` - 开发环境配置
-  - [ ] `application-prod.yml` - 生产环境配置
-  - [ ] 数据库连接配置 (PostgreSQL)
-  - [ ] Redis 连接配置
-  - [ ] Kafka 集群配置
-  - [ ] JWT 密钥配置
-  - [ ] OAuth2 客户端配置 (GitHub/Gitee)
-  - [ ] 邮件服务器配置
-  - [ ] 文件存储配置
+  - [X] `application.yml` - 主配置文件
+  - [X] `application-dev.yml` - 开发环境配置
+  - [X] `application-prod.yml` - 生产环境配置
+  - [X] 数据库连接配置 (PostgreSQL)
+  - [X] Redis 连接配置
+  - [X] Kafka 集群配置
+  - [X] JWT 密钥配置
+  - [X] OAuth2 客户端配置 (GitHub/Gitee)
+  - [X] 邮件服务器配置
+  - [X] 文件存储配置
 
 ### 🛡️ **2. 统一响应格式与全局异常处理**
 
@@ -147,21 +128,21 @@
 
 - **📋 通用 DTO** (`com.kisesaki.blog.common.dto`):
 
-  - [ ] `ApiResponse<T>` - 统一响应格式 `{code, message, data, timestamp}`
-  - [ ] `PageResponse<T>` - 分页响应格式
-  - [ ] `ResultUtils` - 响应工具类
+  - [X] `ApiResponse<T>` - 统一响应格式 `{code, message, data, timestamp}`
+  - [X] `PageResponse<T>` - 分页响应格式
+  - [X] `ResultUtils` - 响应工具类
 - **🚨 全局异常处理** (`com.kisesaki.blog.common.exception`):
 
-  - [ ] `BusinessException` - 业务异常基类
-  - [ ] `GlobalExceptionHandler` - 全局异常处理器
-  - [ ] 参数校验异常处理 (`MethodArgumentNotValidException`)
-  - [ ] 权限不足异常处理 (`AccessDeniedException`)
-  - [ ] 系统异常处理 (`RuntimeException`)
-  - [ ] 404/405 等 HTTP 异常处理
+  - [X] `BusinessException` - 业务异常基类
+  - [X] `GlobalExceptionHandler` - 全局异常处理器
+  - [X] 参数校验异常处理 (`MethodArgumentNotValidException`)
+  - [X] 权限不足异常处理 (`AccessDeniedException`)
+  - [X] 系统异常处理 (`RuntimeException`)
+  - [X] 404/405 等 HTTP 异常处理
 - **📊 通用枚举** (`com.kisesaki.blog.common.enums`):
 
-  - [ ] `ErrorCode` - 错误码枚举
-  - [ ] `ResponseStatus` - 响应状态枚举
+  - [X] `ErrorCode` - 错误码枚举
+  - [X] `ResponseStatus` - 响应状态枚举
 
 ### 🔐 **3. RBAC 权限体系实体设计**
 
@@ -793,7 +774,7 @@
 ## 🔄 **开发规范提醒**
 
 - ✨ **按功能划分包结构** (每个业务模块独立管理)
-- **🔷 严格遵循分层架构** (Controller -> Service -> Mapper)
+-  **🔷 严格遵循分层架构** (Controller -> Service -> Mapper)
 - 📝 **所有接口使用 DTO 进行数据传输**
 - 🎨 **使用 Jakarta Bean Validation 进行参数校验**
 - 🔐 **统一异常处理和日志记录**

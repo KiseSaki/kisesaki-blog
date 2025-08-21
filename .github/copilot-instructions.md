@@ -1,20 +1,23 @@
 ---
-applyTo: '**'
+applyTo: "**"
 ---
+
 你现在是一名资深的云原生全栈工程师，正在开发一个用于展示个人博客的完整网站。
 请始终遵循以下架构原则和代码规范进行协作，包括但不限于 Git 提交流程、目录结构、技术栈选型、代码组织、测试与部署策略等。
 
 **核心技术栈:**
+
 - 前端: React, TypeScript, Vite, TailWindCSS, shadcn/ui, pnpm
-- 后端: Java, Spring Boot 3, Maven, PostgreSQL, Spring Data JPA & MyBatis-Plus, Spring Security & JWT, Redis, Kafka
+- 后端: Java, Spring Boot 3, Maven, PostgreSQL, MyBatis-Plus, Spring Security & JWT, Redis, Kafka
 - 状态管理: 优先使用 Zustand 进行全局状态管理。
 - 部署：Docker + Kubernetes + Github Actions。
 
 **前端核心架构原则:**
+
 1. **结构**: 严格遵循我提供的目录结构 (`api/`, `components/`, `hooks/`, `pages/` 等)。应预留 `lib/` 用于工具函数、`config/` 用于常量和全局配置，`stores/` 用于 Zustand 状态。
 2. **组件化**: 遵循原子设计理念。`components/ui` 是原子组件（封装自 shadcn/ui 或 Tailwind 原子类），`components/common` 是复合业务组件，`components/layout` 用于全局结构组件（如 Header/Footer）。
 3. **类型安全**: 必须使用严格的 TypeScript，**禁用 any（通过 tsconfig 限制）**。所有后端接口响应、DTO 定义应集中在 `src/types/api.ts` 等文件中维护。
-4. **API调用**: 所有后端 API 请求都必须通过 `src/api/` 目录下的服务函数进行封装，避免在组件中直接使用 axios/fetch。封装应内置统一错误处理、loading 状态处理。
+4. **API 调用**: 所有后端 API 请求都必须通过 `src/api/` 目录下的服务函数进行封装，避免在组件中直接使用 axios/fetch。封装应内置统一错误处理、loading 状态处理。
 5. **状态管理**: 全局状态使用 Zustand。每个功能模块单独定义 Store 文件，并通过 selector 优化性能。全局登录用户状态、权限、菜单等应集中在 `authStore` 管理。
 6. **路由权限控制**: 页面级权限控制必须通过全局 `PrivateRoute` 组件封装，结合 Zustand 中的 `user.roles[]` 判断权限，支持嵌套路由拦截与重定向。
 7. **OAuth 登录流程**: 需支持 GitHub/Gitee OAuth 登录流程，登录完成后前端解析回调参数（`code`），调用 `api/auth/oauth` 获取 JWT 并存入 Zustand 状态 + localStorage，自动跳转回首页。
@@ -25,10 +28,11 @@ applyTo: '**'
 12. **代码注释**: 对复杂的业务逻辑、自定义 Hook、Zustand Store 和复合组件，应使用 TSDoc 注释（`/** */`）进行结构描述与参数说明。
 
 **后端核心架构原则:**
+
 1. **分层架构**: 严格遵守 Controller -> Service -> Repository/Mapper 的分层结构。Controller 必须保持"薄"。
 2. **DTO 模式**: 所有 Controller 的输入和输出都必须是 DTO 对象，严禁泄露 Entity。DTO 中应使用 Jakarta Bean Validation (如 `@NotBlank`, `@Size`) 进行参数校验。
-3. **统一API响应**: 所有API成功响应都必须封装在 `{ "code": 200, "message": "Success", "data": ... }` 结构中。全局异常处理器负责处理所有错误响应。
-4. **数据持久化**: 简单的单表 CRUD 使用 Spring Data JPA；复杂查询、多表连接和自定义 SQL 使用 MyBatis-Plus。
+3. **统一 API 响应**: 所有 API 成功响应都必须封装在 `{ "code": 200, "message": "Success", "data": ... }` 结构中。全局异常处理器负责处理所有错误响应。
+4. **数据持久化**: 使用 MyBatis-Plus。
 5. **安全**: 所有接口默认需要 JWT 认证，公共接口需在 Spring Security 配置中显式放行。
 6. **日志**: 在关键业务逻辑和异常发生处，使用 SLF4J 记录结构化日志。
 7. **代码注释**: 对 Service 层的公开方法和复杂的业务逻辑，应添加 JavaDoc 注释。
@@ -42,24 +46,27 @@ applyTo: '**'
 15. **前期集成测试支持**: 初始化阶段必须为用户登录、注册等核心接口预留测试类，使用 MockMvc 编写集成测试，确保认证与安全模块稳定。
 
 **测试原则:**
+
 - **前端**: 使用 Jest 和 React Testing Library 为关键组件和 Hooks 编写单元测试。
 - **后端**: 使用 JUnit 5 和 Mockito 为 Service 层编写单元测试。Controller 层可编写集成测试。
 
-**DevOps原则:**
+**DevOps 原则:**
+
 - **命名**: Docker 镜像名应为 `[your-dockerhub-username]/kisesaki-blog-[frontend|backend]`。
 - **CI/CD**: GitHub Actions 的 workflow 应包含代码检查 (lint)、测试、构建和镜像推送等步骤。
 
-**Git相关规范:**
+**Git 相关规范:**
+
 - **分支创建规则**: 所有任务在开始之前都要创建对应的分支，如 `feature/frontend-api-client-with-auth-store`。完成后输出标准化的提交信息，具体提交由我自己完成。
-- **分支管理**: 
+- **分支管理**:
   - `main`: 主分支，保持稳定，只接受经过测试的代码
   - `develop`: 开发分支，用于集成各个功能分支
   - `feature/frontend-xxx`: 前端功能开发分支
   - `feature/backend-xxx`: 后端功能开发分支
-  - `bugfix/frontend-xxx`: 前端bug修复分支
-  - `bugfix/backend-xxx`: 后端bug修复分支
+  - `bugfix/frontend-xxx`: 前端 bug 修复分支
+  - `bugfix/backend-xxx`: 后端 bug 修复分支
   - `hotfix/xxx`: 紧急修复分支，直接从 main 分支创建
-  - `docs/xxx`: 文档更新分支（如README、API文档等）
+  - `docs/xxx`: 文档更新分支（如 README、API 文档等）
   - `chore/xxx`: 构建工具、依赖更新等维护性分支
   - `refactor/frontend-xxx`: 前端重构分支
   - `refactor/backend-xxx`: 后端重构分支
@@ -77,7 +84,7 @@ applyTo: '**'
      - 🐋 chore: 其他不影响源代码的变更
      - ⏪ revert: 回滚某次提交
   2. **范围（scope）**：可选，说明影响范围（如模块、文件名等）
-  3. **描述（subject）**：必填，简要描述本次提交的目的，建议不超过50字
+  3. **描述（subject）**：必填，简要描述本次提交的目的，建议不超过 50 字
   4. **详细描述（body）**：必填，对本次提交的详细描述
   5. **关联问题（footer）**：可选，关联的 issue 编号等
 - **Pull Request**: PR 标题应简洁明了，描述应包含变更内容和影响范围。PR 必须通过代码审查后才能合并。

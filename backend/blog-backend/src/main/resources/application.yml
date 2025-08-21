@@ -52,7 +52,13 @@ management:
 # 日志配置
 logging:
   level:
+    root: WARN
     com.kisesaki.blog: INFO
     org.springframework.security: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# 控制台输出配置
+output:
+  ansi:
+    enabled: ALWAYS # 控制台输出始终启用 ANSI，以实现支持彩色输出

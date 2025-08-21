@@ -34,7 +34,7 @@ public class ResultUtils {
      * 构建成功响应（自定义消息）
      * 
      * @param message 自定义消息
-     * @param data 响应数据
+     * @param data    响应数据
      * @return ApiResponse
      */
     public static <T> ApiResponse<T> success(String message, T data) {
@@ -55,7 +55,7 @@ public class ResultUtils {
      * 构建分页成功响应（自定义消息）
      * 
      * @param message 自定义消息
-     * @param page 分页数据
+     * @param page    分页数据
      * @return ApiResponse
      */
     public static <T> ApiResponse<PageResponse<T>> success(String message, Page<T> page) {
@@ -65,7 +65,7 @@ public class ResultUtils {
     /**
      * 构建失败响应
      * 
-     * @param code 错误码
+     * @param code    错误码
      * @param message 错误消息
      * @return ApiResponse
      */

@@ -14,7 +14,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @param <T> 数据类型
  * @author KiseSaki
  */
-@Schema(description = "分页响应") @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(description = "分页响应")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PageResponse<T> {
 
     @Schema(description = "当前页码", example = "1")
@@ -48,14 +49,14 @@ public class PageResponse<T> {
     /**
      * 构造函数
      *
-     * @param currentPage 当前页码
-     * @param pageSize 每页大小
+     * @param currentPage  当前页码
+     * @param pageSize     每页大小
      * @param totalRecords 总记录数
-     * @param totalPages 总页数
-     * @param data 数据列表
-     * @param first 是否为第一页
-     * @param last 是否为最后一页
-     * @param empty 是否为空页
+     * @param totalPages   总页数
+     * @param data         数据列表
+     * @param first        是否为第一页
+     * @param last         是否为最后一页
+     * @param empty        是否为空页
      */
     public PageResponse(int currentPage, int pageSize, long totalRecords, long totalPages,
             List<T> data, boolean first, boolean last, boolean empty) {
@@ -70,9 +71,10 @@ public class PageResponse<T> {
     }
 
     /**
-     * 从Spring Data Page对象构建PageResponse 直接从 Spring Data 的分页对象提取数据，适用于用 JPA 做分页时
+     * 从Spring Data Page对象构建PageResponse
+     * 直接从 Spring Data 的分页对象提取数据，适用于用 JPA 做分页时
      *
-     * @param <T> 数据类型
+     * @param <T>  数据类型
      * @param page 分页对象
      * @return PageResponse
      */
@@ -83,13 +85,14 @@ public class PageResponse<T> {
     }
 
     /**
-     * 自定义PageResponse 只要有数据列表和总数等信息即可构建，适合非 JPA 场景
+     * 自定义PageResponse
+     * 只要有数据列表和总数等信息即可构建，适合非 JPA 场景
      *
-     * @param <T> 数据类型
-     * @param data 数据列表
+     * @param <T>          数据类型
+     * @param data         数据列表
      * @param totalRecords 总记录数
-     * @param currentPage 当前页码
-     * @param pageSize 每页大小
+     * @param currentPage  当前页码
+     * @param pageSize     每页大小
      * @return PageResponse
      */
     public static <T> PageResponse<T> of(List<T> data, long totalRecords, int currentPage,
@@ -106,9 +109,9 @@ public class PageResponse<T> {
     /**
      * 创建空的分页响应
      *
-     * @param <T> 数据类型
+     * @param <T>         数据类型
      * @param currentPage 当前页码
-     * @param pageSize 每页大小
+     * @param pageSize    每页大小
      * @return PageResponse
      */
     public static <T> PageResponse<T> empty(int currentPage, int pageSize) {

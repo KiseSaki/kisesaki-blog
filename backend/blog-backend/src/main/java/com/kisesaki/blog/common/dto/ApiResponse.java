@@ -10,7 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @param <T> 数据类型
  * @author KiseSaki
  */
-@Schema(description = "统一响应格式") @JsonInclude(JsonInclude.Include.NON_NULL)
+@Schema(description = "统一响应格式")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
 
     @Schema(description = "状态码", example = "200")
@@ -36,9 +37,9 @@ public class ApiResponse<T> {
     /**
      * 构造函数
      *
-     * @param code 状态码
+     * @param code    状态码
      * @param message 提示信息
-     * @param data 返回数据
+     * @param data    返回数据
      */
     public ApiResponse(int code, String message, T data) {
         this.code = code;
@@ -50,7 +51,7 @@ public class ApiResponse<T> {
     /**
      * 成功响应（带数据）
      *
-     * @param <T> 数据类型
+     * @param <T>  数据类型
      * @param data 返回数据
      * @return ApiResponse
      */
@@ -71,9 +72,9 @@ public class ApiResponse<T> {
     /**
      * 成功响应（自定义消息和数据）
      *
-     * @param <T> 数据类型
+     * @param <T>     数据类型
      * @param message 提示信息
-     * @param data 返回数据
+     * @param data    返回数据
      * @return ApiResponse
      */
     public static <T> ApiResponse<T> success(String message, T data) {
@@ -83,8 +84,8 @@ public class ApiResponse<T> {
     /**
      * 错误响应
      *
-     * @param <T> 数据类型
-     * @param code 状态码
+     * @param <T>     数据类型
+     * @param code    状态码
      * @param message 提示信息
      * @return ApiResponse
      */
@@ -95,7 +96,7 @@ public class ApiResponse<T> {
     /**
      * 错误响应（默认500）
      *
-     * @param <T> 数据类型
+     * @param <T>     数据类型
      * @param message 提示信息
      * @return ApiResponse
      */

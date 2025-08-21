@@ -2,6 +2,8 @@ package com.kisesaki.blog.common.dto;
 
 import org.springframework.data.domain.Page;
 
+import com.kisesaki.blog.common.enums.ErrorCode;
+
 /**
  * 响应构建工具类 提供统一的响应构建方法
  * 
@@ -71,6 +73,39 @@ public class ResultUtils {
      */
     public static <T> ApiResponse<T> error(int code, String message) {
         return ApiResponse.error(code, message);
+    }
+
+    /**
+     * 构建失败响应（使用ErrorCode枚举）
+     * 
+     * @param errorCode 错误码枚举
+     * @return ApiResponse
+     */
+    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
+        return ApiResponse.error(errorCode.getCode(), errorCode.getMessage());
+    }
+
+    /**
+     * 构建失败响应（使用ErrorCode枚举和自定义消息）
+     * 
+     * @param errorCode 错误码枚举
+     * @param message   自定义错误消息
+     * @return ApiResponse
+     */
+    public static <T> ApiResponse<T> error(ErrorCode errorCode, String message) {
+        return ApiResponse.error(errorCode.getCode(), message);
+    }
+
+    /**
+     * 构建失败响应（使用ErrorCode枚举、自定义消息和数据）
+     * 
+     * @param errorCode 错误码枚举
+     * @param message   自定义错误消息
+     * @param data      响应数据
+     * @return ApiResponse
+     */
+    public static <T> ApiResponse<T> error(ErrorCode errorCode, String message, T data) {
+        return new ApiResponse<>(errorCode.getCode(), message, data);
     }
 
     /**

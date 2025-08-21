@@ -19,13 +19,13 @@ import io.github.cdimascio.dotenv.Dotenv;
 @EnableCaching // 启用缓存功能
 @EnableAsync // 启用异步处理
 @EnableKafka // 启用 Kafka 支持
-public class BlogBackendApplication {
+public class BlogApplication {
 
     public static void main(String[] args) {
         // 加载 .env 文件到环境变量中
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
         dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
 
-        SpringApplication.run(BlogBackendApplication.class, args);
+        SpringApplication.run(BlogApplication.class, args);
     }
 }

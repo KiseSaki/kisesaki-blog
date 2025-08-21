@@ -20,39 +20,58 @@
     │   ├── AuthController.java
     │   ├── AuthService.java
     │   ├── dto                      # 认证相关 DTO
-    │   ├── entity                   # 角色权限实体
-    │   ├── repository               # 认证相关数据访问
+    ---
+
+## 🔄 **开发规范提醒**
+
+- ✨ **按功能划分包结构** (每个业务模块独立管理)
+- 🔷 **严格遵循分层架构** (Controller -> Service -> Mapper)
+- 📝 **所有接口使用 DTO 进行数据传输**
+- 🎨 **使用 Jakarta Bean Validation 进行参数校验**
+- 🔐 **统一异常处理和日志记录**
+- 🧪 **核心功能需要编写单元测试**
+- 📊 **重要操作需要添加 Kafka 事件发布**
+- 🛡️ **敏感操作需要权限验证**
+- 🗄️ **MyBatis-Plus 数据访问规范**:
+  - 简单 CRUD 使用 `BaseMapper` 提供的基础方法
+  - 复杂查询使用 `QueryWrapper` 或 `LambdaQueryWrapper`
+  - 多表关联查询编写自定义 XML 映射文件
+  - 分页查询使用 MyBatis-Plus 分页插件
+  - 所有 Mapper 接口继承 `BaseMapper<Entity>`
+  - Service 层可选择继承 `ServiceImpl<Mapper, Entity>` 获得基础服务方法
+- 🏗️ **每个功能模块内部保持高内聚，模块之间保持低耦合**y                   # 角色权限实体
+    │   ├── mapper                   # 认证相关数据访问
     │   └── security                 # Security 配置
     ├── user                         # 用户管理模块
     │   ├── UserController.java
     │   ├── UserService.java
     │   ├── dto                      # 用户相关 DTO
     │   ├── entity                   # 用户实体
-    │   └── repository               # 用户数据访问
+    │   └── mapper                   # 用户数据访问
     ├── post                         # 文章管理模块
     │   ├── PostController.java
     │   ├── PostService.java
     │   ├── dto                      # 文章相关 DTO
     │   ├── entity                   # 文章实体
-    │   └── repository               # 文章数据访问
+    │   └── mapper                   # 文章数据访问
     ├── category                     # 分类管理模块
     │   ├── CategoryController.java
     │   ├── CategoryService.java
     │   ├── dto
     │   ├── entity
-    │   └── repository
+    │   └── mapper
     ├── tag                          # 标签管理模块
     │   ├── TagController.java
     │   ├── TagService.java
     │   ├── dto
     │   ├── entity
-    │   └── repository
+    │   └── mapper
     ├── comment                      # 评论管理模块
     │   ├── CommentController.java
     │   ├── CommentService.java
     │   ├── dto
     │   ├── entity
-    │   └── repository
+    │   └── mapper
     ├── interaction                  # 互动功能模块 (点赞、收藏、关注)
     │   ├── InteractionController.java
     │   ├── LikeService.java
@@ -60,33 +79,33 @@
     │   ├── FollowService.java
     │   ├── dto
     │   ├── entity
-    │   └── repository
+    │   └── mapper
     ├── admin                        # 管理员功能模块
     │   ├── AdminController.java
     │   ├── AdminUserService.java
     │   ├── AdminPostService.java
     │   ├── DashboardService.java
     │   ├── dto
-    │   └── repository
+    │   └── mapper
     ├── media                        # 媒体文件管理模块
     │   ├── MediaController.java
     │   ├── FileUploadService.java
     │   ├── MediaResourceService.java
     │   ├── dto
     │   ├── entity
-    │   └── repository
+    │   └── mapper
     ├── notification                 # 通知系统模块
     │   ├── NotificationController.java
     │   ├── NotificationService.java
     │   ├── EmailService.java
     │   ├── dto
     │   ├── entity
-    │   └── repository
+    │   └── mapper
     └── statistics                   # 统计分析模块
         ├── StatisticsController.java
         ├── StatisticsService.java
         ├── dto
-        └── repository
+        └── mapper
 ```
 
 ## 🚀 阶段一：项目基础架构与安全体系 (Foundation & Security)
@@ -94,12 +113,13 @@
 ### 🔧 **1. 项目初始化与环境配置**
 
 > **优先级**: 最高 ⭐⭐⭐
+> **技术栈**: 纯 MyBatis-Plus 数据访问层，无 Spring Data JPA
 
 - **📦 Maven 依赖配置** (`pom.xml`):
 
   - [ ] Spring Boot 3.x 核心依赖
   - [ ] Spring Security 6.x + OAuth2 Client
-  - [ ] Spring Data JPA + MyBatis-Plus
+  - [ ] MyBatis-Plus (纯MyBatis-Plus，无Spring Data JPA)
   - [ ] PostgreSQL Driver + HikariCP
   - [ ] Redis + Spring Data Redis
   - [ ] Kafka + Spring Kafka
@@ -155,12 +175,12 @@
     - [ ] `Permission` - 权限实体 (使用 Enum 管理权限点)
     - [ ] `UserRole` - 用户角色关联 (多对多中间表)
     - [ ] `RolePermission` - 角色权限关联 (多对多中间表)
-  - [ ] **数据访问层** (`auth.repository`):
+  - [ ] **数据访问层** (`auth.mapper`):
 
-    - [ ] `RoleRepository` - 角色数据访问
-    - [ ] `PermissionRepository` - 权限数据访问
-    - [ ] `UserRoleRepository` - 用户角色关联访问
-    - [ ] `RolePermissionRepository` - 角色权限关联访问
+    - [ ] `RoleMapper` - 角色数据访问
+    - [ ] `PermissionMapper` - 权限数据访问
+    - [ ] `UserRoleMapper` - 用户角色关联访问
+    - [ ] `RolePermissionMapper` - 角色权限关联访问
 - **👤 用户管理模块** (`com.kisesaki.blog.user`):
 
   - [ ] **实体层** (`user.entity`):
@@ -168,11 +188,11 @@
     - [ ] `User` - 用户基础信息
     - [ ] `UserProfile` - 用户扩展信息
     - [ ] `UserSettings` - 用户个性化设置
-  - [ ] **数据访问层** (`user.repository`):
+  - [ ] **数据访问层** (`user.mapper`):
 
-    - [ ] `UserRepository` - 用户数据访问
-    - [ ] `UserProfileRepository` - 用户扩展信息访问
-    - [ ] `UserSettingsRepository` - 用户设置访问
+    - [ ] `UserMapper` - 用户数据访问
+    - [ ] `UserProfileMapper` - 用户扩展信息访问
+    - [ ] `UserSettingsMapper` - 用户设置访问
 
 ### 🔒 **4. Spring Security 配置**
 
@@ -183,6 +203,7 @@
   - [ ] `SecurityConfig` - 主安全配置类
   - [ ] `CorsConfig` - CORS 跨域配置
   - [ ] `RedisConfig` - Redis 配置
+  - [ ] `MybatisPlusConfig` - MyBatis-Plus 配置
   - [ ] `KafkaConfig` - Kafka 配置
 - **🔐 认证安全** (`com.kisesaki.blog.auth.security`):
 
@@ -192,6 +213,13 @@
   - [ ] `OAuth2UserService` - OAuth2 用户信息服务
   - [ ] 接口权限配置 (公开接口放行，管理接口权限控制)
   - [ ] 密码编码器配置
+- **📊 MyBatis-Plus 配置** (`com.kisesaki.blog.config`):
+
+  - [ ] `@MapperScan("com.kisesaki.blog.**.mapper")` - Mapper 包扫描
+  - [ ] 分页插件配置 (PostgreSQL)
+  - [ ] 逻辑删除配置
+  - [ ] 字段填充策略 (创建时间、更新时间)
+  - [ ] 乐观锁插件配置
 
 ---
 
@@ -283,43 +311,43 @@
     - [ ] `PostRevision` - 文章版本历史
     - [ ] `PostMeta` - 文章元数据 (SEO 相关)
     - [ ] `PostTag` - 文章标签关联
-  - [ ] **数据访问层** (`post.repository`):
+  - [ ] **数据访问层** (`post.mapper`):
 
-    - [ ] `PostRepository` - 文章数据访问 (JPA + 自定义查询)
-    - [ ] `PostRevisionRepository` - 文章版本访问
-    - [ ] `PostMetaRepository` - 文章元数据访问
+    - [ ] `PostMapper` - 文章数据访问 (MyBatis-Plus BaseMapper + 自定义查询)
+    - [ ] `PostRevisionMapper` - 文章版本访问
+    - [ ] `PostMetaMapper` - 文章元数据访问
 - **📁 分类管理模块** (`com.kisesaki.blog.category`):
 
   - [ ] **实体层** (`category.entity`):
 
     - [ ] `Category` - 分类实体 (支持层级结构)
-  - [ ] **数据访问层** (`category.repository`):
+  - [ ] **数据访问层** (`category.mapper`):
 
-    - [ ] `CategoryRepository` - 分类数据访问
+    - [ ] `CategoryMapper` - 分类数据访问
 - **🏷️ 标签管理模块** (`com.kisesaki.blog.tag`):
 
   - [ ] **实体层** (`tag.entity`):
 
     - [ ] `Tag` - 标签实体
-  - [ ] **数据访问层** (`tag.repository`):
+  - [ ] **数据访问层** (`tag.mapper`):
 
-    - [ ] `TagRepository` - 标签数据访问
+    - [ ] `TagMapper` - 标签数据访问
 - **💬 评论管理模块** (`com.kisesaki.blog.comment`):
 
   - [ ] **实体层** (`comment.entity`):
 
     - [ ] `Comment` - 评论实体 (支持嵌套回复)
-  - [ ] **数据访问层** (`comment.repository`):
+  - [ ] **数据访问层** (`comment.mapper`):
 
-    - [ ] `CommentRepository` - 评论数据访问
+    - [ ] `CommentMapper` - 评论数据访问
 - **📷 媒体管理模块** (`com.kisesaki.blog.media`):
 
   - [ ] **实体层** (`media.entity`):
 
     - [ ] `MediaResource` - 媒体资源实体
-  - [ ] **数据访问层** (`media.repository`):
+  - [ ] **数据访问层** (`media.mapper`):
 
-    - [ ] `MediaResourceRepository` - 媒体资源访问
+    - [ ] `MediaResourceMapper` - 媒体资源访问
 
 ### 📋 **9. 博客 DTO 设计**
 
@@ -356,13 +384,13 @@
 
   - [ ] **服务层**:
 
-    - [ ] `PostService` - 文章核心服务
+    - [ ] `PostService` - 文章核心服务 (继承 MyBatis-Plus ServiceImpl)
 
       - [ ] `getPublishedPosts()` - 获取已发布文章列表
       - [ ] `getPostBySlug()` - 根据 slug 获取文章详情 (带缓存)
       - [ ] `getPostsByCategory()` - 按分类获取文章
-      - [ ] `getPostsByTag()` - 按标签获取文章
-      - [ ] `searchPosts()` - 搜索文章
+      - [ ] `getPostsByTag()` - 按标签获取文章 (多对多关联查询)
+      - [ ] `searchPosts()` - 搜索文章 (PostgreSQL 全文搜索)
       - [ ] `getArchivePosts()` - 获取归档文章
       - [ ] `incrementViewCount()` - 增加浏览量
   - [ ] **控制器层**:
@@ -484,12 +512,12 @@
     - [ ] `Favorite` - 收藏实体
     - [ ] `Following` - 关注关系实体
     - [ ] `ViewLog` - 浏览记录实体
-  - [ ] **数据访问层** (`interaction.repository`):
+  - [ ] **数据访问层** (`interaction.mapper`):
 
-    - [ ] `LikeRepository` - 点赞数据访问
-    - [ ] `FavoriteRepository` - 收藏数据访问
-    - [ ] `FollowingRepository` - 关注数据访问
-    - [ ] `ViewLogRepository` - 浏览记录访问
+    - [ ] `LikeMapper` - 点赞数据访问
+    - [ ] `FavoriteMapper` - 收藏数据访问
+    - [ ] `FollowingMapper` - 关注数据访问
+    - [ ] `ViewLogMapper` - 浏览记录访问
   - [ ] **服务层**:
 
     - [ ] `LikeService` - 点赞服务
@@ -765,7 +793,7 @@
 ## 🔄 **开发规范提醒**
 
 - ✨ **按功能划分包结构** (每个业务模块独立管理)
-- 🔷 **严格遵循分层架构** (Controller -> Service -> Repository)
+- **🔷 严格遵循分层架构** (Controller -> Service -> Mapper)
 - 📝 **所有接口使用 DTO 进行数据传输**
 - 🎨 **使用 Jakarta Bean Validation 进行参数校验**
 - 🔐 **统一异常处理和日志记录**

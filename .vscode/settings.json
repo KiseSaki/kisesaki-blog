@@ -7,7 +7,7 @@
     // Java 开发相关配置
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.compile.nullAnalysis.mode": "disabled",
-    "java.format.settings.url": "backend/.vscode/eclipse-java-google-style.xml",
+    "java.format.settings.url": "./eclipse-java-google-style.xml",
     "java.format.settings.profile": "GoogleStyle",
     "java.import.maven.enabled": true,
     "java.maven.downloadSources": true,

@@ -78,27 +78,27 @@ spring:
             enable: true
             required: true
   
-  # OAuth2 配置
-  security:
-    oauth2:
-      client:
-        registration:
-          github:
-            client-id: ${GITHUB_CLIENT_ID:your-github-client-id}
-            client-secret: ${GITHUB_CLIENT_SECRET:your-github-client-secret}
-            scope: user:email,read:user
-          gitee:
-            client-id: ${GITEE_CLIENT_ID:your-gitee-client-id}
-            client-secret: ${GITEE_CLIENT_SECRET:your-gitee-client-secret}
-            authorization-grant-type: authorization_code
-            redirect-uri: ${GITEE_REDIRECT_URI:http://localhost:3000/auth/gitee/callback}
-            scope: user_info
-        provider:
-          gitee:
-            authorization-uri: https://gitee.com/oauth/authorize
-            token-uri: https://gitee.com/oauth/token
-            user-info-uri: https://gitee.com/api/v5/user
-            user-name-attribute: login
+  # OAuth2 配置 - 暂时禁用以测试环境变量
+  # security:
+  #   oauth2:
+  #     client:
+  #       registration:
+  #         github:
+  #           client-id: ${GITHUB_CLIENT_ID:your-github-client-id}
+  #           client-secret: ${GITHUB_CLIENT_SECRET:your-github-client-secret}
+  #           scope: user:email,read:user
+  #         gitee:
+  #           client-id: ${GITEE_CLIENT_ID:your-gitee-client-id}
+  #           client-secret: ${GITEE_CLIENT_SECRET:your-gitee-client-secret}
+  #           authorization-grant-type: authorization_code
+  #           redirect-uri: ${GITEE_REDIRECT_URI:http://localhost:3000/auth/gitee/callback}
+  #           scope: user_info
+  #       provider:
+  #         gitee:
+  #           authorization-uri: https://gitee.com/oauth/authorize
+  #           token-uri: https://gitee.com/oauth/token
+  #           user-info-uri: https://gitee.com/api/v5/user
+  #           user-name-attribute: login
 
 # 自定义配置
 kisesaki:

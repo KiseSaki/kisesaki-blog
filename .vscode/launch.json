@@ -3,6 +3,41 @@
     "configurations": [
         {
             "type": "java",
+            "name": "ThreadStudy",
+            "request": "launch",
+            "mainClass": "noa.ThreadStudy",
+            "projectName": "blog-backend"
+        },
+        {
+            "type": "java",
+            "name": "teacher",
+            "request": "launch",
+            "mainClass": "noa.teacher",
+            "projectName": "blog-backend"
+        },
+        {
+            "type": "java",
+            "name": "father",
+            "request": "launch",
+            "mainClass": "noa.father",
+            "projectName": "blog-backend"
+        },
+        {
+            "type": "java",
+            "name": "BlogBackendApplication",
+            "request": "launch",
+            "mainClass": "com.kisesaki.blog.BlogBackendApplication",
+            "projectName": "blog-backend"
+        },
+        {
+            "type": "java",
+            "name": "noa",
+            "request": "launch",
+            "mainClass": "com.kisesaki.noa",
+            "projectName": "blog-backend"
+        },
+        {
+            "type": "java",
             "name": "BlogBackendApplication",
             "request": "launch",
             "mainClass": "com.kisesaki.blog.blog_backend.BlogBackendApplication",

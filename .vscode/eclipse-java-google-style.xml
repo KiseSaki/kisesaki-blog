@@ -110,6 +110,14 @@
         <setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
         <!-- 缩进大小为 2 个空格 (Google Style 标准) -->
         <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="2"/>
+        <!-- 连续缩进大小 -->
+        <setting id="org.eclipse.jdt.core.formatter.continuation_indentation" value="2"/>
+        <!-- 数组初始化缩进 -->
+        <setting id="org.eclipse.jdt.core.formatter.continuation_indentation_for_array_initializer" value="2"/>
+        <!-- 启用对齐特性 -->
+        <setting id="org.eclipse.jdt.core.formatter.align_type_members_on_columns" value="false"/>
+        <!-- 缩进空块 -->
+        <setting id="org.eclipse.jdt.core.formatter.indent_empty_lines" value="false"/>
 
         <!-- 格式化标签控制 -->
         <!-- 不使用格式化开关标签 (@formatter:on/off) -->
@@ -183,13 +191,13 @@
         <setting id="org.eclipse.jdt.core.formatter.insert_new_line_before_while_in_do_statement" value="do not insert"/>
 
         <!-- ================== 方法参数和调用格式化 ================== -->
-        <!-- 方法参数超长时的换行策略: 所有参数换行 -->
+        <!-- 方法参数格式化: 优先同行，超过行宽时智能换行对齐 -->
         <setting id="org.eclipse.jdt.core.formatter.alignment_for_parameters_in_method_declaration" value="16"/>
-        <!-- 方法调用参数超长时的换行策略: 所有参数换行 -->
+        <!-- 方法调用参数格式化: 优先同行，超过行宽时智能换行对齐 -->
         <setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_method_invocation" value="16"/>
-        <!-- 构造函数参数超长时的换行策略: 所有参数换行 -->
+        <!-- 构造函数参数格式化: 优先同行，超过行宽时智能换行对齐 -->
         <setting id="org.eclipse.jdt.core.formatter.alignment_for_parameters_in_constructor_declaration" value="16"/>
-        <!-- 注解参数超长时的换行策略: 所有参数换行 -->
+        <!-- 注解参数格式化: 优先同行，超过行宽时智能换行对齐 -->
         <setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_annotation" value="16"/>
 
         <!-- ================== 类和接口声明格式化 ================== -->
@@ -211,16 +219,16 @@
         <setting id="org.eclipse.jdt.core.formatter.insert_space_after_comma_in_array_initializer" value="insert"/>
 
         <!-- ================== 注解格式化 ================== -->
-        <!-- 类型注解换行: @Override 单独一行 -->
-        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_type" value="49"/>
-        <!-- 方法注解换行: @Test 单独一行 -->
-        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_method" value="49"/>
+        <!-- 类型注解换行: @RestController 单独一行 -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_type" value="80"/>
+        <!-- 方法注解换行: @PostMapping 单独一行 -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_method" value="80"/>
         <!-- 字段注解换行: @Autowired 单独一行 -->
-        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_field" value="49"/>
-        <!-- 参数注解换行: @Param 单独一行 -->
-        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_parameter" value="49"/>
-        <!-- 局部变量注解换行 -->
-        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_local_variable" value="49"/>
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_field" value="80"/>
+        <!-- 参数注解换行: @RequestBody 与参数同行，只在必要时换行 -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_parameter" value="16"/>
+        <!-- 局部变量注解换行: 与变量同行，只在必要时换行 -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_annotations_on_local_variable" value="16"/>
 
         <!-- ================== 运算符和表达式格式化 ================== -->
         <!-- 二元运算符前插入空格: a + b -->
@@ -234,6 +242,11 @@
         <setting id="org.eclipse.jdt.core.formatter.insert_space_before_assignment_operator" value="insert"/>
         <setting id="org.eclipse.jdt.core.formatter.insert_space_after_assignment_operator" value="insert"/>
 
+        <!-- ================== 链式调用对齐设置 ================== -->
+        <!-- 方法调用链对齐: 优先同行，超长时智能换行对齐 -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_selector_in_method_invocation" value="16"/>
+        <!-- 限定调用对齐: 点号处换行时对齐 -->
+        <setting id="org.eclipse.jdt.core.formatter.wrap_before_binary_operator" value="true"/>
         <!-- ================== 条件运算符格式化 ================== -->
         <!-- 三元运算符空格: condition ? true : false -->
         <setting id="org.eclipse.jdt.core.formatter.insert_space_before_question_in_conditional" value="insert"/>
@@ -280,5 +293,31 @@
         <!-- 字段声明对齐 -->
         <setting id="org.eclipse.jdt.core.formatter.alignment_for_multiple_fields" value="16"/>
 
+        <!-- ================== 主流最佳实践配置 ================== -->
+        <!-- 方法调用链缩进策略：智能处理点号换行 -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_dot_in_qualified_allocation_expression" value="16"/>
+        <!-- 长表达式换行时的对齐 -->
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_expressions_in_for_loop_header" value="16"/>
+        <!-- 注解后的元素关系控制 -->
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_type" value="insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_method" value="insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_field" value="insert"/>
+        <!-- 参数注解不强制换行，保持与参数的紧密关系 -->
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_parameter" value="do not insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_local_variable" value="do not insert"/>
+        <!-- 多个注解之间的关系 -->
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_between_annotations_on_type" value="do not insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_between_annotations_on_method" value="do not insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_between_annotations_on_field" value="do not insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_between_annotations_on_parameter" value="do not insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_between_annotations_on_local_variable" value="do not insert"/>
+
+        <!-- ================== 优化的缩进和空格控制 ================== -->
+        <!-- 智能连续缩进 -->
+        <setting id="org.eclipse.jdt.core.formatter.continuation_indentation" value="2"/>
+        <!-- 方法调用时的缩进 -->
+        <setting id="org.eclipse.jdt.core.formatter.continuation_indentation_for_array_initializer" value="2"/>
+        <!-- 保持方法链调用的可读性 -->
+        <setting id="org.eclipse.jdt.core.formatter.wrap_outer_expressions_when_nested" value="true"/>
     </profile>
 </profiles>

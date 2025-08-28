@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kisesaki.blog.auth.dto.request.LoginRequestDto;
+import com.kisesaki.blog.auth.dto.request.RefreshTokenRequestDto;
 import com.kisesaki.blog.auth.dto.request.RegisterRequestDto;
 import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
 import com.kisesaki.blog.common.dto.ApiResponse;
@@ -31,7 +32,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "用户登录", description = "用户使用用户名和密码进行登录")
-    public ResponseEntity<ApiResponse<LoginResponseDto>> login(@RequestBody LoginRequestDto loginRequestDto) {
+    public ResponseEntity<ApiResponse<LoginResponseDto>> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
         ApiResponse<LoginResponseDto> response = authService.login(loginRequestDto);
         return ResponseEntity.ok(response);
     }
@@ -40,6 +41,13 @@ public class AuthController {
     @Operation(summary = "用户注册", description = "新用户注册账号")
     public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequestDto registerRequest) {
         ApiResponse<String> response = authService.register(registerRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refreshToken")
+    @Operation(summary = "刷新令牌", description = "使用刷新令牌获取新的访问令牌")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> refreshToken(@Valid @RequestBody RefreshTokenRequestDto refreshTokenRequestDto) {
+        ApiResponse<LoginResponseDto> response = authService.refreshToken(refreshTokenRequestDto);
         return ResponseEntity.ok(response);
     }
 }

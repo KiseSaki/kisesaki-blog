@@ -5,15 +5,18 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kisesaki.blog.auth.dto.request.LoginRequestDto;
+import com.kisesaki.blog.auth.dto.request.RefreshTokenRequestDto;
 import com.kisesaki.blog.auth.dto.request.RegisterRequestDto;
 import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
 import com.kisesaki.blog.auth.security.jwt.JwtTokenProvider;
 import com.kisesaki.blog.auth.security.jwt.RefreshTokenService;
+import com.kisesaki.blog.auth.security.user.CustomUserDetailsService;
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
@@ -38,6 +41,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Value("${kisesaki.blog.jwt.expiration}")
     private Long jwtExpiration;
@@ -105,5 +109,36 @@ public class AuthService {
             log.error("用户注册失败，用户名：{}，错误：{}", username, e.getMessage(), e);
             throw BusinessException.of(ErrorCode.SYSTEM_ERROR, "注册失败，请稍后重试");
         }
+    }
+
+    /**
+     * 刷新访问令牌
+     *
+     * @param refreshToken 刷新令牌
+     * @return 新的访问令牌
+     */
+    public ApiResponse<LoginResponseDto> refreshToken(RefreshTokenRequestDto refreshTokenRequestDto) {
+        String refreshToken = refreshTokenRequestDto.getRefreshToken();
+
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            return ApiResponse.error("无效的刷新令牌");
+        }
+
+        // 获取用户名
+        String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
+
+        if (!refreshTokenService.validateRefreshToken(username, refreshToken)) {
+            return ApiResponse.error("刷新令牌无效或已过期");
+        }
+
+        // 加载用户详情
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
+                userDetails.getAuthorities());
+
+        String newAccessToken = jwtTokenProvider.createAccessToken(authentication);
+        long expiresIn = jwtExpiration / 1000;
+
+        return ApiResponse.success("访问令牌刷新成功", new LoginResponseDto(newAccessToken, refreshToken, expiresIn));
     }
 }

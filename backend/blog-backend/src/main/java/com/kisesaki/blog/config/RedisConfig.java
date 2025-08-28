@@ -3,6 +3,7 @@ package com.kisesaki.blog.config;
 import java.time.Duration;
 
 import org.springframework.cache.CacheManager;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Redis 配置类。
  *
- * 
  * 提供一个通用的 RedisTemplate Bean，默认使用 String 作为 key/hashKey 的序列化器，
  * 使用 GenericJackson2JsonRedisSerializer 作为 value/hashValue 的序列化器。
  * 这样确保开发中存取对象时具有良好的可读性与向后兼容性，同时避免 Java 序列化带来的跨语言问题。
@@ -97,8 +97,10 @@ public class RedisConfig {
      * 缓存管理器配置
      * 
      * 配置Redis作为Spring Cache的实现，支持多种缓存配置
+     * 只有在没有其他CacheManager Bean时才创建此Bean
      */
     @Bean
+    @ConditionalOnMissingBean
     public CacheManager cacheManager(RedisConnectionFactory cf) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 // 设置缓存有效期为30分钟

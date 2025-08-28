@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DeviceFingerprintService {
 
-    @Value("${kisesaki.blog.security.device.salt:kisesaki-blog-device-salt-2024}")
+    @Value("${kisesaki.blog.security.device.salt:kisesaki-blog-device-salt-2025}")
     private String deviceSalt;
 
     @Value("${kisesaki.blog.security.device.trust-client-fingerprint:true}")

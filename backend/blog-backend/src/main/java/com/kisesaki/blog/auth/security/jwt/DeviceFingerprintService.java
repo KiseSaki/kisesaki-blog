@@ -273,7 +273,7 @@ public class DeviceFingerprintService {
             info.append(" - Edge");
         }
 
-        return info.length() > 0 ? info.toString() : "Unknown Device";
+        return !info.isEmpty() ? info.toString() : "Unknown Device";
     }
 
     /**

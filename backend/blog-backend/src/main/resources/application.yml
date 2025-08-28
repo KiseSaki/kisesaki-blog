@@ -94,6 +94,12 @@ kisesaki:
       expiration: 86400000 # 24小时 (毫秒)
       refresh-expiration: 604800000 # 7天 (毫秒)
 
+    # 设备指纹安全配置
+    security:
+      device:
+        salt: ${DEVICE_SALT:kisesaki-blog-device-salt-2025}
+        trust-client-fingerprint: true
+
     # 文件上传默认配置
     upload:
       max-size: 10MB

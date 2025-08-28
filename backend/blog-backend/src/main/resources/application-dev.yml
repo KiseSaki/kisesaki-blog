@@ -114,6 +114,12 @@ kisesaki:
     jwt:
       secret: ${JWT_SECRET:kisesaki-blog-jwt-secret-key-for-development-only}
 
+    # 设备指纹安全配置（开发环境）
+    security:
+      device:
+        salt: ${DEVICE_SALT:kisesaki-blog-device-salt-dev-2025}
+        trust-client-fingerprint: ${TRUST_CLIENT_FINGERPRINT:true}
+
     # 文件上传开发环境配置
     upload:
       path: ${UPLOAD_PATH:./uploads}

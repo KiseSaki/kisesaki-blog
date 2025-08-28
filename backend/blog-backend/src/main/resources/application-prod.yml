@@ -138,6 +138,12 @@ kisesaki:
     jwt:
       secret: ${JWT_SECRET}
 
+    # 设备指纹安全配置（生产环境 - 增强安全性）
+    security:
+      device:
+        salt: ${DEVICE_SALT}
+        trust-client-fingerprint: ${TRUST_CLIENT_FINGERPRINT:false}
+
     # 文件上传生产环境配置
     upload:
       path: ${UPLOAD_PATH:/data/uploads}

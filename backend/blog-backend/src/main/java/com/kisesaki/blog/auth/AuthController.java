@@ -14,6 +14,7 @@ import com.kisesaki.blog.common.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -31,9 +32,11 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    @Operation(summary = "用户登录", description = "用户使用用户名和密码进行登录")
-    public ResponseEntity<ApiResponse<LoginResponseDto>> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
-        ApiResponse<LoginResponseDto> response = authService.login(loginRequestDto);
+    @Operation(summary = "用户登录", description = "用户使用用户名和密码进行登录，支持设备管理")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> login(
+            @Valid @RequestBody LoginRequestDto loginRequestDto,
+            HttpServletRequest request) {
+        ApiResponse<LoginResponseDto> response = authService.login(loginRequestDto, request);
         return ResponseEntity.ok(response);
     }
 
@@ -46,7 +49,8 @@ public class AuthController {
 
     @PostMapping("/refreshToken")
     @Operation(summary = "刷新令牌", description = "使用刷新令牌获取新的访问令牌")
-    public ResponseEntity<ApiResponse<LoginResponseDto>> refreshToken(@Valid @RequestBody RefreshTokenRequestDto refreshTokenRequestDto) {
+    public ResponseEntity<ApiResponse<LoginResponseDto>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequestDto refreshTokenRequestDto) {
         ApiResponse<LoginResponseDto> response = authService.refreshToken(refreshTokenRequestDto);
         return ResponseEntity.ok(response);
     }

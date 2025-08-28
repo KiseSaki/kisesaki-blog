@@ -10,10 +10,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kisesaki.blog.auth.dto.DeviceInfo;
 import com.kisesaki.blog.auth.dto.request.LoginRequestDto;
 import com.kisesaki.blog.auth.dto.request.RefreshTokenRequestDto;
 import com.kisesaki.blog.auth.dto.request.RegisterRequestDto;
 import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
+import com.kisesaki.blog.auth.security.jwt.DeviceFingerprintService;
 import com.kisesaki.blog.auth.security.jwt.JwtTokenProvider;
 import com.kisesaki.blog.auth.security.jwt.RefreshTokenService;
 import com.kisesaki.blog.auth.security.user.CustomUserDetailsService;
@@ -23,6 +25,7 @@ import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.mapper.UserMapper;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +42,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
+    private final DeviceFingerprintService deviceFingerprintService;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService customUserDetailsService;
@@ -50,9 +54,10 @@ public class AuthService {
      * 用户登录
      *
      * @param loginRequestDto 登录请求信息
-     * @return 登录结果，包含JWT令牌
+     * @param request         HTTP请求对象，用于获取设备指纹
+     * @return 登录结果，包含JWT令牌和设备信息
      */
-    public ApiResponse<LoginResponseDto> login(LoginRequestDto loginRequestDto) {
+    public ApiResponse<LoginResponseDto> login(LoginRequestDto loginRequestDto, HttpServletRequest request) {
         // 执行认证
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
@@ -60,13 +65,23 @@ public class AuthService {
         // 认证信息添加到 SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        // 生成设备信息
+        DeviceInfo deviceInfo = deviceFingerprintService.generateDeviceFingerprint(request);
+        String deviceId = deviceInfo.getDeviceId();
+        String deviceInfoStr = deviceInfo.getDeviceInfo();
+
         // 生成 JWT Token
         String accessToken = jwtTokenProvider.createAccessToken(authentication);
-        String refreshToken = refreshTokenService.createAndStoreRefreshToken(authentication);
+        String refreshToken = refreshTokenService.createAndStoreRefreshToken(authentication, deviceId, deviceInfoStr);
 
         long expiresIn = jwtExpiration / 1000;
 
-        return ApiResponse.success("登录成功", new LoginResponseDto(accessToken, refreshToken, expiresIn));
+        LoginResponseDto response = new LoginResponseDto(accessToken, refreshToken, expiresIn, deviceId);
+
+        log.info("用户 {} 从设备 {} 登录成功", loginRequestDto.getUsername(),
+                deviceId.substring(0, Math.min(8, deviceId.length())) + "...");
+
+        return ApiResponse.success("登录成功", response);
     }
 
     /**
@@ -114,11 +129,12 @@ public class AuthService {
     /**
      * 刷新访问令牌
      *
-     * @param refreshToken 刷新令牌
+     * @param refreshTokenRequestDto 刷新令牌请求
      * @return 新的访问令牌
      */
     public ApiResponse<LoginResponseDto> refreshToken(RefreshTokenRequestDto refreshTokenRequestDto) {
         String refreshToken = refreshTokenRequestDto.getRefreshToken();
+        String deviceId = refreshTokenRequestDto.getDeviceId();
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             return ApiResponse.error("无效的刷新令牌");
@@ -127,7 +143,8 @@ public class AuthService {
         // 获取用户名
         String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
 
-        if (!refreshTokenService.validateRefreshToken(username, refreshToken)) {
+        // 验证 Refresh Token（支持设备ID验证）
+        if (!refreshTokenService.validateRefreshToken(username, refreshToken, deviceId)) {
             return ApiResponse.error("刷新令牌无效或已过期");
         }
 
@@ -139,6 +156,11 @@ public class AuthService {
         String newAccessToken = jwtTokenProvider.createAccessToken(authentication);
         long expiresIn = jwtExpiration / 1000;
 
-        return ApiResponse.success("访问令牌刷新成功", new LoginResponseDto(newAccessToken, refreshToken, expiresIn));
+        // 返回响应时保持设备信息
+        LoginResponseDto response = new LoginResponseDto(newAccessToken, refreshToken, expiresIn, deviceId);
+
+        log.debug("用户 {} 的访问令牌刷新成功，设备: {}", username, deviceId.substring(0, Math.min(8, deviceId.length())) + "...");
+
+        return ApiResponse.success("访问令牌刷新成功", response);
     }
 }

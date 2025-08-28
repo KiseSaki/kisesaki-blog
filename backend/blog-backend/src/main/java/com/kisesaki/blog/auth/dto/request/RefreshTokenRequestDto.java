@@ -9,4 +9,7 @@ import lombok.NoArgsConstructor;
 public class RefreshTokenRequestDto {
     @NotBlank(message = "Refresh Token 不能为空")
     private String refreshToken;
+
+    @NotBlank(message = "设备 ID 不能为空")
+    private String deviceId;
 }

@@ -42,6 +42,12 @@ public class AuthService {
     @Value("${jwt.expiration}")
     private Long jwtExpiration;
 
+    /**
+     * 用户登录
+     *
+     * @param loginRequestDto 登录请求信息
+     * @return 登录结果，包含JWT令牌
+     */
     @Transactional
     public ApiResponse<LoginResponseDto> login(LoginRequestDto loginRequestDto) {
         // 执行认证

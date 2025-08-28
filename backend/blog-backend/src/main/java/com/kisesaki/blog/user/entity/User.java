@@ -14,7 +14,7 @@ import lombok.Data;
  * 用户实体，对应表 user
  */
 @Data
-@TableName("user")
+@TableName("\"user\"")
 public class User {
     /** 用户唯一ID (雪花算法) */
     @TableId(type = IdType.ASSIGN_ID)

@@ -27,6 +27,15 @@ public interface UserMapper extends BaseMapper<User> {
     Optional<User> findByUsername(@Param("username") String username);
 
     /**
+     * 根据用户ID查找用户
+     * 
+     * @param id 用户ID
+     * @return 用户信息
+     */
+    @Select("SELECT * FROM \"user\" WHERE id = #{id} AND status != 'deleted'")
+    Optional<User> findById(@Param("id") Long id);
+
+    /**
      * 根据邮箱查找用户
      * 
      * @param email 邮箱

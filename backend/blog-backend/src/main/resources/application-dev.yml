@@ -100,30 +100,27 @@ spring:
             user-info-uri: https://gitee.com/api/v5/user
             user-name-attribute: login
 
-# 自定义配置
-kisesaki:
-  blog:
-    # JWT 配置
-    jwt:
-      secret: ${JWT_SECRET:kisesaki-blog-jwt-secret-key-for-development-only}
-      expiration: 86400000 # 24小时
-      refresh-expiration: 604800000 # 7天
-    
-    # 文件上传配置
-    upload:
-      path: ${UPLOAD_PATH:./uploads}
-      max-size: 10MB
-      allowed-types: 
-        - image/jpeg
-        - image/png
-        - image/gif
-        - image/webp
-    
-    # 缓存配置
-    cache:
-      default-ttl: 3600 # 1小时
-      post-ttl: 1800    # 30分钟
-      category-ttl: 7200 # 2小时
+# JWT 配置
+jwt:
+  secret: ${JWT_SECRET:kisesaki-blog-jwt-secret-key-for-development-only}
+  expiration: 86400000 # 24小时
+  refresh-expiration: 604800000 # 7天
+
+# 文件上传配置
+upload:
+  path: ${UPLOAD_PATH:./uploads}
+  max-size: 10MB
+  allowed-types:
+    - image/jpeg
+    - image/png
+    - image/gif
+    - image/webp
+
+# 缓存配置
+cache:
+  default-ttl: 3600 # 1小时
+  post-ttl: 1800    # 30分钟
+  category-ttl: 7200 # 2小时
 
 # 日志配置
 logging:

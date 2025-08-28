@@ -57,8 +57,9 @@ public class AuthController {
     @PostMapping("/refreshToken")
     @Operation(summary = "刷新令牌", description = "使用刷新令牌获取新的访问令牌")
     public ResponseEntity<ApiResponse<LoginResponseDto>> refreshToken(
-            @Valid @RequestBody RefreshTokenRequestDto refreshTokenRequestDto) {
-        ApiResponse<LoginResponseDto> response = authService.refreshToken(refreshTokenRequestDto);
+            @Valid @RequestBody RefreshTokenRequestDto refreshTokenRequestDto,
+            HttpServletRequest request) {
+        ApiResponse<LoginResponseDto> response = authService.refreshToken(refreshTokenRequestDto, request);
         return ResponseEntity.ok(response);
     }
 
@@ -66,10 +67,11 @@ public class AuthController {
     @Operation(summary = "用户登出", description = "用户登出当前设备")
     public ResponseEntity<ApiResponse<String>> logout(
             @Valid @RequestBody LogoutRequestDto logoutRequest,
-            Authentication authentication) {
+            Authentication authentication,
+            HttpServletRequest request) {
         String username = authentication.getName();
         ApiResponse<String> response = authService.logout(username,
-                logoutRequest.getRefreshToken(), logoutRequest.getDeviceId());
+                logoutRequest.getRefreshToken(), logoutRequest.getDeviceId(), request);
         return ResponseEntity.ok(response);
     }
 
@@ -85,9 +87,10 @@ public class AuthController {
     @Operation(summary = "踢出指定设备", description = "管理员或用户踢出指定设备")
     public ResponseEntity<ApiResponse<String>> kickDevice(
             @PathVariable String deviceId,
-            Authentication authentication) {
+            Authentication authentication,
+            HttpServletRequest request) {
         String username = authentication.getName();
-        ApiResponse<String> response = authService.kickDevice(username, deviceId);
+        ApiResponse<String> response = authService.kickDevice(username, deviceId, request);
         return ResponseEntity.ok(response);
     }
 
@@ -101,9 +104,11 @@ public class AuthController {
 
     @PostMapping("/clean-expired")
     @Operation(summary = "清理过期令牌", description = "清理用户的过期令牌")
-    public ResponseEntity<ApiResponse<String>> cleanExpiredTokens(Authentication authentication) {
+    public ResponseEntity<ApiResponse<String>> cleanExpiredTokens(
+            Authentication authentication,
+            HttpServletRequest request) {
         String username = authentication.getName();
-        ApiResponse<String> response = authService.cleanExpiredTokens(username);
+        ApiResponse<String> response = authService.cleanExpiredTokens(username, request);
         return ResponseEntity.ok(response);
     }
 }

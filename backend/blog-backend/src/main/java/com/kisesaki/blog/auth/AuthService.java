@@ -51,6 +51,45 @@ public class AuthService {
     private Long jwtExpiration;
 
     /**
+     * 格式化设备ID用于日志显示（安全地显示设备ID的前8位）
+     * 
+     * @param deviceId 设备ID
+     * @return 格式化后的设备ID字符串
+     */
+    private String formatDeviceIdForLog(String deviceId) {
+        if (deviceId == null) {
+            return "未指定";
+        }
+        return deviceId.substring(0, Math.min(8, deviceId.length())) + "...";
+    }
+
+    /**
+     * 验证设备指纹的合法性
+     * 
+     * @param request  HTTP请求对象
+     * @param username 用户名
+     * @param deviceId 设备ID
+     * @return 是否验证通过
+     */
+    private boolean validateDeviceFingerprint(HttpServletRequest request, String username, String deviceId) {
+        if (request == null || deviceId == null) {
+            log.warn("设备指纹验证失败：缺少必要参数 - 用户: {}", username);
+            return false;
+        }
+
+        try {
+            boolean isValid = deviceFingerprintService.validateDeviceFingerprint(request, deviceId);
+            if (!isValid) {
+                log.warn("用户 {} 的设备指纹验证失败，设备: {}", username, formatDeviceIdForLog(deviceId));
+            }
+            return isValid;
+        } catch (Exception e) {
+            log.error("设备指纹验证过程中发生异常 - 用户: {}, 设备: {}", username, formatDeviceIdForLog(deviceId), e);
+            return false;
+        }
+    }
+
+    /**
      * 用户登录
      *
      * @param loginRequestDto 登录请求信息
@@ -78,8 +117,7 @@ public class AuthService {
 
         LoginResponseDto response = new LoginResponseDto(accessToken, refreshToken, expiresIn, deviceId);
 
-        log.info("用户 {} 从设备 {} 登录成功", loginRequestDto.getUsername(),
-                deviceId.substring(0, Math.min(8, deviceId.length())) + "...");
+        log.info("用户 {} 从设备 {} 登录成功", loginRequestDto.getUsername(), formatDeviceIdForLog(deviceId));
 
         return ApiResponse.success("登录成功", response);
     }
@@ -132,7 +170,8 @@ public class AuthService {
      * @param refreshTokenRequestDto 刷新令牌请求
      * @return 新的访问令牌
      */
-    public ApiResponse<LoginResponseDto> refreshToken(RefreshTokenRequestDto refreshTokenRequestDto) {
+    public ApiResponse<LoginResponseDto> refreshToken(RefreshTokenRequestDto refreshTokenRequestDto,
+            HttpServletRequest request) {
         String refreshToken = refreshTokenRequestDto.getRefreshToken();
         String deviceId = refreshTokenRequestDto.getDeviceId();
 
@@ -148,6 +187,12 @@ public class AuthService {
             return ApiResponse.error("刷新令牌无效或已过期");
         }
 
+        // 验证设备指纹
+        if (!deviceFingerprintService.validateDeviceFingerprint(request, deviceId)) {
+            log.warn("用户 {} 的设备指纹验证失败，可能是设备变更或伪造请求，设备ID: {}", username, formatDeviceIdForLog(deviceId));
+            return ApiResponse.error("设备验证失败，无法刷新令牌");
+        }
+
         // 加载用户详情
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
@@ -159,7 +204,7 @@ public class AuthService {
         // 返回响应时保持设备信息
         LoginResponseDto response = new LoginResponseDto(newAccessToken, refreshToken, expiresIn, deviceId);
 
-        log.debug("用户 {} 的访问令牌刷新成功，设备: {}", username, deviceId.substring(0, Math.min(8, deviceId.length())) + "...");
+        log.debug("用户 {} 的访问令牌刷新成功，设备: {}", username, formatDeviceIdForLog(deviceId));
 
         return ApiResponse.success("访问令牌刷新成功", response);
     }
@@ -170,13 +215,20 @@ public class AuthService {
      * @param username     用户名
      * @param refreshToken 要删除的刷新令牌
      * @param deviceId     设备ID（可选）
+     * @param request      HTTP请求对象，用于设备指纹验证
      * @return 登出结果
      */
-    public ApiResponse<String> logout(String username, String refreshToken, String deviceId) {
+    public ApiResponse<String> logout(String username, String refreshToken, String deviceId,
+            HttpServletRequest request) {
+        // 如果提供了设备ID，需要验证设备指纹
+        if (deviceId != null && !validateDeviceFingerprint(request, username, deviceId)) {
+            log.warn("用户 {} 登出时设备指纹验证失败，设备: {}", username, formatDeviceIdForLog(deviceId));
+            return ApiResponse.error("设备验证失败，无法完成登出操作");
+        }
+
         try {
             refreshTokenService.deleteRefreshToken(username, refreshToken, deviceId);
-            log.info("用户 {} 登出成功，设备: {}", username,
-                    deviceId != null ? deviceId.substring(0, Math.min(8, deviceId.length())) + "..." : "未指定");
+            log.info("用户 {} 登出成功，设备: {}", username, formatDeviceIdForLog(deviceId));
             return ApiResponse.success("登出成功");
         } catch (Exception e) {
             log.error("用户 {} 登出失败", username, e);
@@ -206,13 +258,23 @@ public class AuthService {
      * 
      * @param username 用户名
      * @param deviceId 要踢出的设备ID
+     * @param request  HTTP请求对象，用于设备指纹验证（当前设备）
      * @return 操作结果
      */
-    public ApiResponse<String> kickDevice(String username, String deviceId) {
+    public ApiResponse<String> kickDevice(String username, String deviceId, HttpServletRequest request) {
+        // 验证当前操作设备的合法性（防止恶意踢出）
+        DeviceInfo currentDevice = deviceFingerprintService.generateDeviceFingerprint(request);
+        String currentDeviceId = currentDevice.getDeviceId();
+
+        // 不允许踢出自己当前使用的设备
+        if (currentDeviceId.equals(deviceId)) {
+            log.warn("用户 {} 尝试踢出自己当前使用的设备: {}", username, formatDeviceIdForLog(deviceId));
+            return ApiResponse.error("不能踢出当前使用的设备");
+        }
+
         try {
             refreshTokenService.deleteDeviceToken(username, deviceId);
-            log.info("管理员踢出用户 {} 的设备: {}", username,
-                    deviceId.substring(0, Math.min(8, deviceId.length())) + "...");
+            log.info("管理员踢出用户 {} 的设备: {}", username, formatDeviceIdForLog(deviceId));
             return ApiResponse.success("设备已被踢出");
         } catch (Exception e) {
             log.error("踢出用户 {} 设备 {} 失败", username, deviceId, e);
@@ -240,9 +302,17 @@ public class AuthService {
      * 清理用户过期的令牌
      * 
      * @param username 用户名
+     * @param request  HTTP请求对象，用于设备指纹验证
      * @return 清理结果
      */
-    public ApiResponse<String> cleanExpiredTokens(String username) {
+    public ApiResponse<String> cleanExpiredTokens(String username, HttpServletRequest request) {
+        // 验证当前设备的合法性
+        DeviceInfo currentDevice = deviceFingerprintService.generateDeviceFingerprint(request);
+        if (!validateDeviceFingerprint(request, username, currentDevice.getDeviceId())) {
+            log.warn("用户 {} 清理过期令牌时设备指纹验证失败", username);
+            return ApiResponse.error("设备验证失败，无法执行清理操作");
+        }
+
         try {
             refreshTokenService.cleanExpiredTokens(username);
             log.debug("清理用户 {} 的过期令牌完成", username);

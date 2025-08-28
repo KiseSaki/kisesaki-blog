@@ -50,6 +50,19 @@ public class DeviceFingerprintService {
     private static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
 
     /**
+     * 格式化设备指纹用于日志显示（安全地显示指纹的前8位）
+     * 
+     * @param fingerprint 设备指纹
+     * @return 格式化后的指纹字符串
+     */
+    private String formatFingerprintForLog(String fingerprint) {
+        if (fingerprint == null) {
+            return "null";
+        }
+        return fingerprint.substring(0, Math.min(8, fingerprint.length())) + "...";
+    }
+
+    /**
      * 生成设备指纹
      *
      * @param request HTTP请求对象
@@ -84,8 +97,8 @@ public class DeviceFingerprintService {
         deviceInfo.setFingerprintType("CLIENT_ENHANCED");
 
         log.debug("增强客户端设备指纹: {} -> {}",
-                clientFingerprint.substring(0, Math.min(8, clientFingerprint.length())) + "...",
-                enhancedFingerprint.substring(0, 8) + "...");
+                formatFingerprintForLog(clientFingerprint),
+                formatFingerprintForLog(enhancedFingerprint));
 
         return deviceInfo;
     }
@@ -103,7 +116,7 @@ public class DeviceFingerprintService {
         deviceInfo.setServerFeatures(serverFeatures);
         deviceInfo.setFingerprintType("SERVER_GENERATED");
 
-        log.debug("生成服务端设备指纹: {}", deviceId.substring(0, 8) + "...");
+        log.debug("生成服务端设备指纹: {}", formatFingerprintForLog(deviceId));
 
         return deviceInfo;
     }

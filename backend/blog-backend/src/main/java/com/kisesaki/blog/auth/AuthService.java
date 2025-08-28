@@ -55,7 +55,7 @@ public class AuthService {
         String accessToken = jwtTokenProvider.createAccessToken(authentication);
         String refreshToken = refreshTokenService.createAndStoreRefreshToken(authentication);
 
-        Long expiresIn = jwtExpiration / 1000;
+        long expiresIn = jwtExpiration / 1000;
 
         return ApiResponse.success("登录成功", new LoginResponseDto(accessToken, refreshToken, expiresIn));
     }

@@ -163,4 +163,93 @@ public class AuthService {
 
         return ApiResponse.success("访问令牌刷新成功", response);
     }
+
+    /**
+     * 用户登出
+     * 
+     * @param username     用户名
+     * @param refreshToken 要删除的刷新令牌
+     * @param deviceId     设备ID（可选）
+     * @return 登出结果
+     */
+    public ApiResponse<String> logout(String username, String refreshToken, String deviceId) {
+        try {
+            refreshTokenService.deleteRefreshToken(username, refreshToken, deviceId);
+            log.info("用户 {} 登出成功，设备: {}", username,
+                    deviceId != null ? deviceId.substring(0, Math.min(8, deviceId.length())) + "..." : "未指定");
+            return ApiResponse.success("登出成功");
+        } catch (Exception e) {
+            log.error("用户 {} 登出失败", username, e);
+            return ApiResponse.error("登出失败");
+        }
+    }
+
+    /**
+     * 登出所有设备
+     * 
+     * @param username 用户名
+     * @return 登出结果
+     */
+    public ApiResponse<String> logoutAllDevices(String username) {
+        try {
+            refreshTokenService.deleteAllRefreshTokens(username);
+            log.info("用户 {} 已登出所有设备", username);
+            return ApiResponse.success("已登出所有设备");
+        } catch (Exception e) {
+            log.error("用户 {} 登出所有设备失败", username, e);
+            return ApiResponse.error("登出所有设备失败");
+        }
+    }
+
+    /**
+     * 踢出指定设备
+     * 
+     * @param username 用户名
+     * @param deviceId 要踢出的设备ID
+     * @return 操作结果
+     */
+    public ApiResponse<String> kickDevice(String username, String deviceId) {
+        try {
+            refreshTokenService.deleteDeviceToken(username, deviceId);
+            log.info("管理员踢出用户 {} 的设备: {}", username,
+                    deviceId.substring(0, Math.min(8, deviceId.length())) + "...");
+            return ApiResponse.success("设备已被踢出");
+        } catch (Exception e) {
+            log.error("踢出用户 {} 设备 {} 失败", username, deviceId, e);
+            return ApiResponse.error("踢出设备失败");
+        }
+    }
+
+    /**
+     * 获取用户所有登录设备
+     * 
+     * @param username 用户名
+     * @return 设备ID集合
+     */
+    public ApiResponse<java.util.Set<String>> getUserDevices(String username) {
+        try {
+            java.util.Set<String> devices = refreshTokenService.getUserDevices(username);
+            return ApiResponse.success("获取设备列表成功", devices);
+        } catch (Exception e) {
+            log.error("获取用户 {} 设备列表失败", username, e);
+            return ApiResponse.error("获取设备列表失败");
+        }
+    }
+
+    /**
+     * 清理用户过期的令牌
+     * 
+     * @param username 用户名
+     * @return 清理结果
+     */
+    public ApiResponse<String> cleanExpiredTokens(String username) {
+        try {
+            refreshTokenService.cleanExpiredTokens(username);
+            log.debug("清理用户 {} 的过期令牌完成", username);
+            return ApiResponse.success("清理过期令牌成功");
+        } catch (Exception e) {
+            log.error("清理用户 {} 过期令牌失败", username, e);
+            return ApiResponse.error("清理过期令牌失败");
+        }
+    }
 }

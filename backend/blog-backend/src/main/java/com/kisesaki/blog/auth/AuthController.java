@@ -1,12 +1,19 @@
 package com.kisesaki.blog.auth;
 
+import java.util.Set;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kisesaki.blog.auth.dto.request.LoginRequestDto;
+import com.kisesaki.blog.auth.dto.request.LogoutRequestDto;
 import com.kisesaki.blog.auth.dto.request.RefreshTokenRequestDto;
 import com.kisesaki.blog.auth.dto.request.RegisterRequestDto;
 import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
@@ -52,6 +59,51 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponseDto>> refreshToken(
             @Valid @RequestBody RefreshTokenRequestDto refreshTokenRequestDto) {
         ApiResponse<LoginResponseDto> response = authService.refreshToken(refreshTokenRequestDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "用户登出", description = "用户登出当前设备")
+    public ResponseEntity<ApiResponse<String>> logout(
+            @Valid @RequestBody LogoutRequestDto logoutRequest,
+            Authentication authentication) {
+        String username = authentication.getName();
+        ApiResponse<String> response = authService.logout(username,
+                logoutRequest.getRefreshToken(), logoutRequest.getDeviceId());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout-all")
+    @Operation(summary = "登出所有设备", description = "用户登出所有已登录的设备")
+    public ResponseEntity<ApiResponse<String>> logoutAllDevices(Authentication authentication) {
+        String username = authentication.getName();
+        ApiResponse<String> response = authService.logoutAllDevices(username);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/devices/{deviceId}")
+    @Operation(summary = "踢出指定设备", description = "管理员或用户踢出指定设备")
+    public ResponseEntity<ApiResponse<String>> kickDevice(
+            @PathVariable String deviceId,
+            Authentication authentication) {
+        String username = authentication.getName();
+        ApiResponse<String> response = authService.kickDevice(username, deviceId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/devices")
+    @Operation(summary = "获取用户设备列表", description = "获取当前用户所有已登录的设备")
+    public ResponseEntity<ApiResponse<Set<String>>> getUserDevices(Authentication authentication) {
+        String username = authentication.getName();
+        ApiResponse<Set<String>> response = authService.getUserDevices(username);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/clean-expired")
+    @Operation(summary = "清理过期令牌", description = "清理用户的过期令牌")
+    public ResponseEntity<ApiResponse<String>> cleanExpiredTokens(Authentication authentication) {
+        String username = authentication.getName();
+        ApiResponse<String> response = authService.cleanExpiredTokens(username);
         return ResponseEntity.ok(response);
     }
 }

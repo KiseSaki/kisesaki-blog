@@ -26,13 +26,13 @@ public class JwtTokenProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     // 注入JWT密钥
-    @Value("${jwt.secret}")
+    @Value("${kisesaki.blog.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration}")
+    @Value("${kisesaki.blog.jwt.expiration}")
     private Long jwtExpiration;
 
-    @Value("${jwt.refresh-expiration}")
+    @Value("${kisesaki.blog.jwt.refresh-expiration}")
     private Long refreshExpiration;
 
     private SecretKey secretKey;
@@ -126,6 +126,7 @@ public class JwtTokenProvider {
 
     /**
      * 创建刷新令牌
+     * 
      * @param authentication 认证信息
      * @return 刷新令牌
      */

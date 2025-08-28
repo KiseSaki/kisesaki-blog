@@ -1,12 +1,13 @@
 package com.kisesaki.blog.auth.security.jwt;
 
-import lombok.RequiredArgsConstructor;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.TimeUnit;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 负责 Refresh Token 的创建、存储、验证和删除。
@@ -19,7 +20,7 @@ public class RefreshTokenService {
     private final StringRedisTemplate stringRedisTemplate;
     private final JwtTokenProvider jwtTokenProvider;
 
-    @Value("${jwt.refresh-expiration}")
+    @Value("${kisesaki.blog.jwt.refresh-expiration}")
     private Long refreshTokenExpirationMs;
 
     /**
@@ -34,8 +35,7 @@ public class RefreshTokenService {
         // 将 Refresh Token 存储在 Redis 中，设置过期时间
         stringRedisTemplate.opsForValue().set(
                 username, refreshToken, refreshTokenExpirationMs,
-                TimeUnit.MILLISECONDS
-        );
+                TimeUnit.MILLISECONDS);
 
         return refreshToken;
     }

@@ -39,7 +39,7 @@ public class AuthService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${jwt.expiration}")
+    @Value("${kisesaki.blog.jwt.expiration}")
     private Long jwtExpiration;
 
     /**

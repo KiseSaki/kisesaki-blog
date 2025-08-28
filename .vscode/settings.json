@@ -48,5 +48,6 @@
     "explorer.compactFolders": false,
     // 多项目支持
     "typescript.preferences.includePackageJsonAutoImports": "on",
-    "typescript.suggest.autoImports": true
+    "typescript.suggest.autoImports": true,
+    "java.compile.nullAnalysis.mode": "automatic"
 }

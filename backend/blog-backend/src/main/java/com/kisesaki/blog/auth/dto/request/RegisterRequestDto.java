@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Data // 自动生成getter、setter、toString、equals和hashCode方法
 @NoArgsConstructor // 自动生成无参构造方法
-public class RegisterRequest {
+public class RegisterRequestDto {
 
     @NotBlank(message = "用户名不能为空")
     @Size(min = 3, max = 50, message = "用户名长度必须在3-50字符之间")

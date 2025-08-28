@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kisesaki.blog.auth.dto.request.LoginRequestDto;
-import com.kisesaki.blog.auth.dto.request.RegisterRequest;
+import com.kisesaki.blog.auth.dto.request.RegisterRequestDto;
 import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
 import com.kisesaki.blog.auth.security.jwt.JwtTokenProvider;
 import com.kisesaki.blog.auth.security.jwt.RefreshTokenService;
@@ -60,11 +60,17 @@ public class AuthService {
         return ApiResponse.success("登录成功", new LoginResponseDto(accessToken, refreshToken, expiresIn));
     }
 
+    /**
+     * 用户注册
+     * 
+     * @param registerRequestDto 注册信息
+     * @return 注册结果
+     */
     @Transactional
-    public ApiResponse<String> register(RegisterRequest registerRequest) {
-        String username = registerRequest.getUsername();
-        String password = registerRequest.getPassword();
-        String email = registerRequest.getEmail();
+    public ApiResponse<String> register(RegisterRequestDto registerRequestDto) {
+        String username = registerRequestDto.getUsername();
+        String password = registerRequestDto.getPassword();
+        String email = registerRequestDto.getEmail();
 
         if (userMapper.existsByUsername(username)) {
             log.warn("注册失败，用户名已存在：{}", username);

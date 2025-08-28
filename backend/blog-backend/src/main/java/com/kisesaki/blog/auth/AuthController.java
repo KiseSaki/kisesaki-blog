@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kisesaki.blog.auth.dto.request.LoginRequestDto;
-import com.kisesaki.blog.auth.dto.request.RegisterRequest;
+import com.kisesaki.blog.auth.dto.request.RegisterRequestDto;
 import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
 import com.kisesaki.blog.common.dto.ApiResponse;
 
@@ -38,7 +38,7 @@ public class AuthController {
 
     @PostMapping("/register")
     @Operation(summary = "用户注册", description = "新用户注册账号")
-    public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequestDto registerRequest) {
         ApiResponse<String> response = authService.register(registerRequest);
         return ResponseEntity.ok(response);
     }

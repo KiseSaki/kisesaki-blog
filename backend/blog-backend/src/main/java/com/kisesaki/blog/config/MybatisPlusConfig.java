@@ -1,6 +1,6 @@
 package com.kisesaki.blog.config;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import org.apache.ibatis.reflection.MetaObject;
 import org.mybatis.spring.annotation.MapperScan;
@@ -71,16 +71,16 @@ public class MybatisPlusConfig {
             @Override
             public void insertFill(MetaObject metaObject) {
                 // 自动填充创建时间和更新时间
-                this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
-                this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
-                log.debug("Auto fill create time and update time for insert operation");
+                this.strictInsertFill(metaObject, "createdAt", OffsetDateTime.class, OffsetDateTime.now());
+                this.strictInsertFill(metaObject, "updatedAt", OffsetDateTime.class, OffsetDateTime.now());
+                log.debug("Auto fill createdAt and updatedAt for insert operation");
             }
 
             @Override
             public void updateFill(MetaObject metaObject) {
                 // 自动填充更新时间
-                this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
-                log.debug("Auto fill update time for update operation");
+                this.strictUpdateFill(metaObject, "updatedAt", OffsetDateTime.class, OffsetDateTime.now());
+                log.debug("Auto fill updatedAt for update operation");
             }
         };
     }

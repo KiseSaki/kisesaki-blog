@@ -1,6 +1,10 @@
+# =================================================================
 # 开发环境配置
+# 仅包含开发环境特定的配置项
+# =================================================================
+
 spring:
-  # 数据库配置
+  # ===== 数据库配置 =====
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/blog}
     username: ${DB_USERNAME:kisesaki}
@@ -12,21 +16,17 @@ spring:
       idle-timeout: 300000
       max-lifetime: 1200000
       connection-timeout: 20000
-  
-  # JPA 配置
+
+  # ===== JPA 开发环境配置 =====
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-        jdbc:
-          time_zone: Asia/Shanghai
-    open-in-view: false
-  
-  # Redis 配置
+
+  # ===== Redis 配置 =====
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -40,8 +40,8 @@ spring:
           max-idle: 10
           min-idle: 5
           max-wait: 2000ms
-  
-  # Kafka 配置
+
+  # ===== Kafka 配置 =====
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     security:
@@ -63,8 +63,8 @@ spring:
       auto-offset-reset: earliest
       properties:
         spring.json.trusted.packages: com.kisesaki.blog
-  
-  # 邮件配置
+
+  # ===== 邮件配置 =====
   mail:
     host: smtp.gmail.com
     port: 587
@@ -77,8 +77,8 @@ spring:
           starttls:
             enable: true
             required: true
-  
-  # OAuth2 配置
+
+  # ===== OAuth2 客户端配置 =====
   security:
     oauth2:
       client:
@@ -93,41 +93,33 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: ${GITEE_REDIRECT_URI:http://localhost:3000/auth/gitee/callback}
             scope: user_info
-        provider:
-          gitee:
-            authorization-uri: https://gitee.com/oauth/authorize
-            token-uri: https://gitee.com/oauth/token
-            user-info-uri: https://gitee.com/api/v5/user
-            user-name-attribute: login
 
-# JWT 配置
-jwt:
-  secret: ${JWT_SECRET:kisesaki-blog-jwt-secret-key-for-development-only}
-  expiration: 86400000 # 24小时
-  refresh-expiration: 604800000 # 7天
-
-# 文件上传配置
-upload:
-  path: ${UPLOAD_PATH:./uploads}
-  max-size: 10MB
-  allowed-types:
-    - image/jpeg
-    - image/png
-    - image/gif
-    - image/webp
-
-# 缓存配置
-cache:
-  default-ttl: 3600 # 1小时
-  post-ttl: 1800    # 30分钟
-  category-ttl: 7200 # 2小时
-
-# 日志配置
+# ===== 开发环境日志配置 =====
 logging:
   level:
+    root: WARN
     com.kisesaki.blog: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   file:
     name: ./logs/kisesaki-blog-dev.log
+
+# =================================================================
+# 开发环境自定义配置
+# =================================================================
+kisesaki:
+  blog:
+    # JWT 开发环境配置
+    jwt:
+      secret: ${JWT_SECRET:kisesaki-blog-jwt-secret-key-for-development-only}
+
+    # 设备指纹安全配置（开发环境）
+    security:
+      device:
+        salt: ${DEVICE_SALT:kisesaki-blog-device-salt-dev-2025}
+        trust-client-fingerprint: ${TRUST_CLIENT_FINGERPRINT:true}
+
+    # 文件上传开发环境配置
+    upload:
+      path: ${UPLOAD_PATH:./uploads}

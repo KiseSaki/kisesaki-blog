@@ -1,10 +1,325 @@
 package com.kisesaki.blog.auth;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.kisesaki.blog.auth.dto.DeviceInfo;
+import com.kisesaki.blog.auth.dto.request.LoginRequestDto;
+import com.kisesaki.blog.auth.dto.request.RefreshTokenRequestDto;
+import com.kisesaki.blog.auth.dto.request.RegisterRequestDto;
+import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
+import com.kisesaki.blog.auth.security.jwt.DeviceFingerprintService;
+import com.kisesaki.blog.auth.security.jwt.JwtTokenProvider;
+import com.kisesaki.blog.auth.security.jwt.RefreshTokenService;
+import com.kisesaki.blog.auth.security.user.CustomUserDetailsService;
+import com.kisesaki.blog.common.dto.ApiResponse;
+import com.kisesaki.blog.common.enums.ErrorCode;
+import com.kisesaki.blog.common.exception.BusinessException;
+import com.kisesaki.blog.user.entity.User;
+import com.kisesaki.blog.user.mapper.UserMapper;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 认证服务
- * 
+ *
  * @author KiseSaki
  */
+@Service // Spring框架注解，标识这是一个服务层组件，会被Spring容器自动扫描并注册为Bean
+@RequiredArgsConstructor // 自动生成包含所有final字段的构造函数，用于依赖注入
+@Slf4j // 自动生成一个名为log的静态Logger字段，用于日志记录
 public class AuthService {
 
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenService refreshTokenService;
+    private final DeviceFingerprintService deviceFingerprintService;
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final CustomUserDetailsService customUserDetailsService;
+
+    @Value("${kisesaki.blog.jwt.expiration}")
+    private Long jwtExpiration;
+
+    /**
+     * 格式化设备ID用于日志显示（安全地显示设备ID的前8位）
+     * 
+     * @param deviceId 设备ID
+     * @return 格式化后的设备ID字符串
+     */
+    private String formatDeviceIdForLog(String deviceId) {
+        if (deviceId == null) {
+            return "未指定";
+        }
+        return deviceId.substring(0, Math.min(8, deviceId.length())) + "...";
+    }
+
+    /**
+     * 验证设备指纹的合法性
+     * 
+     * @param request  HTTP请求对象
+     * @param username 用户名
+     * @param deviceId 设备ID
+     * @return 是否验证通过
+     */
+    private boolean validateDeviceFingerprint(HttpServletRequest request, String username, String deviceId) {
+        if (request == null || deviceId == null) {
+            log.warn("设备指纹验证失败：缺少必要参数 - 用户: {}", username);
+            return false;
+        }
+
+        try {
+            boolean isValid = deviceFingerprintService.validateDeviceFingerprint(request, deviceId);
+            if (!isValid) {
+                log.warn("用户 {} 的设备指纹验证失败，设备: {}", username, formatDeviceIdForLog(deviceId));
+            }
+            return isValid;
+        } catch (Exception e) {
+            log.error("设备指纹验证过程中发生异常 - 用户: {}, 设备: {}", username, formatDeviceIdForLog(deviceId), e);
+            return false;
+        }
+    }
+
+    /**
+     * 用户登录
+     *
+     * @param loginRequestDto 登录请求信息
+     * @param request         HTTP请求对象，用于获取设备指纹
+     * @return 登录结果，包含JWT令牌和设备信息
+     */
+    public ApiResponse<LoginResponseDto> login(LoginRequestDto loginRequestDto, HttpServletRequest request) {
+        // 执行认证
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
+
+        // 认证信息添加到 SecurityContext
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 生成设备信息
+        DeviceInfo deviceInfo = deviceFingerprintService.generateDeviceFingerprint(request);
+        String deviceId = deviceInfo.getDeviceId();
+        String deviceInfoStr = deviceInfo.getDeviceInfo();
+
+        // 生成 JWT Token
+        String accessToken = jwtTokenProvider.createAccessToken(authentication);
+        String refreshToken = refreshTokenService.createAndStoreRefreshToken(authentication, deviceId, deviceInfoStr);
+
+        long expiresIn = jwtExpiration / 1000;
+
+        LoginResponseDto response = new LoginResponseDto(accessToken, refreshToken, expiresIn, deviceId);
+
+        log.info("用户 {} 从设备 {} 登录成功", loginRequestDto.getUsername(), formatDeviceIdForLog(deviceId));
+
+        return ApiResponse.success("登录成功", response);
+    }
+
+    /**
+     * 用户注册
+     * 
+     * @param registerRequestDto 注册信息
+     * @return 注册结果
+     */
+    @Transactional
+    public ApiResponse<String> register(RegisterRequestDto registerRequestDto) {
+        String username = registerRequestDto.getUsername();
+        String password = registerRequestDto.getPassword();
+        String email = registerRequestDto.getEmail();
+
+        if (userMapper.existsByUsername(username)) {
+            log.warn("注册失败，用户名已存在：{}", username);
+            return ApiResponse.error("用户名已存在");
+        }
+
+        if (userMapper.existsByEmail(email)) {
+            log.warn("注册失败，邮箱已被占用：{}", email);
+            return ApiResponse.error("邮箱已被占用");
+        }
+
+        // 创建用户实体
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setAccountType("local");
+        user.setStatus("active");
+        user.setEmailVerified(false);
+
+        // 保存用户
+        try {
+            userMapper.insert(user);
+            log.info("用户注册成功，用户名：{}, ID: {}", user.getUsername(), user.getId());
+            return ApiResponse.success("注册成功", user.getId().toString());
+        } catch (Exception e) {
+            log.error("用户注册失败，用户名：{}，错误：{}", username, e.getMessage(), e);
+            throw BusinessException.of(ErrorCode.SYSTEM_ERROR, "注册失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 刷新访问令牌
+     *
+     * @param refreshTokenRequestDto 刷新令牌请求
+     * @return 新的访问令牌
+     */
+    public ApiResponse<LoginResponseDto> refreshToken(RefreshTokenRequestDto refreshTokenRequestDto,
+            HttpServletRequest request) {
+        String refreshToken = refreshTokenRequestDto.getRefreshToken();
+        String deviceId = refreshTokenRequestDto.getDeviceId();
+
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            return ApiResponse.error("无效的刷新令牌");
+        }
+
+        // 获取用户名
+        String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
+
+        // 验证 Refresh Token（支持设备ID验证）
+        if (!refreshTokenService.validateRefreshToken(username, refreshToken, deviceId)) {
+            return ApiResponse.error("刷新令牌无效或已过期");
+        }
+
+        // 验证设备指纹
+        if (!deviceFingerprintService.validateDeviceFingerprint(request, deviceId)) {
+            log.warn("用户 {} 的设备指纹验证失败，可能是设备变更或伪造请求，设备ID: {}", username, formatDeviceIdForLog(deviceId));
+            return ApiResponse.error("设备验证失败，无法刷新令牌");
+        }
+
+        // 加载用户详情
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
+                userDetails.getAuthorities());
+
+        String newAccessToken = jwtTokenProvider.createAccessToken(authentication);
+        long expiresIn = jwtExpiration / 1000;
+
+        // 返回响应时保持设备信息
+        LoginResponseDto response = new LoginResponseDto(newAccessToken, refreshToken, expiresIn, deviceId);
+
+        log.debug("用户 {} 的访问令牌刷新成功，设备: {}", username, formatDeviceIdForLog(deviceId));
+
+        return ApiResponse.success("访问令牌刷新成功", response);
+    }
+
+    /**
+     * 用户登出
+     * 
+     * @param username     用户名
+     * @param refreshToken 要删除的刷新令牌
+     * @param deviceId     设备ID（可选）
+     * @param request      HTTP请求对象，用于设备指纹验证
+     * @return 登出结果
+     */
+    public ApiResponse<String> logout(String username, String refreshToken, String deviceId,
+            HttpServletRequest request) {
+        // 如果提供了设备ID，需要验证设备指纹
+        if (deviceId != null && !validateDeviceFingerprint(request, username, deviceId)) {
+            log.warn("用户 {} 登出时设备指纹验证失败，设备: {}", username, formatDeviceIdForLog(deviceId));
+            return ApiResponse.error("设备验证失败，无法完成登出操作");
+        }
+
+        try {
+            refreshTokenService.deleteRefreshToken(username, refreshToken, deviceId);
+            log.info("用户 {} 登出成功，设备: {}", username, formatDeviceIdForLog(deviceId));
+            return ApiResponse.success("登出成功");
+        } catch (Exception e) {
+            log.error("用户 {} 登出失败", username, e);
+            return ApiResponse.error("登出失败");
+        }
+    }
+
+    /**
+     * 登出所有设备
+     * 
+     * @param username 用户名
+     * @return 登出结果
+     */
+    public ApiResponse<String> logoutAllDevices(String username) {
+        try {
+            refreshTokenService.deleteAllRefreshTokens(username);
+            log.info("用户 {} 已登出所有设备", username);
+            return ApiResponse.success("已登出所有设备");
+        } catch (Exception e) {
+            log.error("用户 {} 登出所有设备失败", username, e);
+            return ApiResponse.error("登出所有设备失败");
+        }
+    }
+
+    /**
+     * 踢出指定设备
+     * 
+     * @param username 用户名
+     * @param deviceId 要踢出的设备ID
+     * @param request  HTTP请求对象，用于设备指纹验证（当前设备）
+     * @return 操作结果
+     */
+    public ApiResponse<String> kickDevice(String username, String deviceId, HttpServletRequest request) {
+        // 验证当前操作设备的合法性（防止恶意踢出）
+        DeviceInfo currentDevice = deviceFingerprintService.generateDeviceFingerprint(request);
+        String currentDeviceId = currentDevice.getDeviceId();
+
+        // 不允许踢出自己当前使用的设备
+        if (currentDeviceId.equals(deviceId)) {
+            log.warn("用户 {} 尝试踢出自己当前使用的设备: {}", username, formatDeviceIdForLog(deviceId));
+            return ApiResponse.error("不能踢出当前使用的设备");
+        }
+
+        try {
+            refreshTokenService.deleteDeviceToken(username, deviceId);
+            log.info("管理员踢出用户 {} 的设备: {}", username, formatDeviceIdForLog(deviceId));
+            return ApiResponse.success("设备已被踢出");
+        } catch (Exception e) {
+            log.error("踢出用户 {} 设备 {} 失败", username, deviceId, e);
+            return ApiResponse.error("踢出设备失败");
+        }
+    }
+
+    /**
+     * 获取用户所有登录设备
+     * 
+     * @param username 用户名
+     * @return 设备ID集合
+     */
+    public ApiResponse<java.util.Set<String>> getUserDevices(String username) {
+        try {
+            java.util.Set<String> devices = refreshTokenService.getUserDevices(username);
+            return ApiResponse.success("获取设备列表成功", devices);
+        } catch (Exception e) {
+            log.error("获取用户 {} 设备列表失败", username, e);
+            return ApiResponse.error("获取设备列表失败");
+        }
+    }
+
+    /**
+     * 清理用户过期的令牌
+     * 
+     * @param username 用户名
+     * @param request  HTTP请求对象，用于设备指纹验证
+     * @return 清理结果
+     */
+    public ApiResponse<String> cleanExpiredTokens(String username, HttpServletRequest request) {
+        // 验证当前设备的合法性
+        DeviceInfo currentDevice = deviceFingerprintService.generateDeviceFingerprint(request);
+        if (!validateDeviceFingerprint(request, username, currentDevice.getDeviceId())) {
+            log.warn("用户 {} 清理过期令牌时设备指纹验证失败", username);
+            return ApiResponse.error("设备验证失败，无法执行清理操作");
+        }
+
+        try {
+            refreshTokenService.cleanExpiredTokens(username);
+            log.debug("清理用户 {} 的过期令牌完成", username);
+            return ApiResponse.success("清理过期令牌成功");
+        } catch (Exception e) {
+            log.error("清理用户 {} 过期令牌失败", username, e);
+            return ApiResponse.error("清理过期令牌失败");
+        }
+    }
 }

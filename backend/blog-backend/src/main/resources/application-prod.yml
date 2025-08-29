@@ -1,6 +1,10 @@
+# =================================================================
 # 生产环境配置
+# 仅包含生产环境特定的配置项，注重性能和安全性
+# =================================================================
+
 spring:
-  # 数据库配置
+  # ===== 数据库配置 =====
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/blog_prod}
     username: ${DATABASE_USERNAME:kisesaki}
@@ -13,20 +17,14 @@ spring:
       max-lifetime: 1200000
       connection-timeout: 30000
       leak-detection-threshold: 60000
-  
-  # JPA 配置
+
+  # ===== JPA 生产环境配置 =====
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        jdbc:
-          time_zone: Asia/Shanghai
-    open-in-view: false
-  
-  # Redis 配置
+
+  # ===== Redis 配置 =====
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -40,8 +38,8 @@ spring:
           max-idle: 20
           min-idle: 10
           max-wait: 3000ms
-  
-  # Kafka 配置
+
+  # ===== Kafka 配置 =====
   kafka:
     bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
     security:
@@ -67,8 +65,8 @@ spring:
       max-poll-records: 500
       properties:
         spring.json.trusted.packages: com.kisesaki.blog
-  
-  # 邮件配置
+
+  # ===== 邮件配置 =====
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
@@ -81,8 +79,8 @@ spring:
           starttls:
             enable: true
             required: true
-  
-  # OAuth2 配置
+
+  # ===== OAuth2 客户端配置 =====
   security:
     oauth2:
       client:
@@ -97,14 +95,8 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: ${GITEE_REDIRECT_URI}
             scope: user_info
-        provider:
-          gitee:
-            authorization-uri: https://gitee.com/oauth/authorize
-            token-uri: https://gitee.com/oauth/token
-            user-info-uri: https://gitee.com/api/v5/user
-            user-name-attribute: login
 
-# 服务器配置
+# ===== 服务器生产环境配置 =====
 server:
   port: ${SERVER_PORT:8080}
   servlet:
@@ -114,32 +106,17 @@ server:
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
     min-response-size: 1024
 
-# 自定义配置
-kisesaki:
-  blog:
-    # JWT 配置
-    jwt:
-      secret: ${JWT_SECRET}
-      expiration: 86400000 # 24小时
-      refresh-expiration: 604800000 # 7天
-    
-    # 文件上传配置
-    upload:
-      path: ${UPLOAD_PATH:/data/uploads}
-      max-size: 10MB
-      allowed-types: 
-        - image/jpeg
-        - image/png
-        - image/gif
-        - image/webp
-    
-    # 缓存配置
-    cache:
-      default-ttl: 3600 # 1小时
-      post-ttl: 1800    # 30分钟
-      category-ttl: 7200 # 2小时
+# ===== 生产环境监控配置 =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
 
-# 日志配置
+# ===== 生产环境日志配置 =====
 logging:
   level:
     root: WARN
@@ -152,12 +129,21 @@ logging:
       max-file-size: 100MB
       max-history: 30
 
-# Actuator 监控配置
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: when-authorized
+# =================================================================
+# 生产环境自定义配置
+# =================================================================
+kisesaki:
+  blog:
+    # JWT 生产环境配置
+    jwt:
+      secret: ${JWT_SECRET}
+
+    # 设备指纹安全配置（生产环境 - 增强安全性）
+    security:
+      device:
+        salt: ${DEVICE_SALT}
+        trust-client-fingerprint: ${TRUST_CLIENT_FINGERPRINT:false}
+
+    # 文件上传生产环境配置
+    upload:
+      path: ${UPLOAD_PATH:/data/uploads}

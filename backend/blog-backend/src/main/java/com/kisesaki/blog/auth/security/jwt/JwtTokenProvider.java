@@ -26,11 +26,14 @@ public class JwtTokenProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
     // 注入JWT密钥
-    @Value("${jwt.secret}")
+    @Value("${kisesaki.blog.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration}")
+    @Value("${kisesaki.blog.jwt.expiration}")
     private Long jwtExpiration;
+
+    @Value("${kisesaki.blog.jwt.refresh-expiration}")
+    private Long refreshExpiration;
 
     private SecretKey secretKey;
 
@@ -119,5 +122,23 @@ public class JwtTokenProvider {
                 .getPayload()
                 // 获取 subject 声明
                 .getSubject();
+    }
+
+    /**
+     * 创建刷新令牌
+     * 
+     * @param authentication 认证信息
+     * @return 刷新令牌
+     */
+    public String createRefreshToken(Authentication authentication) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + refreshExpiration);
+
+        return Jwts.builder()
+                .subject(authentication.getName())
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(secretKey, Jwts.SIG.HS256)
+                .compact();
     }
 }

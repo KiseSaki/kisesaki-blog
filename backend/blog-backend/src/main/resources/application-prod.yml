@@ -66,7 +66,7 @@ spring:
       properties:
         spring.json.trusted.packages: com.kisesaki.blog
 
-  # ===== 邮件配置 =====
+  # ===== 邮件配置（生产环境）=====
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
@@ -77,8 +77,8 @@ spring:
         smtp:
           auth: true
           starttls:
-            enable: true
-            required: true
+            enable: ${MAIL_TLS_ENABLED:true}
+            required: ${MAIL_TLS_REQUIRED:true}
 
   # ===== OAuth2 客户端配置 =====
   security:
@@ -121,7 +121,9 @@ logging:
   level:
     root: WARN
     com.kisesaki.blog: INFO
+    com.kisesaki.blog.notification: INFO # 邮件通知模块日志
     org.springframework.security: WARN
+    org.springframework.mail: WARN # Spring Mail日志
   file:
     name: /var/log/kisesaki-blog/app.log
   logback:

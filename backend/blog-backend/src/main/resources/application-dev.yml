@@ -66,17 +66,17 @@ spring:
 
   # ===== 邮件配置（开发环境）=====
   mail:
-    host: ${MAIL_HOST:smtp.zoho.com}
-    port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:your-email@example.com}
-    password: ${MAIL_PASSWORD:your-app-password}
+    host: ${kisesaki.blog.email.smtp.host}
+    port: ${kisesaki.blog.email.smtp.port}
+    username: ${kisesaki.blog.email.smtp.username}
+    password: ${kisesaki.blog.email.smtp.password}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
-            enable: ${MAIL_TLS_ENABLED:true}
-            required: ${MAIL_TLS_REQUIRED:true}
+            enable: ${kisesaki.blog.email.tls.enabled}
+            required: ${kisesaki.blog.email.tls.required}
           ssl:
             enable: true
 
@@ -128,3 +128,19 @@ kisesaki:
     # 文件上传开发环境配置
     upload:
       path: ${UPLOAD_PATH:./uploads}
+
+    # 邮件通知模块配置（开发环境）
+    email:
+      # SMTP服务器配置
+      smtp:
+        host: ${MAIL_HOST:smtp.zoho.com}
+        port: ${MAIL_PORT:465}
+        username: ${MAIL_USERNAME:your-email@example.com}
+        password: ${MAIL_PASSWORD:your-app-password}
+        protocol: smtp
+        default-encoding: UTF-8
+
+      # TLS/SSL配置
+      tls:
+        enabled: ${MAIL_TLS_ENABLED:true}
+        required: ${MAIL_TLS_REQUIRED:true}

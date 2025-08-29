@@ -56,8 +56,8 @@ spring:
 
   # ===== 邮件通用配置 =====
   mail:
-    protocol: smtp
-    default-encoding: UTF-8
+    protocol: ${kisesaki.blog.email.smtp.protocol:smtp}
+    default-encoding: ${kisesaki.blog.email.smtp.default-encoding:UTF-8}
     properties:
       mail:
         smtp:
@@ -135,6 +135,16 @@ kisesaki:
 
     # 邮件通知模块配置
     email:
+      # SMTP服务器配置（通用）
+      smtp:
+        protocol: smtp
+        default-encoding: UTF-8
+
+      # TLS/SSL配置（通用）
+      tls:
+        enabled: true
+        required: true
+
       # 邮件模板配置
       templates:
         enabled: true

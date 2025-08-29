@@ -1,14 +1,14 @@
 package com.kisesaki.blog.notification.config;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import lombok.Data;
+
 @Data
 @Component
-@ConfigurationProperties(prefix = "app.email")
+@ConfigurationProperties(prefix = "kisesaki.blog.email")
 public class EmailConfigurationProperties {
-
 
     /* SMTP服务器配置 */
     private Smtp smtp = new Smtp();

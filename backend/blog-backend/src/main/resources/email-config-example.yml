@@ -1,0 +1,177 @@
+# =================================================================
+# 邮件通知模块配置示例文件
+# 
+# 重要说明：
+# 1. 这是一个配置示例文件，不会被Spring Boot加载
+# 2. 请根据需要将相关配置复制到实际的配置文件中：
+#    - 通用配置 -> application.yml
+#    - 开发环境配置 -> application-dev.yml  
+#    - 生产环境配置 -> application-prod.yml
+# 3. 本文件仅供参考，包含详细的配置说明和使用示例
+# =================================================================
+
+# 邮件配置
+email:
+  # SMTP服务器配置
+  smtp:
+    host: smtp.zoho.com                  # zohoSMTP服务器地址
+    # host: smtp.qq.com                  # QQ邮箱SMTP服务器
+    # host: smtp.163.com                 # 网易邮箱SMTP服务器  
+    # host: smtp.gmail.com               # Gmail SMTP服务器
+    port: 465                            # SMTP端口 (TLS: 587, SSL: 465)
+    username: your-email@qq.com          # 发送邮箱账号
+    password: your-app-password          # 邮箱应用密码(不是登录密码)
+    protocol: smtp
+    defaultEncoding: UTF-8
+    
+  # TLS/SSL配置  
+  tls:
+    enabled: true
+    required: true
+    
+  # 邮件模板配置
+  templates:
+    enabled: true
+    cacheEnabled: true                   # 是否启用模板缓存
+    cacheSize: 100                       # 缓存大小
+    cacheExpireMinutes: 30               # 缓存过期时间(分钟)
+    
+  # 异步发送配置
+  async:
+    enabled: true
+    corePoolSize: 2                      # 核心线程数
+    maxPoolSize: 5                       # 最大线程数
+    queueCapacity: 100                   # 队列容量
+    threadNamePrefix: email-task-        # 线程名前缀
+    
+  # 重试配置
+  retry:
+    enabled: true
+    maxAttempts: 3                       # 最大重试次数
+    initialDelay: 2000                   # 初始延迟(毫秒)
+    multiplier: 2.0                      # 延迟倍数
+    maxDelay: 10000                      # 最大延迟(毫秒)
+
+# Spring Mail基础配置 (必需)
+spring:
+  mail:
+    host: ${email.smtp.host}
+    port: ${email.smtp.port}
+    username: ${email.smtp.username}
+    password: ${email.smtp.password}
+    protocol: ${email.smtp.protocol}
+    default-encoding: ${email.smtp.defaultEncoding}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: ${email.tls.enabled}
+            required: ${email.tls.required}
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+# 定时任务配置(用于清理过期通知)
+spring:
+  task:
+    scheduling:
+      pool:
+        size: 2
+
+# 数据库连接池配置(建议)
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+
+# 日志配置
+logging:
+  level:
+    com.kisesaki.blog.notification: DEBUG    # 通知模块调试日志
+    org.springframework.mail: INFO           # Spring Mail日志
+    org.springframework.retry: DEBUG         # 重试机制日志
+
+---
+# 邮件服务商配置参考
+
+# QQ邮箱配置
+# SMTP服务器: smtp.qq.com
+# 端口: 587 (TLS) 或 465 (SSL)
+# 需要开启SMTP服务并获取授权码
+
+# 网易邮箱配置  
+# SMTP服务器: smtp.163.com
+# 端口: 587 (TLS) 或 994 (SSL)
+# 需要开启SMTP服务并设置客户端授权密码
+
+# Gmail配置
+# SMTP服务器: smtp.gmail.com  
+# 端口: 587 (TLS) 或 465 (SSL)
+# 需要开启"安全性较低的应用访问权限"或使用应用专用密码
+
+# 企业邮箱配置
+# 请咨询您的邮箱服务提供商获取SMTP配置信息
+
+---
+# 使用示例
+
+# 在Spring Boot应用中使用:
+# 
+# @Autowired
+# private EmailEventPublisher emailEventPublisher;
+# 
+# // 发送注册确认邮件
+# emailEventPublisher.publishUserRegistrationEvent(
+#     "user@example.com", 
+#     userId, 
+#     "用户名", 
+#     "confirmation-token"
+# );
+#
+# // 发送密码重置邮件  
+# emailEventPublisher.publishPasswordResetEvent(
+#     "user@example.com",
+#     userId, 
+#     "用户名",
+#     "reset-token"
+# );
+
+---
+# =================================================================
+# 配置整合说明
+# =================================================================
+
+# 本示例文件中的配置已经按照最佳实践整合到以下配置文件中：
+#
+# 1. application.yml - 通用配置：
+#    - spring.mail 基础配置
+#    - 邮件模板、异步发送、重试等自定义配置
+#    - 定时任务配置
+#
+# 2. application-dev.yml - 开发环境配置：
+#    - SMTP服务器配置（默认使用Zoho）
+#    - 开发环境特定的邮件日志配置
+#
+# 3. application-prod.yml - 生产环境配置：
+#    - SMTP服务器配置（默认使用Gmail）
+#    - 生产环境优化的邮件日志配置
+#
+# 您只需要根据实际使用的邮件服务商配置相应的环境变量即可：
+# - MAIL_HOST: SMTP服务器地址
+# - MAIL_PORT: SMTP端口
+# - MAIL_USERNAME: 发送邮箱账号
+# - MAIL_PASSWORD: 邮箱应用密码
+# - MAIL_TLS_ENABLED: 是否启用TLS
+# - MAIL_TLS_REQUIRED: 是否要求TLS
+
+---
+# 生产环境建议
+
+# 1. 使用专业的邮件服务提供商(如SendGrid、阿里云邮件推送等)
+# 2. 配置邮件发送限制和频率控制
+# 3. 监控邮件发送状态和失败率
+# 4. 定期清理邮件日志和过期通知
+# 5. 配置邮件模板的版本管理
+# 6. 设置邮件内容的安全过滤

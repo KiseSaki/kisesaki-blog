@@ -68,7 +68,7 @@ public class EmailEventFactory {
 
         return new EmailEvent(source, EmailType.PASSWORD_RESET, toEmail, userId, userDisplayName,
                 variables, "密码重置请求 - KiseSaki博客",
-                "PASSWORD_RESET", userId.toString(), 3); // 密码重置，优先级普通
+                "PASSWORD_RESET", userId.toString(), 2); // 密码重置，优先级较高
     }
 
     /**

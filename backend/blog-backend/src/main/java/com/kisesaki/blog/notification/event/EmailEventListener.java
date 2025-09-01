@@ -162,7 +162,26 @@ public class EmailEventListener {
     }
 
     private boolean validateEmailEvent(EmailEvent event) {
-        // ... (省略实现)
+        if (event == null) {
+            return false;
+        }
+        if (event.getToEmail() == null || event.getToEmail().trim().isEmpty()) {
+            return false;
+        }
+        // 简单的邮箱格式验证
+        if (!event.getToEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            return false;
+        }
+        if (event.getSubject() == null || event.getSubject().trim().isEmpty()) {
+            return false;
+        }
+        if (event.getEmailType() == null) {
+            return false;
+        }
+        if (event.getPriority() < 1 || event.getPriority() > 5) {
+            return false;
+        }
+        // 其他验证可以根据需要添加
         return true;
     }
 

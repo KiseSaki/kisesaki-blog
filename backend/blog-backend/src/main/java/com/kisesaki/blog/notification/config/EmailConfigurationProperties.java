@@ -49,4 +49,21 @@ public class EmailConfigurationProperties {
         // 模板缓存时间
         private Integer cacheTime = 3600; // 单位秒
     }
+
+    /* 异步配置 */
+    private Async async = new Async();
+
+    @Data
+    public static class Async {
+        // 核心线程数
+        private Integer corePoolSize = 2;
+        // 最大线程数
+        private Integer maxPoolSize = 10;
+        // 队列容量
+        private Integer queueCapacity = 100;
+        // 线程名称前缀
+        private String threadNamePrefix = "email-async-";
+        // 线程存活时间
+        private Integer keepAliveSeconds = 60;
+    }
 }

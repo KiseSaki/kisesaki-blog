@@ -22,6 +22,7 @@ import com.kisesaki.blog.auth.security.user.CustomUserDetailsService;
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
+import com.kisesaki.blog.notification.event.EmailEventPublisher;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.mapper.UserMapper;
 
@@ -46,6 +47,7 @@ public class AuthService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService customUserDetailsService;
+    private final EmailEventPublisher emailEventPublisher;
 
     @Value("${kisesaki.blog.jwt.expiration}")
     private Long jwtExpiration;
@@ -157,6 +159,18 @@ public class AuthService {
         try {
             userMapper.insert(user);
             log.info("用户注册成功，用户名：{}, ID: {}", user.getUsername(), user.getId());
+
+            // 发送欢迎邮件
+            try {
+                emailEventPublisher.publishWelcomeEmailEvent(user.getEmail(), user.getId(), user.getUsername());
+                log.info("已发送欢迎邮件给用户：{}", user.getEmail());
+            } catch (Exception emailException) {
+                // 邮件发送失败不应该影响注册结果，只记录错误日志
+                log.error("发送欢迎邮件失败，用户：{}，邮箱：{}，错误：{}",
+                        user.getUsername(), user.getEmail(), emailException.getMessage(), emailException);
+            }
+
+            log.info("用户 {} 注册完成，ID: {}", user.getUsername(), user.getId());
             return ApiResponse.success("注册成功", user.getId().toString());
         } catch (Exception e) {
             log.error("用户注册失败，用户名：{}，错误：{}", username, e.getMessage(), e);

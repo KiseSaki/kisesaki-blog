@@ -1,12 +1,9 @@
 package com.kisesaki.blog.auth;
 
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
 
-import com.kisesaki.blog.auth.dto.request.VerifyEmailRequestDto;
-import com.kisesaki.blog.auth.event.UserRegistrationEvent;
-import com.kisesaki.blog.redis.RedisService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,10 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kisesaki.blog.auth.dto.DeviceInfo;
+import com.kisesaki.blog.auth.dto.request.ChangePasswordRequestDto;
 import com.kisesaki.blog.auth.dto.request.LoginRequestDto;
 import com.kisesaki.blog.auth.dto.request.RefreshTokenRequestDto;
 import com.kisesaki.blog.auth.dto.request.RegisterRequestDto;
+import com.kisesaki.blog.auth.dto.request.VerifyEmailRequestDto;
 import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
+import com.kisesaki.blog.auth.event.UserRegistrationEvent;
 import com.kisesaki.blog.auth.security.jwt.DeviceFingerprintService;
 import com.kisesaki.blog.auth.security.jwt.JwtTokenProvider;
 import com.kisesaki.blog.auth.security.jwt.RefreshTokenService;
@@ -31,6 +31,7 @@ import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.notification.event.EmailEventPublisher;
+import com.kisesaki.blog.redis.RedisService;
 import com.kisesaki.blog.user.Keys.UserKey;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.mapper.UserMapper;
@@ -59,6 +60,7 @@ public class AuthService {
     private final ApplicationEventPublisher eventPublisher;
     private final RedisService RedisService;
     private final RedisService redisService;
+    private final EmailEventPublisher emailEventPublisher;
 
     @Value("${kisesaki.blog.jwt.expiration}")
     private Long jwtExpiration;
@@ -176,8 +178,7 @@ public class AuthService {
                     user.getId(),
                     user.getUsername(),
                     user.getEmail(),
-                    java.time.LocalDateTime.now()
-            );
+                    LocalDateTime.now());
             eventPublisher.publishEvent(event);
             log.info("用户 {} 注册完成，ID: {}", user.getUsername(), user.getId());
             return ApiResponse.success("注册成功", user.getId().toString());
@@ -364,6 +365,57 @@ public class AuthService {
         } catch (Exception e) {
             log.error("获取用户 {} 设备列表失败", username, e);
             return ApiResponse.error("获取设备列表失败");
+        }
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param changePasswordRequestDto 修改密码请求
+     * @param request                  HTTP请求对象，用于设备指纹验证
+     * @return 修改结果
+     */
+    public ApiResponse<String> changePassword(String username, ChangePasswordRequestDto changePasswordRequestDto, HttpServletRequest request) {
+        String oldPassword = changePasswordRequestDto.getOldPassword();
+        String newPassword = changePasswordRequestDto.getNewPassword();
+
+        if (oldPassword.equals(newPassword)) {
+            return ApiResponse.error("新密码不能与旧密码相同");
+        }
+
+        Optional<User> user = userMapper.findByUsername(username);
+        if (user.isEmpty()) {
+            return ApiResponse.error("用户不存在");
+        }
+
+        if (!user.get().getEmailVerified()) {
+            return ApiResponse.error("请先验证邮箱");
+        }
+
+        if (!passwordEncoder.matches(oldPassword, user.get().getPassword())) {
+            return ApiResponse.error("旧密码不正确");
+        }
+
+        user.get().setPassword(passwordEncoder.encode(newPassword));
+        try {
+            userMapper.updateById(user.get());
+
+            // 修改密码后，删除所有刷新令牌，强制重新登录
+            refreshTokenService.deleteAllRefreshTokens(username);
+            // 发送密码修改通知邮件
+            emailEventPublisher.publishPasswordChangedEvent(
+                    user.get().getEmail(),
+                    user.get().getId(),
+                    user.get().getUsername(),
+                    String.valueOf(LocalDateTime.now()),
+                    request.getRemoteAddr()
+            );
+
+            log.info("用户 {} 修改密码成功", username);
+            return ApiResponse.success("密码修改成功");
+        } catch (Exception e) {
+            log.error("用户 {} 修改密码失败", username, e);
+            return ApiResponse.error("密码修改失败");
         }
     }
 

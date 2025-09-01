@@ -106,6 +106,17 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("change-password")
+    @Operation(summary = "修改密码", description = "用户修改自己的登录密码")
+    public ResponseEntity<ApiResponse<String>> changePassword(
+            @Valid @RequestBody ChangePasswordRequestDto changePasswordRequest,
+            Authentication authentication,
+            HttpServletRequest request) {
+        String username = authentication.getName();
+        ApiResponse<String> response = authService.changePassword(username, changePasswordRequest, request);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/clean-expired")
     @Operation(summary = "清理过期令牌", description = "清理用户的过期令牌")
     public ResponseEntity<ApiResponse<String>> cleanExpiredTokens(

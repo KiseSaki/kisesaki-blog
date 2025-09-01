@@ -117,6 +117,22 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("forgot-password")
+    @Operation(summary = "忘记密码", description = "用户通过邮箱重置登录密码")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequestDto forgotPasswordRequestDto) {
+        ApiResponse<String> response = authService.forgotPassword(forgotPasswordRequestDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "确认重置密码", description = "用户通过邮箱收到的令牌确认重置密码")
+    public ResponseEntity<ApiResponse<String>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequestDto resetPasswordRequest) {
+        ApiResponse<String> response = authService.resetPassword(resetPasswordRequest);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/clean-expired")
     @Operation(summary = "清理过期令牌", description = "清理用户的过期令牌")
     public ResponseEntity<ApiResponse<String>> cleanExpiredTokens(

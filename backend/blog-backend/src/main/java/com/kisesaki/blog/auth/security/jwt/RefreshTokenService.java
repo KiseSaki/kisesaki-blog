@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import com.kisesaki.blog.user.Keys.UserKey;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,9 +30,9 @@ import lombok.extern.slf4j.Slf4j;
  * 6. 支持批量操作和并发安全
  * 
  * Redis存储结构：
- * - refresh_token:{username}:device:{deviceId} -> token内容
- * - user_devices:{username} -> Set<deviceId>
- * - token_metadata:{username}:{deviceId} -> 元数据JSON
+ * - UserKey:device:refreshToken:{username}:{deviceId} -> token内容
+ * - UserKey:devices:{username} -> Set<deviceId>
+ * - UserKey:device:metadata:{username}:{deviceId} -> 元数据JSON
  * 
  * @author KiseSaki
  */
@@ -55,27 +57,6 @@ public class RefreshTokenService {
      */
     @Value("${kisesaki.blog.security.max-devices-per-user:10}")
     private Integer maxDevicesPerUser;
-
-    /**
-     * 设备token在Redis中的键名模板
-     * 格式：refresh_token:{username}:device:{deviceId}
-     * 用于存储具体的token字符串
-     */
-    private static final String DEVICE_TOKEN_PREFIX = "refresh_token:%s:device:%s";
-
-    /**
-     * 用户设备集合在Redis中的键名模板
-     * 格式：user_devices:{username}
-     * 用于存储用户所有登录设备的ID集合
-     */
-    private static final String USER_DEVICES_KEY = "user_devices:%s";
-
-    /**
-     * token元数据在Redis中的键名模板
-     * 格式：token_metadata:{username}:{deviceId}
-     * 用于存储设备信息、创建时间、最后使用时间等元数据
-     */
-    private static final String TOKEN_METADATA_KEY = "token_metadata:%s:%s";
 
     /**
      * 创建并存储 Refresh Token
@@ -115,11 +96,11 @@ public class RefreshTokenService {
     private String createDeviceToken(String username, Authentication authentication, String deviceId,
             String deviceInfo) {
         String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
-        String redisKey = String.format(DEVICE_TOKEN_PREFIX, username, deviceId);
+        String redisKey = UserKey.buildDeviceRefreshTokenKey(username, deviceId);
         // 设备token存储键
-        String userDevicesKey = String.format(USER_DEVICES_KEY, username);
+        String userDevicesKey = UserKey.buildUserDevicesKey(username);
         // 元数据存储键
-        String metadataKey = String.format(TOKEN_METADATA_KEY, username, deviceId);
+        String metadataKey = UserKey.buildDeviceMetadataKey(username, deviceId);
 
         // 检查是否是设备重复登录
         String oldToken = stringRedisTemplate.opsForValue().get(redisKey);
@@ -151,11 +132,11 @@ public class RefreshTokenService {
                 // ARGV[1]，新生成的 Refresh Token 字符串，用于存储到 Redis
                 refreshToken,
                 // ARGV[2]，token 过期时间（毫秒），用于设置键的 PX（毫秒过期）
-                String.valueOf(refreshTokenExpirationMs),
+                String.valueOf(UserKey.DEVICE_REFRESH_TOKEN.getExpireSeconds() * 1000L),
                 // ARGV[3]，设备 ID，用于添加到用户设备集合。
                 deviceId,
                 // ARGV[4]，设备集合的过期时间（秒），与 token 过期时间一致
-                String.valueOf(refreshTokenExpirationMs / 1000),
+                String.valueOf(UserKey.DEVICE_REFRESH_TOKEN.getExpireSeconds()),
                 // ARGV[5]，token 元数据 JSON 字符串（包含设备信息、创建时间等），存储到元数据键
                 metadata);
 
@@ -203,7 +184,7 @@ public class RefreshTokenService {
      */
     private boolean validateDeviceToken(String username, String refreshToken, String deviceId) {
         // 构建Redis键名
-        String redisKey = String.format(DEVICE_TOKEN_PREFIX, username, deviceId);
+        String redisKey = UserKey.buildDeviceRefreshTokenKey(username, deviceId);
         // 从Redis获取存储的token
         String storedToken = stringRedisTemplate.opsForValue().get(redisKey);
         // 比较提供的token和存储的token是否一致
@@ -220,7 +201,7 @@ public class RefreshTokenService {
      */
     private boolean validateAllDeviceTokens(String username, String refreshToken) {
         // 获取用户所有设备ID集合的Redis键
-        String userDevicesKey = String.format(USER_DEVICES_KEY, username);
+        String userDevicesKey = UserKey.buildUserDevicesKey(username);
         // 从Redis Set中获取所有设备ID
         Set<String> deviceIds = stringRedisTemplate.opsForSet().members(userDevicesKey);
 
@@ -260,7 +241,7 @@ public class RefreshTokenService {
 
         // 如果未删除成功，则遍历所有设备查找并删除匹配的token
         if (!deleted) {
-            String userDevicesKey = String.format(USER_DEVICES_KEY, username);
+            String userDevicesKey = UserKey.buildUserDevicesKey(username);
             Set<String> deviceIds = stringRedisTemplate.opsForSet().members(userDevicesKey);
 
             if (deviceIds != null) {
@@ -284,15 +265,15 @@ public class RefreshTokenService {
      */
     private boolean deleteSpecificDeviceToken(String username, String refreshToken, String deviceId) {
         // 构建设备token的Redis键
-        String redisKey = String.format(DEVICE_TOKEN_PREFIX, username, deviceId);
+        String redisKey = UserKey.buildDeviceRefreshTokenKey(username, deviceId);
         // 获取存储的token进行验证
         String storedToken = stringRedisTemplate.opsForValue().get(redisKey);
 
         // 验证token是否匹配
         if (refreshToken.equals(storedToken)) {
             // 构建相关的Redis键
-            String userDevicesKey = String.format(USER_DEVICES_KEY, username); // 用户设备集合键
-            String metadataKey = String.format(TOKEN_METADATA_KEY, username, deviceId); // 元数据键
+            String userDevicesKey = UserKey.buildUserDevicesKey(username); // 用户设备集合键
+            String metadataKey = UserKey.buildDeviceMetadataKey(username, deviceId); // 元数据键
 
             // 使用 Lua 脚本确保原子性删除操作
             // 删除token、从设备集合中移除设备ID、删除元数据
@@ -330,14 +311,14 @@ public class RefreshTokenService {
      * @param username 用户名
      */
     public void deleteAllRefreshTokens(String username) {
-        String userDevicesKey = String.format(USER_DEVICES_KEY, username);
+        String userDevicesKey = UserKey.buildUserDevicesKey(username);
         Set<String> deviceIds = stringRedisTemplate.opsForSet().members(userDevicesKey);
 
         if (deviceIds != null && !deviceIds.isEmpty()) {
             // 批量删除所有设备的token和元数据
             for (String deviceId : deviceIds) {
-                String redisKey = String.format(DEVICE_TOKEN_PREFIX, username, deviceId);
-                String metadataKey = String.format(TOKEN_METADATA_KEY, username, deviceId);
+                String redisKey = UserKey.buildDeviceRefreshTokenKey(username, deviceId);
+                String metadataKey = UserKey.buildDeviceMetadataKey(username, deviceId);
                 stringRedisTemplate.delete(redisKey);
                 stringRedisTemplate.delete(metadataKey);
             }
@@ -364,9 +345,9 @@ public class RefreshTokenService {
      * @param deviceId 设备ID
      */
     public void deleteDeviceToken(String username, String deviceId) {
-        String redisKey = String.format(DEVICE_TOKEN_PREFIX, username, deviceId);
-        String userDevicesKey = String.format(USER_DEVICES_KEY, username);
-        String metadataKey = String.format(TOKEN_METADATA_KEY, username, deviceId);
+        String redisKey = UserKey.buildDeviceRefreshTokenKey(username, deviceId);
+        String userDevicesKey = UserKey.buildUserDevicesKey(username);
+        String metadataKey = UserKey.buildDeviceMetadataKey(username, deviceId);
 
         // 使用 Lua 脚本确保原子性删除
         String luaScript = """
@@ -397,7 +378,7 @@ public class RefreshTokenService {
      * @return 设备ID集合，如果用户没有登录设备则返回空集合
      */
     public Set<String> getUserDevices(String username) {
-        String userDevicesKey = String.format(USER_DEVICES_KEY, username);
+        String userDevicesKey = UserKey.buildUserDevicesKey(username);
         return stringRedisTemplate.opsForSet().members(userDevicesKey);
     }
 
@@ -413,7 +394,7 @@ public class RefreshTokenService {
      * @return 活跃设备数量，如果用户没有登录设备则返回0
      */
     public Long getActiveDeviceCount(String username) {
-        String userDevicesKey = String.format(USER_DEVICES_KEY, username);
+        String userDevicesKey = UserKey.buildUserDevicesKey(username);
         return stringRedisTemplate.opsForSet().size(userDevicesKey);
     }
 
@@ -430,18 +411,18 @@ public class RefreshTokenService {
      * @param username 用户名
      */
     public void cleanExpiredTokens(String username) {
-        String userDevicesKey = String.format(USER_DEVICES_KEY, username);
+        String userDevicesKey = UserKey.buildUserDevicesKey(username);
         Set<String> deviceIds = stringRedisTemplate.opsForSet().members(userDevicesKey);
 
         if (deviceIds != null && !deviceIds.isEmpty()) {
             int cleanedCount = 0;
             for (String deviceId : deviceIds) {
-                String redisKey = String.format(DEVICE_TOKEN_PREFIX, username, deviceId);
+                String redisKey = UserKey.buildDeviceRefreshTokenKey(username, deviceId);
                 // 检查token是否还存在
                 if (!stringRedisTemplate.hasKey(redisKey)) {
                     // token已过期，清理相关引用
                     stringRedisTemplate.opsForSet().remove(userDevicesKey, deviceId);
-                    String metadataKey = String.format(TOKEN_METADATA_KEY, username, deviceId);
+                    String metadataKey = UserKey.buildDeviceMetadataKey(username, deviceId);
                     stringRedisTemplate.delete(metadataKey);
                     cleanedCount++;
                 }
@@ -471,7 +452,7 @@ public class RefreshTokenService {
      * @return 元数据JSON字符串，如果不存在则返回null
      */
     public String getTokenMetadata(String username, String deviceId) {
-        String metadataKey = String.format(TOKEN_METADATA_KEY, username, deviceId);
+        String metadataKey = UserKey.buildDeviceMetadataKey(username, deviceId);
         return stringRedisTemplate.opsForValue().get(metadataKey);
     }
 
@@ -490,7 +471,7 @@ public class RefreshTokenService {
             log.warn("用户 {} 设备数量超限，当前: {}, 最大: {}", username, deviceCount, maxDevicesPerUser);
 
             // 构建用户设备集合的Redis键
-            String userDevicesKey = String.format(USER_DEVICES_KEY, username);
+            String userDevicesKey = UserKey.buildUserDevicesKey(username);
 
             // 删除最旧的设备（这里使用集合的任意元素，实际场景可以根据时间戳排序）
             Set<String> deviceIds = stringRedisTemplate.opsForSet().members(userDevicesKey);
@@ -534,7 +515,7 @@ public class RefreshTokenService {
      */
     private void updateTokenLastUsed(String username, String deviceId) {
         // 构建元数据的Redis键
-        String metadataKey = String.format(TOKEN_METADATA_KEY, username, deviceId);
+        String metadataKey = UserKey.buildDeviceMetadataKey(username, deviceId);
         // 获取当前元数据
         String metadata = stringRedisTemplate.opsForValue().get(metadataKey);
 
@@ -548,8 +529,8 @@ public class RefreshTokenService {
                     "\"lastUsedAt\": \"" + newTimestamp + "\""); // 替换为新的时间戳
 
             // 更新Redis中的元数据，保持原有的TTL
-            stringRedisTemplate.opsForValue().set(metadataKey, updatedMetadata, refreshTokenExpirationMs,
-                    TimeUnit.MILLISECONDS);
+            stringRedisTemplate.opsForValue().set(metadataKey, updatedMetadata,
+                    UserKey.DEVICE_TOKEN_METADATA.getExpireSeconds(), TimeUnit.SECONDS);
         }
     }
 }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.kisesaki.blog.auth.dto.request.VerifyEmailRequestDto;
 import com.kisesaki.blog.auth.event.UserRegistrationEvent;
 import com.kisesaki.blog.redis.RedisService;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +57,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService customUserDetailsService;
     private final ApplicationEventPublisher eventPublisher;
+    private final RedisService RedisService;
+    private final RedisService redisService;
 
     @Value("${kisesaki.blog.jwt.expiration}")
     private Long jwtExpiration;
@@ -181,6 +184,52 @@ public class AuthService {
         } catch (Exception e) {
             log.error("用户注册失败，用户名：{}，错误：{}", username, e.getMessage(), e);
             throw BusinessException.of(ErrorCode.SYSTEM_ERROR, "注册失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 验证用户邮箱
+     *
+     * @param verifyEmailRequestDto 验证请求
+     * @return 验证结果
+     */
+    public ApiResponse<String> verifyEmail(VerifyEmailRequestDto verifyEmailRequestDto) {
+        String emailToken = verifyEmailRequestDto.getEmailToken();
+        String redisKey = UserKey.buildEmailVerificationKey(emailToken);
+
+        Map<Object, Object> verificationData = redisService.hGetAll(redisKey);
+        if (verificationData == null || verificationData.isEmpty()) {
+            log.warn("邮箱验证失败，令牌无效或已过期，令牌: {}", emailToken);
+            return ApiResponse.error("邮箱验证令牌无效或已过期");
+        }
+
+        // 获取用户ID和邮箱
+        Long userId = (Long) verificationData.get("userId");
+
+        // 验证用户存在性
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            log.error("邮箱验证失败，用户不存在，用户ID: {}", userId);
+            return ApiResponse.error("用户不存在");
+        }
+
+        // 检查邮箱是否已验证
+        if (user.getEmailVerified() != null && user.getEmailVerified()) {
+            log.info("用户 {} 的邮箱已验证，无需重复验证", user.getUsername());
+            return ApiResponse.success("邮箱已验证", "");
+        }
+
+        // 更新用户的邮箱验证状态
+        user.setEmailVerified(true);
+        try {
+            userMapper.updateById(user);
+            // 删除整个key
+            redisService.delete(redisKey);
+            log.info("用户 {} 的邮箱验证成功", user.getUsername());
+            return ApiResponse.success("邮箱验证成功", "");
+        } catch (Exception e) {
+            log.error("更新用户 {} 的邮箱验证状态失败", user.getUsername(), e);
+            return ApiResponse.error("邮箱验证失败，请稍后重试");
         }
     }
 

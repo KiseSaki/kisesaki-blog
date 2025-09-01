@@ -119,6 +119,10 @@ kisesaki:
     jwt:
       secret: ${JWT_SECRET:kisesaki-blog-jwt-secret-key-for-development-only}
 
+    # 前端应用配置（开发环境）
+    frontend:
+      base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
+
     # 设备指纹安全配置（开发环境）
     security:
       device:

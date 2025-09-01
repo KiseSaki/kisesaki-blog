@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新用户注册通知 - KiseSaki博客</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #6366f1;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 24px;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .user-info {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+        .user-details {
+            background: #f0fdf4;
+            border: 1px solid #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .admin-actions {
+            background: #fef3cd;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">KiseSaki博客</div>
+            <h1 class="title">新用户注册通知</h1>
+        </div>
+        
+        <div class="content">
+            <p>管理员您好，</p>
+            
+            <p>KiseSaki博客有新用户注册！请及时审核用户信息。</p>
+            
+            <div class="user-info">
+                <h3 style="margin-top: 0;">👤 新注册用户</h3>
+                <p style="font-size: 18px; margin: 10px 0;"><strong>${userName}</strong></p>
+                <p style="margin-bottom: 0;">注册时间：${registrationTime}</p>
+            </div>
+            
+            <div class="user-details">
+                <h4>用户信息：</h4>
+                <p><strong>用户名：</strong>${userName}</p>
+                <p><strong>邮箱：</strong>${userEmail}</p>
+                <p><strong>注册IP：</strong>${registrationIp}</p>
+                <p><strong>用户ID：</strong>${userId}</p>
+                
+                <p style="text-align: center; margin-top: 20px;">
+                    <a href="${userProfileUrl}" class="button">查看用户详情</a>
+                </p>
+            </div>
+            
+            <div class="admin-actions">
+                <h4>管理员操作建议：</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>审核用户资料是否完整</li>
+                    <li>检查邮箱验证状态</li>
+                    <li>监控用户初始行为</li>
+                    <li>如有异常及时处理</li>
+                </ul>
+            </div>
+            
+            <p>新用户的加入有助于丰富社区内容，请保持对社区发展的关注。</p>
+        </div>
+        
+        <div class="footer">
+            <p>此为系统管理员通知邮件。</p>
+            <p>
+                <a href="${adminUrl}" style="color: #6366f1;">进入管理后台</a> |
+                <a href="${blogUrl}" style="color: #6366f1;">访问博客</a>
+            </p>
+            <p style="margin-top: 20px; font-size: 12px;">
+                此邮件由系统自动发送，请勿回复。<br>
+                © 2024 KiseSaki博客. 保留所有权利。
+            </p>
+        </div>
+    </div>
+</body>
+</html>

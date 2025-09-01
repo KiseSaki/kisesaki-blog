@@ -68,7 +68,7 @@ public class EmailEventFactory {
 
         return new EmailEvent(source, EmailType.PASSWORD_RESET, toEmail, userId, userDisplayName,
                 variables, "密码重置请求 - KiseSaki博客",
-                "PASSWORD_RESET", userId.toString(), 1); // 密码重置，优先级最高
+                "PASSWORD_RESET", userId.toString(), 3); // 密码重置，优先级普通
     }
 
     /**
@@ -187,7 +187,7 @@ public class EmailEventFactory {
 
         return new EmailEvent(source, EmailType.WELCOME, toEmail, userId, userDisplayName,
                 variables, "欢迎加入KiseSaki博客！",
-                "USER_WELCOME", userId.toString(), 3); // 欢迎邮件，普通优先级
+                "USER_WELCOME", userId.toString(), 3); // 欢迎邮件，优先级普通
     }
 
     /**
@@ -211,7 +211,7 @@ public class EmailEventFactory {
 
         return new EmailEvent(source, EmailType.PASSWORD_CHANGED, toEmail, userId, userDisplayName,
                 variables, "密码修改通知 - KiseSaki博客",
-                "PASSWORD_CHANGED", userId.toString(), 1); // 密码修改，优先级最高
+                "PASSWORD_CHANGED", userId.toString(), 3); // 密码修改，优先级普通
     }
 
     /**
@@ -360,7 +360,7 @@ public class EmailEventFactory {
 
         return new EmailEvent(source, EmailType.CONTENT_MODERATION, moderatorEmail, moderatorId, moderatorName,
                 variables, "内容审核通知 - " + contentTitle,
-                "CONTENT_MODERATION", contentId.toString(), 2); // 内容审核，优先级较高
+                "CONTENT_MODERATION", contentId.toString(), 3); // 内容审核，优先级普通
     }
 
     /**

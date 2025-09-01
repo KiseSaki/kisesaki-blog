@@ -1,4 +1,4 @@
-package com.kisesaki.blog.notification.factory;
+package com.kisesaki.blog.notification.event;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import com.kisesaki.blog.config.ApplicationProperties;
 import com.kisesaki.blog.notification.enums.EmailType;
-import com.kisesaki.blog.notification.event.EmailEvent;
 
 import lombok.RequiredArgsConstructor;
 

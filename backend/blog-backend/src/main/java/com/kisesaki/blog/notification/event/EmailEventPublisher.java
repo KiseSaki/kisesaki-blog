@@ -159,7 +159,7 @@ public class EmailEventPublisher {
                 "supportEmail", "support@kisesaki.com");
 
         publishCustomEmailEvent(EmailType.WELCOME, toEmail, userId, userName, variables,
-                "欢迎加入KiseSaki博客！", "USER_WELCOME", userId.toString(), 2);
+                "欢迎加入KiseSaki博客！", "USER_WELCOME", userId.toString(), 3);
     }
 
     /**

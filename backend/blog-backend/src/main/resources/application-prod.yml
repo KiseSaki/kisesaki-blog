@@ -140,6 +140,10 @@ kisesaki:
     jwt:
       secret: ${JWT_SECRET}
 
+    # 前端应用配置（生产环境）
+    frontend:
+      base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
+
     # 设备指纹安全配置（生产环境 - 增强安全性）
     security:
       device:

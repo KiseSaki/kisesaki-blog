@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关注通知 - KiseSaki博客</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #6366f1;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 24px;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .follow-info {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            background: #f59e0b;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+        .follower-profile {
+            background: #fef3cd;
+            border: 1px solid #f59e0b;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">KiseSaki博客</div>
+            <h1 class="title">您有新的关注者！</h1>
+        </div>
+        
+        <div class="content">
+            <p>亲爱的 <strong>${userName}</strong>，</p>
+            
+            <p>恭喜！有人开始关注您了。这是一个与更多读者建立联系的好机会。</p>
+            
+            <div class="follow-info">
+                <h3 style="margin-top: 0;">👥 新关注者</h3>
+                <p style="font-size: 18px; margin: 10px 0;"><strong>${followerName}</strong></p>
+                <p style="margin-bottom: 0;">关注时间：${followTime}</p>
+            </div>
+            
+            <div class="follower-profile">
+                <h4>关注者信息：</h4>
+                <p><strong>用户名：</strong>${followerName}</p>
+                <p><strong>简介：</strong>${followerBio}</p>
+                
+                <p style="text-align: center; margin-top: 20px;">
+                    <a href="${followerUrl}" class="button">查看关注者主页</a>
+                </p>
+            </div>
+            
+            <p>现在这位用户将会收到您发布新文章的通知。您也可以：</p>
+            <ul>
+                <li>查看他们的文章和评论</li>
+                <li>关注他们以建立互相关注</li>
+                <li>在评论区与他们互动</li>
+            </ul>
+            
+            <p>保持积极的互动可以帮助您建立更好的社区关系！</p>
+        </div>
+        
+        <div class="footer">
+            <p>感谢您成为KiseSaki博客的一员！</p>
+            <p>
+                <a href="${blogUrl}" style="color: #6366f1;">访问博客</a> |
+                <a href="${blogUrl}/profile" style="color: #6366f1;">我的主页</a>
+            </p>
+            <p style="margin-top: 20px; font-size: 12px;">
+                此邮件由系统自动发送，请勿回复。<br>
+                © 2024 KiseSaki博客. 保留所有权利。
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -64,19 +64,21 @@ spring:
       properties:
         spring.json.trusted.packages: com.kisesaki.blog
 
-  # ===== 邮件配置 =====
+  # ===== 邮件配置（开发环境）=====
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${MAIL_USERNAME:your-email@gmail.com}
-    password: ${MAIL_PASSWORD:your-app-password}
+    host: ${kisesaki.blog.email.smtp.host}
+    port: ${kisesaki.blog.email.smtp.port}
+    username: ${kisesaki.blog.email.smtp.username}
+    password: ${kisesaki.blog.email.smtp.password}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
+            enable: ${kisesaki.blog.email.tls.enabled}
+            required: ${kisesaki.blog.email.tls.required}
+          ssl:
             enable: true
-            required: true
 
   # ===== OAuth2 客户端配置 =====
   security:
@@ -99,7 +101,10 @@ logging:
   level:
     root: WARN
     com.kisesaki.blog: DEBUG
+    com.kisesaki.blog.notification: DEBUG # 邮件通知模块调试日志
     org.springframework.security: DEBUG
+    org.springframework.mail: INFO # Spring Mail日志
+    org.springframework.retry: DEBUG # 重试机制日志
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   file:
@@ -123,3 +128,19 @@ kisesaki:
     # 文件上传开发环境配置
     upload:
       path: ${UPLOAD_PATH:./uploads}
+
+    # 邮件通知模块配置（开发环境）
+    email:
+      # SMTP服务器配置
+      smtp:
+        host: ${MAIL_HOST:smtp.zoho.com}
+        port: ${MAIL_PORT:465}
+        username: ${MAIL_USERNAME:your-email@example.com}
+        password: ${MAIL_PASSWORD:your-app-password}
+        protocol: smtp
+        default-encoding: UTF-8
+
+      # TLS/SSL配置
+      tls:
+        enabled: ${MAIL_TLS_ENABLED:true}
+        required: ${MAIL_TLS_REQUIRED:true}

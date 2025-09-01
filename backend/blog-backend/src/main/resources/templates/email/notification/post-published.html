@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章发布通知 - KiseSaki博客</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #6366f1;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 24px;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .post-info {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            background: #6366f1;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 10px 0;
+        }
+        .post-details {
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">KiseSaki博客</div>
+            <h1 class="title">文章发布成功！</h1>
+        </div>
+        
+        <div class="content">
+            <p>亲爱的 <strong>${userName}</strong>，</p>
+            
+            <p>恭喜！您的文章已成功发布到KiseSaki博客平台。</p>
+            
+            <div class="post-info">
+                <h3 style="margin-top: 0;">📝 文章信息</h3>
+                <p style="font-size: 18px; margin: 10px 0;"><strong>${postTitle}</strong></p>
+                <p style="margin-bottom: 0;">发布时间：${publishTime}</p>
+            </div>
+            
+            <div class="post-details">
+                <h4>文章摘要：</h4>
+                <p>${postSummary}</p>
+                
+                <p style="text-align: center; margin-top: 20px;">
+                    <a href="${postUrl}" class="button">查看完整文章</a>
+                </p>
+            </div>
+            
+            <p>现在您的文章已经公开可见，其他用户可以阅读、点赞和评论您的内容。</p>
+            
+            <p>如果您需要编辑文章或查看统计数据，请登录您的账户管理面板。</p>
+        </div>
+        
+        <div class="footer">
+            <p>感谢您与我们分享您的见解！</p>
+            <p>
+                <a href="${blogUrl}" style="color: #6366f1;">访问博客</a> |
+                <a href="${blogUrl}/dashboard" style="color: #6366f1;">管理面板</a>
+            </p>
+            <p style="margin-top: 20px; font-size: 12px;">
+                此邮件由系统自动发送，请勿回复。<br>
+                © 2024 KiseSaki博客. 保留所有权利。
+            </p>
+        </div>
+    </div>
+</body>
+</html>

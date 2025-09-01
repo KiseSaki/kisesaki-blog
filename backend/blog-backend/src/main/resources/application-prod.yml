@@ -66,19 +66,19 @@ spring:
       properties:
         spring.json.trusted.packages: com.kisesaki.blog
 
-  # ===== 邮件配置 =====
+  # ===== 邮件配置（生产环境）=====
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    host: ${kisesaki.blog.email.smtp.host}
+    port: ${kisesaki.blog.email.smtp.port}
+    username: ${kisesaki.blog.email.smtp.username}
+    password: ${kisesaki.blog.email.smtp.password}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
-            enable: true
-            required: true
+            enable: ${kisesaki.blog.email.tls.enabled}
+            required: ${kisesaki.blog.email.tls.required}
 
   # ===== OAuth2 客户端配置 =====
   security:
@@ -121,7 +121,9 @@ logging:
   level:
     root: WARN
     com.kisesaki.blog: INFO
+    com.kisesaki.blog.notification: INFO # 邮件通知模块日志
     org.springframework.security: WARN
+    org.springframework.mail: WARN # Spring Mail日志
   file:
     name: /var/log/kisesaki-blog/app.log
   logback:
@@ -147,3 +149,19 @@ kisesaki:
     # 文件上传生产环境配置
     upload:
       path: ${UPLOAD_PATH:/data/uploads}
+
+    # 邮件通知模块配置（生产环境）
+    email:
+      # SMTP服务器配置
+      smtp:
+        host: ${MAIL_HOST:smtp.gmail.com}
+        port: ${MAIL_PORT:587}
+        username: ${MAIL_USERNAME}
+        password: ${MAIL_PASSWORD}
+        protocol: smtp
+        default-encoding: UTF-8
+
+      # TLS/SSL配置
+      tls:
+        enabled: ${MAIL_TLS_ENABLED:true}
+        required: ${MAIL_TLS_REQUIRED:true}

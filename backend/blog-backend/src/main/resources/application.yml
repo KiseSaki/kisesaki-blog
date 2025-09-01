@@ -54,9 +54,27 @@ spring:
             user-info-uri: https://gitee.com/api/v5/user
             user-name-attribute: login
 
+  # ===== 邮件通用配置 =====
+  mail:
+    protocol: ${kisesaki.blog.email.smtp.protocol:smtp}
+    default-encoding: ${kisesaki.blog.email.smtp.default-encoding:UTF-8}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+  # ===== 定时任务配置 =====
+  task:
+    scheduling:
+      pool:
+        size: 2
+
 # ===== 服务器配置 =====
 server:
-  port: 8080
+  port: 51073
   servlet:
     context-path: /api
     encoding:
@@ -114,3 +132,38 @@ kisesaki:
       default-ttl: 3600 # 1小时 (秒)
       post-ttl: 1800 # 30分钟 (秒)
       category-ttl: 7200 # 2小时 (秒)
+
+    # 邮件通知模块配置
+    email:
+      # SMTP服务器配置（通用）
+      smtp:
+        protocol: smtp
+        default-encoding: UTF-8
+
+      # TLS/SSL配置（通用）
+      tls:
+        enabled: true
+        required: true
+
+      # 邮件模板配置
+      templates:
+        enabled: true
+        cache-enabled: true
+        cache-size: 100
+        cache-expire-minutes: 30
+
+      # 异步发送配置
+      async:
+        enabled: true
+        core-pool-size: 2
+        max-pool-size: 5
+        queue-capacity: 100
+        thread-name-prefix: email-task-
+
+      # 重试配置
+      retry:
+        enabled: true
+        max-attempts: 3
+        initial-delay: 2000
+        multiplier: 2.0
+        max-delay: 10000

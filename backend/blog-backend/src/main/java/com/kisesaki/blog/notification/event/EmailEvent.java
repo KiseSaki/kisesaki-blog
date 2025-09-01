@@ -109,7 +109,7 @@ public class EmailEvent extends ApplicationEvent {
 
                 return new EmailEvent(source, EmailType.EMAIL_VERIFICATION, toEmail, userId, userDisplayName,
                                 variables, "欢迎注册KiseSaki博客 - 请确认您的邮箱",
-                                "USER_REGISTRATION", userId.toString(), 2); // 注册邮件，优先级较高
+                                "USER_REGISTRATION", userId.toString(), 3); // 注册邮件
         }
 
         /**

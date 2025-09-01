@@ -95,4 +95,81 @@ public final class UserKey extends BasePrefix {
     public static String buildDeviceMetadataKey(String username, String deviceId) {
         return DEVICE_TOKEN_METADATA.buildKey(username, deviceId);
     }
+
+    /**
+     * 构建按用户ID缓存的Redis键
+     * 格式：UserKey:byId:userId
+     * 
+     * @param userId 用户ID
+     * @return Redis键字符串
+     */
+    public static String buildByIdKey(String userId) {
+        return BY_ID.buildKey(userId);
+    }
+
+    /**
+     * 构建用户会话的Redis键
+     * 格式：UserKey:session:sessionId
+     * 
+     * @param sessionId 会话ID
+     * @return Redis键字符串
+     */
+    public static String buildSessionKey(String sessionId) {
+        return SESSION.buildKey(sessionId);
+    }
+
+    /**
+     * 构建登录失败尝试计数的Redis键
+     * 格式：UserKey:loginAttempt:username
+     * 
+     * @param username 用户名
+     * @return Redis键字符串
+     */
+    public static String buildLoginAttemptKey(String username) {
+        return LOGIN_ATTEMPT.buildKey(username);
+    }
+
+    /**
+     * 构建验证码的Redis键
+     * 格式：UserKey:verifyCode:identifier
+     * 
+     * @param identifier 标识符（如邮箱或手机号）
+     * @return Redis键字符串
+     */
+    public static String buildVerificationCodeKey(String identifier) {
+        return VERIFICATION_CODE.buildKey(identifier);
+    }
+
+    /**
+     * 构建邮箱验证令牌的Redis键
+     * 格式：UserKey:emailVerification:token
+     * 
+     * @param token 验证令牌
+     * @return Redis键字符串
+     */
+    public static String buildEmailVerificationKey(String token) {
+        return EMAIL_VERIFICATION.buildKey(token);
+    }
+
+    /**
+     * 构建用户已登录设备集合的Redis键
+     * 格式：UserKey:devices:username
+     * 
+     * @param username 用户名
+     * @return Redis键字符串
+     */
+    public static String buildDevicesKey(String username) {
+        return DEVICES.buildKey(username);
+    }
+
+    /**
+     * 构建密码重置令牌的Redis键
+     * 格式：UserKey:passwordReset:token
+     * 
+     * @param token 重置令牌
+     * @return Redis键字符串
+     */
+    public static String buildPasswordResetKey(String token) {
+        return PASSWORD_RESET.buildKey(token);
+    }
 }

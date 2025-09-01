@@ -1,6 +1,14 @@
 package com.kisesaki.blog.auth;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import com.kisesaki.blog.auth.dto.request.VerifyEmailRequestDto;
+import com.kisesaki.blog.auth.event.UserRegistrationEvent;
+import com.kisesaki.blog.redis.RedisService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,6 +31,7 @@ import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.notification.event.EmailEventPublisher;
+import com.kisesaki.blog.user.Keys.UserKey;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.mapper.UserMapper;
 
@@ -47,14 +56,16 @@ public class AuthService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService customUserDetailsService;
-    private final EmailEventPublisher emailEventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
+    private final RedisService RedisService;
+    private final RedisService redisService;
 
     @Value("${kisesaki.blog.jwt.expiration}")
     private Long jwtExpiration;
 
     /**
      * 格式化设备ID用于日志显示（安全地显示设备ID的前8位）
-     * 
+     *
      * @param deviceId 设备ID
      * @return 格式化后的设备ID字符串
      */
@@ -67,7 +78,7 @@ public class AuthService {
 
     /**
      * 验证设备指纹的合法性
-     * 
+     *
      * @param request  HTTP请求对象
      * @param username 用户名
      * @param deviceId 设备ID
@@ -126,7 +137,7 @@ public class AuthService {
 
     /**
      * 用户注册
-     * 
+     *
      * @param registerRequestDto 注册信息
      * @return 注册结果
      */
@@ -161,20 +172,64 @@ public class AuthService {
             log.info("用户注册成功，用户名：{}, ID: {}", user.getUsername(), user.getId());
 
             // 发送欢迎邮件
-            try {
-                emailEventPublisher.publishWelcomeEmailEvent(user.getEmail(), user.getId(), user.getUsername());
-                log.info("已发送欢迎邮件给用户：{}", user.getEmail());
-            } catch (Exception emailException) {
-                // 邮件发送失败不应该影响注册结果，只记录错误日志
-                log.error("发送欢迎邮件失败，用户：{}，邮箱：{}，错误：{}",
-                        user.getUsername(), user.getEmail(), emailException.getMessage(), emailException);
-            }
-
+            UserRegistrationEvent event = new UserRegistrationEvent(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    java.time.LocalDateTime.now()
+            );
+            eventPublisher.publishEvent(event);
             log.info("用户 {} 注册完成，ID: {}", user.getUsername(), user.getId());
             return ApiResponse.success("注册成功", user.getId().toString());
         } catch (Exception e) {
             log.error("用户注册失败，用户名：{}，错误：{}", username, e.getMessage(), e);
             throw BusinessException.of(ErrorCode.SYSTEM_ERROR, "注册失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 验证用户邮箱
+     *
+     * @param verifyEmailRequestDto 验证请求
+     * @return 验证结果
+     */
+    public ApiResponse<String> verifyEmail(VerifyEmailRequestDto verifyEmailRequestDto) {
+        String emailToken = verifyEmailRequestDto.getEmailToken();
+        String redisKey = UserKey.buildEmailVerificationKey(emailToken);
+
+        Map<Object, Object> verificationData = redisService.hGetAll(redisKey);
+        if (verificationData == null || verificationData.isEmpty()) {
+            log.warn("邮箱验证失败，令牌无效或已过期，令牌: {}", emailToken);
+            return ApiResponse.error("邮箱验证令牌无效或已过期");
+        }
+
+        // 获取用户ID和邮箱
+        Long userId = (Long) verificationData.get("userId");
+
+        // 验证用户存在性
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            log.error("邮箱验证失败，用户不存在，用户ID: {}", userId);
+            return ApiResponse.error("用户不存在");
+        }
+
+        // 检查邮箱是否已验证
+        if (user.getEmailVerified() != null && user.getEmailVerified()) {
+            log.info("用户 {} 的邮箱已验证，无需重复验证", user.getUsername());
+            return ApiResponse.success("邮箱已验证", "");
+        }
+
+        // 更新用户的邮箱验证状态
+        user.setEmailVerified(true);
+        try {
+            userMapper.updateById(user);
+            // 删除整个key
+            redisService.delete(redisKey);
+            log.info("用户 {} 的邮箱验证成功", user.getUsername());
+            return ApiResponse.success("邮箱验证成功", "");
+        } catch (Exception e) {
+            log.error("更新用户 {} 的邮箱验证状态失败", user.getUsername(), e);
+            return ApiResponse.error("邮箱验证失败，请稍后重试");
         }
     }
 
@@ -185,7 +240,7 @@ public class AuthService {
      * @return 新的访问令牌
      */
     public ApiResponse<LoginResponseDto> refreshToken(RefreshTokenRequestDto refreshTokenRequestDto,
-            HttpServletRequest request) {
+                                                      HttpServletRequest request) {
         String refreshToken = refreshTokenRequestDto.getRefreshToken();
         String deviceId = refreshTokenRequestDto.getDeviceId();
 
@@ -225,7 +280,7 @@ public class AuthService {
 
     /**
      * 用户登出
-     * 
+     *
      * @param username     用户名
      * @param refreshToken 要删除的刷新令牌
      * @param deviceId     设备ID（可选）
@@ -233,7 +288,7 @@ public class AuthService {
      * @return 登出结果
      */
     public ApiResponse<String> logout(String username, String refreshToken, String deviceId,
-            HttpServletRequest request) {
+                                      HttpServletRequest request) {
         // 如果提供了设备ID，需要验证设备指纹
         if (deviceId != null && !validateDeviceFingerprint(request, username, deviceId)) {
             log.warn("用户 {} 登出时设备指纹验证失败，设备: {}", username, formatDeviceIdForLog(deviceId));
@@ -252,7 +307,7 @@ public class AuthService {
 
     /**
      * 登出所有设备
-     * 
+     *
      * @param username 用户名
      * @return 登出结果
      */
@@ -269,7 +324,7 @@ public class AuthService {
 
     /**
      * 踢出指定设备
-     * 
+     *
      * @param username 用户名
      * @param deviceId 要踢出的设备ID
      * @param request  HTTP请求对象，用于设备指纹验证（当前设备）
@@ -298,7 +353,7 @@ public class AuthService {
 
     /**
      * 获取用户所有登录设备
-     * 
+     *
      * @param username 用户名
      * @return 设备ID集合
      */
@@ -314,7 +369,7 @@ public class AuthService {
 
     /**
      * 清理用户过期的令牌
-     * 
+     *
      * @param username 用户名
      * @param request  HTTP请求对象，用于设备指纹验证
      * @return 清理结果

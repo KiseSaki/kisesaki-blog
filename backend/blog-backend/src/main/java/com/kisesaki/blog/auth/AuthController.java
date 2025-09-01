@@ -2,6 +2,7 @@ package com.kisesaki.blog.auth;
 
 import java.util.Set;
 
+import com.kisesaki.blog.auth.dto.request.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,10 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kisesaki.blog.auth.dto.request.LoginRequestDto;
-import com.kisesaki.blog.auth.dto.request.LogoutRequestDto;
-import com.kisesaki.blog.auth.dto.request.RefreshTokenRequestDto;
-import com.kisesaki.blog.auth.dto.request.RegisterRequestDto;
 import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
 import com.kisesaki.blog.common.dto.ApiResponse;
 
@@ -51,6 +48,13 @@ public class AuthController {
     @Operation(summary = "用户注册", description = "新用户注册账号")
     public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequestDto registerRequest) {
         ApiResponse<String> response = authService.register(registerRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/verify-email")
+    @Operation(summary = "验证邮箱", description = "使用邮箱验证令牌验证用户的邮箱")
+    public ResponseEntity<ApiResponse<String>> verifyEmail(@Valid @RequestBody VerifyEmailRequestDto verifyEmailRequest) {
+        ApiResponse<String> response = authService.verifyEmail(verifyEmailRequest);
         return ResponseEntity.ok(response);
     }
 

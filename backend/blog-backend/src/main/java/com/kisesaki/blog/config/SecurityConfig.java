@@ -125,6 +125,7 @@ public class SecurityConfig {
                                 // 认证相关公开接口
                                 "/auth/login",
                                 "/auth/register",
+                                "/auth/verify-email",
                                 "/auth/refresh-token",
                                 "/auth/forgot-password",
                                 "/auth/reset-password",

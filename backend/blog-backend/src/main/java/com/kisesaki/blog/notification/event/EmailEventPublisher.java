@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import com.kisesaki.blog.notification.enums.EmailType;
+import com.kisesaki.blog.notification.factory.EmailEventFactory;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,11 @@ public class EmailEventPublisher {
     private final ApplicationEventPublisher eventPublisher;
 
     /**
+     * 邮件事件工厂，负责创建各种类型的邮件事件
+     */
+    private final EmailEventFactory emailEventFactory;
+
+    /**
      * 核心的私有方法，用于发布一个已构建好的邮件事件。
      *
      * @param event 待发布的邮件事件对象
@@ -57,7 +63,7 @@ public class EmailEventPublisher {
      * @param confirmToken 确认令牌
      */
     public void publishUserRegistrationEvent(String toEmail, Long userId, String userName, String confirmToken) {
-        EmailEvent event = EmailEvent.createUserRegistrationEvent(this, toEmail, userId, userName, confirmToken);
+        EmailEvent event = emailEventFactory.createUserRegistrationEvent(this, toEmail, userId, userName, confirmToken);
         publishEmailEvent(event);
     }
 
@@ -70,7 +76,7 @@ public class EmailEventPublisher {
      * @param resetToken 重置令牌
      */
     public void publishPasswordResetEvent(String toEmail, Long userId, String userName, String resetToken) {
-        EmailEvent event = EmailEvent.createPasswordResetEvent(this, toEmail, userId, userName, resetToken);
+        EmailEvent event = emailEventFactory.createPasswordResetEvent(this, toEmail, userId, userName, resetToken);
         publishEmailEvent(event);
     }
 
@@ -86,7 +92,7 @@ public class EmailEventPublisher {
      */
     public void publishCommentNotificationEvent(String toEmail, Long userId, String userName,
             String postTitle, String commenterName, String commentContent) {
-        EmailEvent event = EmailEvent.createCommentNotificationEvent(this, toEmail, userId, userName,
+        EmailEvent event = emailEventFactory.createCommentNotificationEvent(this, toEmail, userId, userName,
                 postTitle, commenterName, commentContent);
         publishEmailEvent(event);
     }
@@ -102,7 +108,7 @@ public class EmailEventPublisher {
      */
     public void publishSystemNotificationEvent(String toEmail, Long userId, String userName,
             String notificationTitle, String notificationContent) {
-        EmailEvent event = EmailEvent.createSystemNotificationEvent(this, toEmail, userId, userName,
+        EmailEvent event = emailEventFactory.createSystemNotificationEvent(this, toEmail, userId, userName,
                 notificationTitle, notificationContent);
         publishEmailEvent(event);
     }
@@ -118,7 +124,7 @@ public class EmailEventPublisher {
      */
     public void publishMarketingEvent(String toEmail, Long userId, String userName,
             String campaignName, Map<String, Object> campaignVariables) {
-        EmailEvent event = EmailEvent.createMarketingEvent(this, toEmail, userId, userName,
+        EmailEvent event = emailEventFactory.createMarketingEvent(this, toEmail, userId, userName,
                 campaignName, campaignVariables);
         publishEmailEvent(event);
     }
@@ -156,7 +162,7 @@ public class EmailEventPublisher {
      * @param userName 用户名
      */
     public void publishWelcomeEmailEvent(String toEmail, Long userId, String userName) {
-        EmailEvent event = EmailEvent.createWelcomeEvent(this, toEmail, userId, userName);
+        EmailEvent event = emailEventFactory.createWelcomeEvent(this, toEmail, userId, userName);
         publishEmailEvent(event);
     }
 
@@ -171,7 +177,7 @@ public class EmailEventPublisher {
      */
     public void publishPasswordChangedEvent(String toEmail, Long userId, String userName,
             String changeTime, String ipAddress) {
-        EmailEvent event = EmailEvent.createPasswordChangedEvent(this, toEmail, userId, userName, changeTime,
+        EmailEvent event = emailEventFactory.createPasswordChangedEvent(this, toEmail, userId, userName, changeTime,
                 ipAddress);
         publishEmailEvent(event);
     }
@@ -191,7 +197,7 @@ public class EmailEventPublisher {
      */
     public void publishPostPublishedEvent(String toEmail, Long userId, String userName,
             String postTitle, String postSummary, String authorName, Long postId) {
-        EmailEvent event = EmailEvent.createPostPublishedEvent(this, toEmail, userId, userName,
+        EmailEvent event = emailEventFactory.createPostPublishedEvent(this, toEmail, userId, userName,
                 postTitle, postSummary, authorName, postId);
         publishEmailEvent(event);
     }
@@ -207,7 +213,7 @@ public class EmailEventPublisher {
      */
     public void publishFollowNotificationEvent(String toEmail, Long userId, String userName,
             String followerName, Long followerId) {
-        EmailEvent event = EmailEvent.createFollowNotificationEvent(this, toEmail, userId, userName,
+        EmailEvent event = emailEventFactory.createFollowNotificationEvent(this, toEmail, userId, userName,
                 followerName, followerId);
         publishEmailEvent(event);
     }
@@ -224,7 +230,7 @@ public class EmailEventPublisher {
      */
     public void publishWeeklyDigestEvent(String toEmail, Long userId, String userName,
             String weekStartDate, String weekEndDate, Map<String, Object> weeklyContent) {
-        EmailEvent event = EmailEvent.createWeeklyDigestEvent(this, toEmail, userId, userName,
+        EmailEvent event = emailEventFactory.createWeeklyDigestEvent(this, toEmail, userId, userName,
                 weekStartDate, weekEndDate, weeklyContent);
         publishEmailEvent(event);
     }
@@ -245,7 +251,7 @@ public class EmailEventPublisher {
     public void publishUserRegisteredEvent(String adminEmail, Long adminId, String adminName,
             String newUserName, String newUserEmail, Long newUserId,
             String registrationTime) {
-        EmailEvent event = EmailEvent.createUserRegisteredEvent(this, adminEmail, adminId, adminName,
+        EmailEvent event = emailEventFactory.createUserRegisteredEvent(this, adminEmail, adminId, adminName,
                 newUserName, newUserEmail, newUserId, registrationTime);
         publishEmailEvent(event);
     }
@@ -265,7 +271,8 @@ public class EmailEventPublisher {
     public void publishContentModerationEvent(String moderatorEmail, Long moderatorId, String moderatorName,
             String contentType, String contentTitle, Long contentId,
             String authorName, String reportReason) {
-        EmailEvent event = EmailEvent.createContentModerationEvent(this, moderatorEmail, moderatorId, moderatorName,
+        EmailEvent event = emailEventFactory.createContentModerationEvent(this, moderatorEmail, moderatorId,
+                moderatorName,
                 contentType, contentTitle, contentId, authorName, reportReason);
         publishEmailEvent(event);
     }
@@ -301,7 +308,7 @@ public class EmailEventPublisher {
     public void publishFeatureAnnouncementEvent(String toEmail, Long userId, String userName,
             String featureName, String featureDescription,
             String releaseVersion, Map<String, Object> featureDetails) {
-        EmailEvent event = EmailEvent.createFeatureAnnouncementEvent(this, toEmail, userId, userName,
+        EmailEvent event = emailEventFactory.createFeatureAnnouncementEvent(this, toEmail, userId, userName,
                 featureName, featureDescription, releaseVersion, featureDetails);
         publishEmailEvent(event);
     }

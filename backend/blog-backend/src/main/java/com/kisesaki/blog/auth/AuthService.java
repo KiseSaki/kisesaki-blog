@@ -1,12 +1,12 @@
 package com.kisesaki.blog.auth;
 
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
-import com.kisesaki.blog.auth.dto.request.VerifyEmailRequestDto;
-import com.kisesaki.blog.auth.event.UserRegistrationEvent;
-import com.kisesaki.blog.redis.RedisService;
+import com.kisesaki.blog.auth.dto.request.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,10 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kisesaki.blog.auth.dto.DeviceInfo;
-import com.kisesaki.blog.auth.dto.request.LoginRequestDto;
-import com.kisesaki.blog.auth.dto.request.RefreshTokenRequestDto;
-import com.kisesaki.blog.auth.dto.request.RegisterRequestDto;
 import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
+import com.kisesaki.blog.auth.event.UserRegistrationEvent;
 import com.kisesaki.blog.auth.security.jwt.DeviceFingerprintService;
 import com.kisesaki.blog.auth.security.jwt.JwtTokenProvider;
 import com.kisesaki.blog.auth.security.jwt.RefreshTokenService;
@@ -31,6 +29,7 @@ import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.notification.event.EmailEventPublisher;
+import com.kisesaki.blog.redis.RedisService;
 import com.kisesaki.blog.user.Keys.UserKey;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.mapper.UserMapper;
@@ -59,6 +58,7 @@ public class AuthService {
     private final ApplicationEventPublisher eventPublisher;
     private final RedisService RedisService;
     private final RedisService redisService;
+    private final EmailEventPublisher emailEventPublisher;
 
     @Value("${kisesaki.blog.jwt.expiration}")
     private Long jwtExpiration;
@@ -176,8 +176,7 @@ public class AuthService {
                     user.getId(),
                     user.getUsername(),
                     user.getEmail(),
-                    java.time.LocalDateTime.now()
-            );
+                    LocalDateTime.now());
             eventPublisher.publishEvent(event);
             log.info("用户 {} 注册完成，ID: {}", user.getUsername(), user.getId());
             return ApiResponse.success("注册成功", user.getId().toString());
@@ -357,13 +356,151 @@ public class AuthService {
      * @param username 用户名
      * @return 设备ID集合
      */
-    public ApiResponse<java.util.Set<String>> getUserDevices(String username) {
+    public ApiResponse<Set<String>> getUserDevices(String username) {
         try {
-            java.util.Set<String> devices = refreshTokenService.getUserDevices(username);
+            Set<String> devices = refreshTokenService.getUserDevices(username);
             return ApiResponse.success("获取设备列表成功", devices);
         } catch (Exception e) {
             log.error("获取用户 {} 设备列表失败", username, e);
             return ApiResponse.error("获取设备列表失败");
+        }
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param changePasswordRequestDto 修改密码请求
+     * @param request                  HTTP请求对象，用于设备指纹验证
+     * @return 修改结果
+     */
+    public ApiResponse<String> changePassword(String username, ChangePasswordRequestDto changePasswordRequestDto, HttpServletRequest request) {
+        String oldPassword = changePasswordRequestDto.getOldPassword();
+        String newPassword = changePasswordRequestDto.getNewPassword();
+
+        if (oldPassword.equals(newPassword)) {
+            return ApiResponse.error("新密码不能与旧密码相同");
+        }
+
+        Optional<User> user = userMapper.findByUsername(username);
+        if (user.isEmpty()) {
+            return ApiResponse.error("用户不存在");
+        }
+
+        if (!user.get().getEmailVerified()) {
+            return ApiResponse.error("请先验证邮箱");
+        }
+
+        if (!passwordEncoder.matches(oldPassword, user.get().getPassword())) {
+            return ApiResponse.error("旧密码不正确");
+        }
+
+        user.get().setPassword(passwordEncoder.encode(newPassword));
+        try {
+            userMapper.updateById(user.get());
+
+            // 修改密码后，删除所有刷新令牌，强制重新登录
+            refreshTokenService.deleteAllRefreshTokens(username);
+            // 发送密码修改通知邮件
+            emailEventPublisher.publishPasswordChangedEvent(
+                    user.get().getEmail(),
+                    user.get().getId(),
+                    user.get().getUsername(),
+                    String.valueOf(LocalDateTime.now()),
+                    request.getRemoteAddr()
+            );
+
+            log.info("用户 {} 修改密码成功", username);
+            return ApiResponse.success("密码修改成功");
+        } catch (Exception e) {
+            log.error("用户 {} 修改密码失败", username, e);
+            return ApiResponse.error("密码修改失败");
+        }
+    }
+
+    /**
+     * 忘记密码，发送重置邮件
+     *
+     * @param forgotPasswordRequestDto 重置密码请求
+     * @return 重置结果
+     */
+    public ApiResponse<String> forgotPassword(ForgotPasswordRequestDto forgotPasswordRequestDto) {
+        String email = forgotPasswordRequestDto.getEmail();
+        Optional<User> userOpt = userMapper.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            log.warn("密码重置请求失败，邮箱未注册：{}", email);
+            return ApiResponse.error("邮箱未注册");
+        }
+
+        User user = userOpt.get();
+        if (!user.getEmailVerified()) {
+            log.warn("密码重置请求失败，用户邮箱未验证：{}", email);
+            return ApiResponse.error("请先验证邮箱");
+        }
+
+        try {
+            // 生成密码重置令牌并发送邮件
+            String resetToken = UUID.randomUUID().toString();
+            String redisKey = UserKey.buildPasswordResetKey(resetToken);
+            RedisService.hSet(redisKey, "userId", user.getId());
+            RedisService.expire(redisKey, 15 * 60); // 15分钟过期
+
+            emailEventPublisher.publishPasswordResetEvent(
+                    user.getEmail(),
+                    user.getId(),
+                    user.getUsername(),
+                    resetToken
+            );
+
+            log.info("密码重置邮件已发送至：{}", email);
+            return ApiResponse.success("密码重置邮件已发送，请检查您的邮箱");
+        } catch (Exception e) {
+            log.error("发送密码重置邮件失败，邮箱：{}", email, e);
+            return ApiResponse.error("发送密码重置邮件失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 验证密码重置令牌并设置新密码
+     *
+     * @param resetPasswordRequestDto 重置密码请求
+     * @return 重置结果
+     */
+    public ApiResponse<String> resetPassword(ResetPasswordRequestDto resetPasswordRequestDto) {
+        String resetToken = resetPasswordRequestDto.getResetToken();
+        String newPassword = resetPasswordRequestDto.getNewPassword();
+        String redisKey = UserKey.buildPasswordResetKey(resetToken);
+
+        Map<Object, Object> resetData = redisService.hGetAll(redisKey);
+        if (resetData == null || resetData.isEmpty()) {
+            log.warn("密码重置失败，令牌无效或已过期，令牌: {}", resetToken);
+            return ApiResponse.error("密码重置令牌无效或已过期");
+        }
+
+        Long userId = (Long) resetData.get("userId");
+        Optional<User> userOpt = userMapper.findById(userId);
+        if (userOpt.isEmpty()) {
+            log.error("密码重置失败，用户不存在，用户ID: {}", userId);
+            return ApiResponse.error("用户不存在");
+        }
+
+        User user = userOpt.get();
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            return ApiResponse.error("新密码不能与旧密码相同");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        try {
+            userMapper.updateById(user);
+            // 删除整个key
+            redisService.delete(redisKey);
+            // 重置密码后，删除所有刷新令牌，强制重新登录
+            refreshTokenService.deleteAllRefreshTokens(user.getUsername());
+
+            log.info("用户 {} 的密码重置成功", user.getUsername());
+            return ApiResponse.success("密码重置成功");
+        } catch (Exception e) {
+            log.error("用户 {} 的密码重置失败", user.getUsername(), e);
+            return ApiResponse.error("密码重置失败，请稍后重试");
         }
     }
 

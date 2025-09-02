@@ -1,5 +1,18 @@
 # 🎯 前端项目开发任务流 (KiseSaki Blog)
 
+## 🎨 **UI 设计策略**
+> **双 UI 库架构设计理念**
+
+- **🌟 前台博客 (Blog Frontend)**: 使用 **shadcn/ui + TailwindCSS**
+  - 注重用户阅读体验和视觉美观
+  - 现代化的组件设计，支持深度定制
+  - 轻量级，加载性能优先
+  
+- **👑 后台管理 (Admin Dashboard)**: 使用 **Ant Design (antd)**
+  - 专业的企业级管理界面
+  - 丰富的表格、表单、图表组件
+  - 成熟的交互模式，提升管理效率
+
 ## 🚀 阶段一：项目基础架构 (Foundation)
 
 ### ✅ **1. 项目初始化与配置**
@@ -7,7 +20,7 @@
 
 * **📦 依赖安装**:
   * [X] 核心依赖: `react`, `react-dom`, `typescript`, `vite`
-  * [X] UI 库: `tailwindcss`, `@tailwindcss/typography`, `shadcn/ui`
+  * [X] UI 库: `tailwindcss`, `@tailwindcss/typography`, `shadcn/ui` (前台), `antd` (后台管理)
   * [X] 状态管理: `zustand`
   * [X] 路由: `react-router-dom`
   * [X] HTTP 客户端: `axios`
@@ -123,6 +136,7 @@
 ---
 
 ## 📝 阶段三：博客核心功能 (Blog Core)
+> **UI 库**: 使用 **shadcn/ui + TailwindCSS** 构建用户友好的前台界面
 
 ### 🚧 **7. 博客 API 服务层**
 
@@ -144,30 +158,30 @@
   * [ ] `getCategories()` - 获取所有分类
   * [ ] `getTags()` - 获取所有标签
 
-### � **8. 博客展示组件**
+### � **8. 博客展示组件 (基于 shadcn/ui)**
 
 * **📰 文章卡片** (`src/components/blog/PostCard.tsx`):
-  * [ ] 文章标题、摘要、封面图显示
-  * [ ] 发布时间、作者、分类、标签
+  * [ ] 文章标题、摘要、封面图显示 (shadcn/ui Card 组件)
+  * [ ] 发布时间、作者、分类、标签 (shadcn/ui Badge 组件)
   * [ ] 阅读量、点赞数、评论数
   * [ ] 响应式卡片设计
 
 * **📋 文章列表** (`src/components/blog/PostList.tsx`):
   * [ ] 文章卡片网格布局
-  * [ ] 分页加载功能
-  * [ ] 加载状态和空状态处理
+  * [ ] 分页加载功能 (shadcn/ui Pagination 组件)
+  * [ ] 加载状态和空状态处理 (shadcn/ui Skeleton)
   * [ ] 列表/网格视图切换
 
 * **🏷️ 标签云** (`src/components/blog/TagCloud.tsx`):
-  * [ ] 标签权重可视化
+  * [ ] 标签权重可视化 (shadcn/ui Badge 组件)
   * [ ] 标签点击筛选功能
   * [ ] 响应式标签布局
 
 * **💬 评论组件** (`src/components/blog/Comment.tsx`):
-  * [ ] 评论列表展示
+  * [ ] 评论列表展示 (shadcn/ui Card 组件)
   * [ ] 嵌套回复支持
-  * [ ] 评论表单和提交
-  * [ ] 评论点赞和举报
+  * [ ] 评论表单和提交 (shadcn/ui Form + Input 组件)
+  * [ ] 评论点赞和举报 (shadcn/ui Button 组件)
 
 ### 🚧 **9. 博客页面组件**
 
@@ -268,6 +282,7 @@
 ---
 
 ## 👑 阶段五：管理员功能 (Admin Features)
+> **UI 库**: 使用 **Ant Design (antd)** 构建专业的管理后台界面
 
 ### 🚧 **14. 管理员 API 服务**
 
@@ -281,41 +296,48 @@
   * [ ] `manageCategories()` - 分类管理
   * [ ] `manageTags()` - 标签管理
 
-### 🚧 **15. 管理员组件**
+### 🚧 **15. 管理员组件 (基于 Ant Design)**
 
 * **✏️ 文章编辑器** (`src/components/admin/PostEditor.tsx`):
+  * [ ] 富文本编辑器集成 (使用 antd 的 Input 组件)
   * [ ] Markdown 编辑器集成
   * [ ] 实时预览功能
-  * [ ] 图片上传和管理
-  * [ ] 文章元数据编辑
+  * [ ] 图片上传和管理 (antd Upload 组件)
+  * [ ] 文章元数据编辑 (antd Form 组件)
 
 * **📊 统计图表** (`src/components/admin/StatChart.tsx`):
-  * [ ] 访问量统计图表
+  * [ ] 访问量统计图表 (结合 antd + ECharts/Chart.js)
   * [ ] 用户增长图表
   * [ ] 文章发布统计
 
-### 🚧 **16. 管理员页面**
+* **📝 数据表格** (`src/components/admin/DataTable.tsx`):
+  * [ ] 基于 antd Table 组件的通用数据表格
+  * [ ] 支持排序、筛选、分页
+  * [ ] 批量操作功能
+
+### 🚧 **16. 管理员页面 (Ant Design Layout)**
 
 * **📊 管理员仪表板** (`src/pages/Admin/AdminDashboard.tsx`):
-  * [ ] 网站统计概览
-  * [ ] 最新活动动态
-  * [ ] 快捷操作入口
+  * [ ] antd Layout 布局系统
+  * [ ] 网站统计概览 (antd Card + Statistic 组件)
+  * [ ] 最新活动动态 (antd Timeline 组件)
+  * [ ] 快捷操作入口 (antd Button 组件)
 
-* **📝 内容管理**:
-  * [ ] `PostManagement.tsx` - 文章管理
-  * [ ] `CategoryManagement.tsx` - 分类管理
-  * [ ] `TagManagement.tsx` - 标签管理
-  * [ ] `CommentManagement.tsx` - 评论管理
+* **📝 内容管理** (全部使用 antd 组件):
+  * [ ] `PostManagement.tsx` - 文章管理 (Table + Modal + Form)
+  * [ ] `CategoryManagement.tsx` - 分类管理 (Tree + Form)
+  * [ ] `TagManagement.tsx` - 标签管理 (Tag + Form)
+  * [ ] `CommentManagement.tsx` - 评论管理 (Table + Popconfirm)
 
 * **👥 用户管理** (`src/pages/Admin/UserManagement.tsx`):
-  * [ ] 用户列表和搜索
-  * [ ] 用户权限管理
-  * [ ] 用户状态控制
+  * [ ] 用户列表和搜索 (antd Table + Input.Search)
+  * [ ] 用户权限管理 (antd Select + Switch)
+  * [ ] 用户状态控制 (antd Badge + Button)
 
 * **⚙️ 系统设置** (`src/pages/Admin/SettingsPage.tsx`):
-  * [ ] 网站基本设置
-  * [ ] SEO 配置
-  * [ ] 系统维护选项
+  * [ ] 网站基本设置 (antd Form + Input/TextArea)
+  * [ ] SEO 配置 (antd Tabs + Form)
+  * [ ] 系统维护选项 (antd Switch + DatePicker)
 
 ---
 
@@ -441,7 +463,8 @@
 - 🔷 严格遵循 TypeScript 类型安全，禁用 `any`
 - 📝 关键组件和函数需要添加 TSDoc 注释
 - 🧪 核心功能需要编写单元测试
-- 🎨 遵循 Tailwind + shadcn/ui 设计规范
+- 🎨 **前台组件**: 遵循 TailwindCSS + shadcn/ui 设计规范
+- 👑 **后台组件**: 使用 Ant Design 组件库，保持企业级管理界面风格
 - 📊 重要页面和操作需要添加埋点跟踪
 
 ### 🔄 **持续改进**

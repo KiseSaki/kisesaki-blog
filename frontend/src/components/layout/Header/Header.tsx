@@ -13,7 +13,7 @@ export const Header: React.FC = () => {
         `h-14 px-3 py-2 fixed top-0 left-0 right-0 z-50 transition-colors duration-200 ` +
         // 根据 frosted 状态切换背景/毛玻璃/阴影/边框
         (frosted
-          ? "backdrop-blur-sm bg-white/60 dark:bg-gray-900/60 shadow-sm border-b"
+          ? "backdrop-blur-sm bg-theme-background/60 shadow-sm border-b"
           : "bg-transparent")
       }
     >

@@ -1,5 +1,5 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -34,7 +34,6 @@ const PALETTE = [
  * @returns 返回一个 Tailwind CSS 的背景色类名。
  */
 export function getDeterministicColor(str: string): string {
-  console.log(str)
   // 如果字符串为空，返回一个默认颜色
   if (!str || str.length === 0) {
     return "bg-gray-200";

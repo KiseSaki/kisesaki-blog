@@ -7,7 +7,7 @@ applyTo: "**"
 
 **核心技术栈:**
 
-- 前端: React, TypeScript, Vite, TailWindCSS, shadcn/ui, pnpm
+- 前端: React, TypeScript, Vite, TailWindCSS, shadcn/ui (前台), Ant Design (后台管理), pnpm
 - 后端: Java, Spring Boot 3, Maven, PostgreSQL, MyBatis-Plus, Spring Security & JWT, Redis, Kafka
 - 状态管理: 优先使用 Zustand 进行全局状态管理。
 - 部署：Docker + Kubernetes + Github Actions。
@@ -15,17 +15,25 @@ applyTo: "**"
 **前端核心架构原则:**
 
 1. **结构**: 严格遵循我提供的目录结构 (`api/`, `components/`, `hooks/`, `pages/` 等)。应预留 `lib/` 用于工具函数、`config/` 用于常量和全局配置，`stores/` 用于 Zustand 状态。
-2. **组件化**: 遵循原子设计理念。`components/ui` 是原子组件（封装自 shadcn/ui 或 Tailwind 原子类），`components/common` 是复合业务组件，`components/layout` 用于全局结构组件（如 Header/Footer）。
-3. **类型安全**: 必须使用严格的 TypeScript，**禁用 any（通过 tsconfig 限制）**。所有后端接口响应、DTO 定义应集中在 `src/types/api.ts` 等文件中维护。
-4. **API 调用**: 所有后端 API 请求都必须通过 `src/api/` 目录下的服务函数进行封装，避免在组件中直接使用 axios/fetch。封装应内置统一错误处理、loading 状态处理。
-5. **状态管理**: 全局状态使用 Zustand。每个功能模块单独定义 Store 文件，并通过 selector 优化性能。全局登录用户状态、权限、菜单等应集中在 `authStore` 管理。
-6. **路由权限控制**: 页面级权限控制必须通过全局 `PrivateRoute` 组件封装，结合 Zustand 中的 `user.roles[]` 判断权限，支持嵌套路由拦截与重定向。
-7. **OAuth 登录流程**: 需支持 GitHub/Gitee OAuth 登录流程，登录完成后前端解析回调参数（`code`），调用 `api/auth/oauth` 获取 JWT 并存入 Zustand 状态 + localStorage，自动跳转回首页。
-8. **样式设计**: 使用 TailwindCSS 原子类设计 UI，优先复用 shadcn/ui 组件库。如需扩展样式，建议写入 `src/styles/utilities.css`，不得写入全局样式覆盖。
-9. **错误处理**: API 层必须内置错误提示逻辑，默认使用 `toast`（来自 shadcn/toaster）展示错误信息。可为严重错误（如 403, 500）定义全局错误边界组件。
-10. **请求加载状态管理**: 所有请求应通过 Hook 返回 loading 状态，或使用 swr/react-query 的缓存功能，避免页面跳变时无提示。
-11. **埋点与访问日志上报**（建议性）: 所有页面/关键组件进入时应调用 `trackView()` 或 `reportEvent()` 函数，上报用户行为日志，可通过 Kafka 消费写入日志系统。
-12. **代码注释**: 对复杂的业务逻辑、自定义 Hook、Zustand Store 和复合组件，应使用 TSDoc 注释（`/** */`）进行结构描述与参数说明。
+2. **双 UI 库架构**:
+   - **前台博客**: 使用 `shadcn/ui + TailwindCSS`，注重用户阅读体验和视觉美观
+   - **后台管理**: 使用 `Ant Design (antd)`，提供专业的企业级管理界面
+3. **组件化**: 遵循原子设计理念。`components/ui` 是原子组件（前台封装自 shadcn/ui，后台使用 antd 组件），`components/common` 是复合业务组件，`components/layout` 用于全局结构组件（如 Header/Footer）。
+4. **类型安全**: 必须使用严格的 TypeScript，**禁用 any（通过 tsconfig 限制）**。所有后端接口响应、DTO 定义应集中在 `src/types/api.ts` 等文件中维护。
+5. **API 调用**: 所有后端 API 请求都必须通过 `src/api/` 目录下的服务函数进行封装，避免在组件中直接使用 axios/fetch。封装应内置统一错误处理、loading 状态处理。
+6. **状态管理**: 全局状态使用 Zustand。每个功能模块单独定义 Store 文件，并通过 selector 优化性能。全局登录用户状态、权限、菜单等应集中在 `authStore` 管理。
+7. **路由权限控制**: 页面级权限控制必须通过全局 `PrivateRoute` 组件封装，结合 Zustand 中的 `user.roles[]` 判断权限，支持嵌套路由拦截与重定向。
+8. **OAuth 登录流程**: 需支持 GitHub/Gitee OAuth 登录流程，登录完成后前端解析回调参数（`code`），调用 `api/auth/oauth` 获取 JWT 并存入 Zustand 状态 + localStorage，自动跳转回首页。
+9. **样式设计**:
+   - **前台**: 使用 TailwindCSS 原子类设计 UI，优先复用 shadcn/ui 组件库
+   - **后台**: 使用 Ant Design 组件库，保持企业级管理界面风格
+   - 如需扩展样式，建议写入 `src/styles/utilities.css`，不得写入全局样式覆盖
+10. **错误处理**:
+    - **前台**: API 层内置错误提示逻辑，默认使用 `toast`（来自 shadcn/toaster）展示错误信息
+    - **后台**: 使用 Ant Design 的 `message` 或 `notification` 组件展示错误信息
+11. **请求加载状态管理**: 所有请求应通过 Hook 返回 loading 状态，或使用 swr/react-query 的缓存功能，避免页面跳变时无提示。
+12. **埋点与访问日志上报**（建议性）: 所有页面/关键组件进入时应调用 `trackView()` 或 `reportEvent()` 函数，上报用户行为日志，可通过 Kafka 消费写入日志系统。
+13. **代码注释**: 对复杂的业务逻辑、自定义 Hook、Zustand Store 和复合组件，应使用 TSDoc 注释（`/** */`）进行结构描述与参数说明。
 
 **后端核心架构原则:**
 

@@ -7,7 +7,8 @@
 ### 前端
 - React 18 + TypeScript
 - Vite 构建工具
-- TailwindCSS + shadcn/ui 组件库
+- TailwindCSS + shadcn/ui (前台博客界面)
+- Ant Design (后台管理界面)
 - Zustand 状态管理
 - React Router 路由管理
 

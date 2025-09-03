@@ -10,6 +10,8 @@ export const useHeader = (opts?: { scrollThreshold?: number }) => {
 
   // 磨砂效果状态
   const [frosted, setFrosted] = useState(false);
+  // Header 悬停状态
+  const [isHeaderHovered, setIsHeaderHovered] = useState(false);
 
   useEffect(() => {
     // 初始化上一次滚动位置
@@ -23,11 +25,8 @@ export const useHeader = (opts?: { scrollThreshold?: number }) => {
       // 请求动画帧
       requestAnimationFrame(() => {
         const y = window.scrollY || 0; // 当前滚动位置
-        const delta = y - lastY.current; // 计算滚动距离
-        const isUp = delta < 0; // 是否向上滚动
-        // 向上滚动且不在顶部时也显示磨砂效果，或者页面已滚动超过阈值时显示
-        const shouldFrost =
-          y > threshold || (isUp && y > Math.max(60, threshold));
+        // 页面已滚动超过阈值时显示磨砂效果
+        const shouldFrost = y > threshold;
         setFrosted(shouldFrost);
         // 更新上一次滚动位置
         lastY.current = y;
@@ -43,5 +42,18 @@ export const useHeader = (opts?: { scrollThreshold?: number }) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, [threshold]);
 
-  return { frosted };
+  const handleHeaderMouseEnter = () => {
+    setIsHeaderHovered(true);
+  };
+
+  const handleHeaderMouseLeave = () => {
+    setIsHeaderHovered(false);
+  };
+
+  return {
+    frosted,
+    isHeaderHovered,
+    handleHeaderMouseEnter,
+    handleHeaderMouseLeave,
+  };
 };

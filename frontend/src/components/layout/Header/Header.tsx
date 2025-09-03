@@ -19,10 +19,10 @@ export const Header: React.FC = () => {
     <header
       className={
         // 固定高度、固定顶部及过渡
-        `h-14 px-3 py-2 fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ease-in-out ` +
+        `h-14 px-3 py-2 fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ease-in-out box-border` +
         // 根据状态切换背景/毛玻璃/阴影/边框
         (showFrostedBackground
-          ? "backdrop-blur-sm bg-theme-card-background/60 shadow-lg border-b border-theme-border/60"
+          ? "backdrop-blur-lg bg-theme-card-background/90 shadow-sm border-b border-theme-border/90"
           : "bg-transparent")
       }
       onMouseEnter={handleHeaderMouseEnter}

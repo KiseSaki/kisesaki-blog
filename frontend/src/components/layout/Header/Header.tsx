@@ -20,9 +20,9 @@ export const Header: React.FC = () => {
       className={
         // 固定高度、固定顶部及过渡
         `h-14 px-3 py-2 fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ease-in-out box-border` +
-        // 根据状态切换背景/毛玻璃/阴影/边框
+        // 根据状态切换背景/毛玻璃/阴影（去掉 border-b，改为绝对定位的底线）
         (showFrostedBackground
-          ? "backdrop-blur-lg bg-theme-card-background/90 shadow-sm border-b border-theme-border/90"
+          ? "backdrop-blur-lg bg-theme-card-background/90 shadow-sm"
           : "bg-transparent")
       }
       onMouseEnter={handleHeaderMouseEnter}
@@ -33,6 +33,11 @@ export const Header: React.FC = () => {
         <Center frosted={frosted} isHeaderHovered={isHeaderHovered} />
         <Right />
       </div>
+
+      {/* 绝对定位的底部边线，不影响内部元素布局 */}
+      {showFrostedBackground && (
+        <div className="absolute left-0 right-0 bottom-0 h-px bg-theme-border/90 pointer-events-none" />
+      )}
     </header>
   );
 };

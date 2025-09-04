@@ -1,4 +1,4 @@
-package com.kisesaki.blog.tag;
+package com.kisesaki.blog.content.tag;
 
 /**
  * 标签服务

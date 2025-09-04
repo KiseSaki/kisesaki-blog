@@ -1,4 +1,4 @@
-package com.kisesaki.blog.category;
+package com.kisesaki.blog.content.category;
 
 /**
  * 分类服务

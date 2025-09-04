@@ -132,6 +132,7 @@ kisesaki:
     # 文件上传开发环境配置
     upload:
       path: ${UPLOAD_PATH:./uploads}
+      base-url: ${FILE_BASE_URL:http://localhost:51073/api/files}
 
     # 邮件通知模块配置（开发环境）
     email:

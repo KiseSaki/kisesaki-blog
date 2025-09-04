@@ -12,9 +12,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -106,7 +103,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
 
                 // 配置会话管理：无状态
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // 配置请求授权规则
                 .authorizeHttpRequests(authz -> authz
@@ -121,6 +119,7 @@ public class SecurityConfig {
                                 // 静态资源
                                 "/favicon.ico",
                                 "/error",
+                                "/files/**", // 文件访问路径
 
                                 // 认证相关公开接口
                                 "/auth/login",
@@ -168,7 +167,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
 
                 .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
                         .successHandler(oauth2AuthenticationSuccessHandler))
                 // 异常处理配置
                 .exceptionHandling(ex -> ex
@@ -177,14 +177,18 @@ public class SecurityConfig {
                         // 权限不足时的处理
                         // .accessDeniedHandler(jwtAccessDeniedHandler)
                         .authenticationEntryPoint((request, response, authException) -> {
-                            log.warn("Unauthorized access attempt: {}", authException.getMessage());
+                            log.warn("Unauthorized access attempt: {}",
+                                    authException.getMessage());
                             response.setStatus(401);
-                            response.getWriter().write("{\"code\":401,\"message\":\"Unauthorized\"}");
+                            response.getWriter().write(
+                                    "{\"code\":401,\"message\":\"Unauthorized\"}");
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            log.warn("Access denied: {}", accessDeniedException.getMessage());
+                            log.warn("Access denied: {}",
+                                    accessDeniedException.getMessage());
                             response.setStatus(403);
-                            response.getWriter().write("{\"code\":403,\"message\":\"Access denied\"}");
+                            response.getWriter().write(
+                                    "{\"code\":403,\"message\":\"Access denied\"}");
                         }));
 
         // 添加 JWT 认证过滤器

@@ -153,6 +153,7 @@ kisesaki:
     # 文件上传生产环境配置
     upload:
       path: ${UPLOAD_PATH:/data/uploads}
+      base-url: ${FILE_BASE_URL:http://localhost:51073/api/files}
 
     # 邮件通知模块配置（生产环境）
     email:

@@ -1,11 +1,15 @@
 package com.kisesaki.blog.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -24,10 +28,20 @@ public class PageableParams {
     @Pattern(regexp = "^[a-zA-Z0-9_.]+,(asc|desc)$", message = "sort 格式: field,asc|desc")
     private String sort;
 
-    /**
-     * 是否返回总数
-     */
+    /* 是否返回总数 */
     private Boolean includeTotal = true;
+
+    /* 开始时间（用于时间范围查询）*/
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime startTime;
+
+    /* 结束时间（用于时间范围查询）*/
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime endTime;
+
+    /* 只查询某个日期的数据 */
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate date;
 
     /**
      * 计算偏移量
@@ -57,5 +71,14 @@ public class PageableParams {
         }
         String[] parts = sort.split(",");
         return parts.length > 1 ? parts[1] : "asc";
+    }
+
+    /**
+     * 验证时间范围
+     */
+    private void validateTimeRange() {
+        if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
+            throw new IllegalArgumentException("开始时间不能晚于结束时间");
+        }
     }
 }

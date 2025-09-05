@@ -2,7 +2,7 @@ package com.kisesaki.blog.common.dto;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 
@@ -82,11 +82,11 @@ public final class ResultUtils {
     /**
      * 构建分页成功响应
      * 
-     * @param page Spring Data Page对象
+     * @param page Mybatis Plus Page对象
      * @param <T>  数据类型
      * @return 分页响应对象
      */
-    public static <T> ApiResponse<PageResponse<T>> success(Page<T> page) {
+    public static <T> ApiResponse<PageResponse<T>> success(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page) {
         return ApiResponse.success(PageResponse.of(page));
     }
 

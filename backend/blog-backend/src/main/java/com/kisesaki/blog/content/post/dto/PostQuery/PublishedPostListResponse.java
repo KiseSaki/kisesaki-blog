@@ -1,11 +1,15 @@
 package com.kisesaki.blog.content.post.dto.PostQuery;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import com.kisesaki.blog.content.post.dto.AuthorInfo;
+import com.kisesaki.blog.content.post.dto.CategoryInfo;
+import com.kisesaki.blog.content.post.dto.TagInfo;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.OffsetDateTime;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -60,67 +64,4 @@ public class PublishedPostListResponse {
 
     @Schema(description = "标签列表")
     private List<TagInfo> tags;
-
-    /**
-     * 作者信息
-     */
-    @Data
-    @NoArgsConstructor
-    @Schema(description = "作者信息")
-    public static class AuthorInfo {
-        @Schema(description = "作者ID", example = "1")
-        private Long id;
-
-        @Schema(description = "用户名", example = "kisesaki")
-        private String username;
-
-        @Schema(description = "显示名称", example = "KiseSaki")
-        private String displayName;
-
-        @Schema(description = "头像URL", example = "https://example.com/avatar.jpg")
-        private String avatarUrl;
-
-        @Schema(description = "个人简介", example = "全栈开发工程师")
-        private String bio;
-    }
-
-    /**
-     * 分类信息
-     */
-    @Data
-    @NoArgsConstructor
-    @Schema(description = "分类信息")
-    public static class CategoryInfo {
-        @Schema(description = "分类ID", example = "1")
-        private Long id;
-
-        @Schema(description = "分类名称", example = "技术分享")
-        private String name;
-
-        @Schema(description = "分类别名", example = "tech")
-        private String slug;
-
-        @Schema(description = "分类描述", example = "技术相关的文章分享")
-        private String description;
-    }
-
-    /**
-     * 标签信息
-     */
-    @Data
-    @NoArgsConstructor
-    @Schema(description = "标签信息")
-    public static class TagInfo {
-        @Schema(description = "标签ID", example = "1")
-        private Long id;
-
-        @Schema(description = "标签名称", example = "Spring Boot")
-        private String name;
-
-        @Schema(description = "标签别名", example = "spring-boot")
-        private String slug;
-
-        @Schema(description = "标签颜色", example = "#ff6b6b")
-        private String color;
-    }
 }

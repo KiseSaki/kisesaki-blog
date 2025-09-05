@@ -11,24 +11,18 @@
         <result property="slug" column="post_slug"/>
         <result property="excerpt" column="post_excerpt"/>
         <result property="coverImageUrl" column="post_cover_image_url"/>
-        <result property="featuredImageUrl" column="post_featured_image_url"/>
-        <result property="status" column="post_status"/>
-        <result property="visibility" column="post_visibility"/>
         <result property="viewCount" column="post_view_count"/>
         <result property="likeCount" column="post_like_count"/>
         <result property="commentCount" column="post_comment_count"/>
         <result property="shareCount" column="post_share_count"/>
         <result property="readingTime" column="post_reading_time"/>
-        <result property="wordCount" column="post_word_count"/>
         <result property="isFeatured" column="post_is_featured"/>
         <result property="isTop" column="post_is_top"/>
-        <result property="allowComments" column="post_allow_comments"/>
         <result property="publishedAt" column="post_published_at"/>
-        <result property="createdAt" column="post_created_at"/>
-        <result property="updatedAt" column="post_updated_at"/>
 
         <!-- 作者信息 -->
-        <association property="author" javaType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$AuthorInfo">
+        <association property="author"
+                     javaType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$AuthorInfo">
             <id property="id" column="author_id"/>
             <result property="username" column="author_username"/>
             <result property="displayName" column="author_display_name"/>
@@ -37,7 +31,8 @@
         </association>
 
         <!-- 分类信息 -->
-        <association property="category" javaType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$CategoryInfo">
+        <association property="category"
+                     javaType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$CategoryInfo">
             <id property="id" column="category_id"/>
             <result property="name" column="category_name"/>
             <result property="slug" column="category_slug"/>
@@ -45,7 +40,8 @@
         </association>
 
         <!-- 标签集合 -->
-        <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$TagInfo">
+        <collection property="tags"
+                    ofType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$TagInfo">
             <id property="id" column="tag_id"/>
             <result property="name" column="tag_name"/>
             <result property="slug" column="tag_slug"/>
@@ -63,21 +59,14 @@
         p.slug AS post_slug,
         p.excerpt AS post_excerpt,
         p.cover_image_url AS post_cover_image_url,
-        p.featured_image_url AS post_featured_image_url,
-        p.status AS post_status,
-        p.visibility AS post_visibility,
         p.view_count AS post_view_count,
         p.like_count AS post_like_count,
         p.comment_count AS post_comment_count,
         p.share_count AS post_share_count,
         p.reading_time AS post_reading_time,
-        p.word_count AS post_word_count,
         p.is_featured AS post_is_featured,
         p.is_top AS post_is_top,
-        p.allow_comments AS post_allow_comments,
         p.published_at AS post_published_at,
-        p.created_at AS post_created_at,
-        p.updated_at AS post_updated_at,
 
         -- 作者信息
         u.id AS author_id,
@@ -221,7 +210,7 @@
     <select id="countPublishedPosts" resultType="long">
         SELECT COUNT(DISTINCT p.id)
         FROM posts p
-        
+
         -- 关联作者信息
         LEFT JOIN "user" u ON p.author_id = u.id
         LEFT JOIN user_profiles up ON u.id = up.user_id

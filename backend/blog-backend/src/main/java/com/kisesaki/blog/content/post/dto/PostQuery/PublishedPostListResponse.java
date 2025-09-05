@@ -27,15 +27,6 @@ public class PublishedPostListResponse {
     @Schema(description = "封面图片URL", example = "https://example.com/images/cover.jpg")
     private String coverImageUrl;
 
-    @Schema(description = "特色图片URL", example = "https://example.com/images/featured.jpg")
-    private String featuredImageUrl;
-
-    @Schema(description = "文章状态", example = "published")
-    private String status;
-
-    @Schema(description = "可见性", example = "public")
-    private String visibility;
-
     @Schema(description = "浏览次数", example = "156")
     private Integer viewCount;
 
@@ -51,26 +42,14 @@ public class PublishedPostListResponse {
     @Schema(description = "预估阅读时间（分钟）", example = "5")
     private Integer readingTime;
 
-    @Schema(description = "字数统计", example = "1200")
-    private Integer wordCount;
-
     @Schema(description = "是否为精选文章", example = "false")
     private Boolean isFeatured;
 
     @Schema(description = "是否置顶", example = "false")
     private Boolean isTop;
 
-    @Schema(description = "是否允许评论", example = "true")
-    private Boolean allowComments;
-
     @Schema(description = "发布时间")
     private OffsetDateTime publishedAt;
-
-    @Schema(description = "创建时间")
-    private OffsetDateTime createdAt;
-
-    @Schema(description = "更新时间")
-    private OffsetDateTime updatedAt;
 
     // 关联数据
     @Schema(description = "作者信息")

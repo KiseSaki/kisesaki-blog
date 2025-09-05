@@ -2,8 +2,7 @@ package com.kisesaki.blog.common.dto;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -15,11 +14,11 @@ import lombok.NoArgsConstructor;
 
 /**
  * 分页响应 DTO
- * 
+ *
  * <p>
  * 提供统一的分页数据响应格式，支持从 Spring Data 的 Page 对象自动转换。
  * 包含完整的分页信息和数据列表，便于前端进行分页处理。
- * 
+ *
  * @param <T> 数据类型
  * @author KiseSaki
  * @since 1.0.0
@@ -30,7 +29,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Schema(description = "分页响应数据传输对象")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({ "currentPage", "pageSize", "totalRecords", "totalPages", "first", "last", "empty", "data" })
+@JsonPropertyOrder({"currentPage", "pageSize", "totalRecords", "totalPages", "first", "last", "empty", "data"})
 public class PageResponse<T> {
 
     @Schema(description = "当前页码（从1开始）", example = "1", minimum = "1")
@@ -58,9 +57,9 @@ public class PageResponse<T> {
     private List<T> data;
 
     /**
-     * 从 Spring Data 的 Page 对象创建分页响应
-     * 
-     * @param page Spring Data Page 对象
+     * 从 MyBatis Plus 的 Page 对象创建分页响应
+     *
+     * @param page MyBatis Plus Page 对象
      * @param <T>  数据类型
      * @return 分页响应对象
      */
@@ -79,20 +78,49 @@ public class PageResponse<T> {
         }
 
         return PageResponse.<T>builder()
-                .currentPage(page.getNumber() + 1) // Spring Data 页码从0开始，转换为从1开始
-                .pageSize(page.getSize())
-                .totalRecords(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .empty(page.isEmpty())
-                .data(page.getContent())
+                .currentPage((int) page.getCurrent())
+                .pageSize((int) page.getSize())
+                .totalRecords(page.getTotal())
+                .totalPages(page.getPages())
+                .first(page.getCurrent() == 1)
+                .last(page.getCurrent() >= page.getPages())
+                .empty(page.getRecords().isEmpty())
+                .data(page.getRecords())
                 .build();
     }
 
     /**
+     * 从 PageableParams 手动构建分页响应（当需要分别查询数据和总数时）
+     *
+     * @param data   数据列表
+     * @param total  总记录数
+     * @param params 分页参数
+     * @param <T>    数据类型
+     * @return 分页响应对象
+     */
+    public static <T> PageResponse<T> of(List<T> data, long total, PageableParams params) {
+        if (data == null) {
+            data = List.of();
+        }
+
+        long totalPages = params.getPageSize() > 0 ? (long) Math.ceil((double) total / params.getPageSize()) : 0;
+
+        return PageResponse.<T>builder()
+                .currentPage(params.getCurrentPage())
+                .pageSize(params.getPageSize())
+                .totalRecords(total)
+                .totalPages(totalPages)
+                .first(params.getCurrentPage() == 1)
+                .last(params.getCurrentPage() >= totalPages || totalPages == 0)
+                .empty(data.isEmpty())
+                .data(data)
+                .build();
+    }
+
+
+    /**
      * 创建空的分页响应
-     * 
+     *
      * @param pageSize 每页大小
      * @param <T>      数据类型
      * @return 空的分页响应对象
@@ -112,7 +140,7 @@ public class PageResponse<T> {
 
     /**
      * 创建单页数据响应
-     * 
+     *
      * @param data 数据列表
      * @param <T>  数据类型
      * @return 单页响应对象
@@ -146,7 +174,7 @@ public class PageResponse<T> {
 
     /**
      * 检查是否有下一页
-     * 
+     *
      * @return 是否有下一页
      */
     public boolean hasNext() {
@@ -155,7 +183,7 @@ public class PageResponse<T> {
 
     /**
      * 检查是否有上一页
-     * 
+     *
      * @return 是否有上一页
      */
     public boolean hasPrevious() {
@@ -164,7 +192,7 @@ public class PageResponse<T> {
 
     /**
      * 获取下一页页码
-     * 
+     *
      * @return 下一页页码，如果没有下一页则返回当前页码
      */
     public int getNextPage() {
@@ -173,7 +201,7 @@ public class PageResponse<T> {
 
     /**
      * 获取上一页页码
-     * 
+     *
      * @return 上一页页码，如果没有上一页则返回当前页码
      */
     public int getPreviousPage() {

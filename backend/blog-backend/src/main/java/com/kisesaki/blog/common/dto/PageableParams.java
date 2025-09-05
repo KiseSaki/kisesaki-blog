@@ -1,6 +1,13 @@
 package com.kisesaki.blog.common.dto;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.annotation.JsonFormat;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
@@ -8,48 +15,55 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
+/**
+ * 分页参数 DTO
+ *
+ * <p>
+ * 提供统一的分页查询参数，字段命名与 PageResponse 保持一致。
+ * 包含分页、排序、时间范围等常用查询参数。
+ *
+ * @author KiseSaki
+ * @since 1.0.0
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "分页查询参数")
 public class PageableParams {
-    @Min(value = 1, message = "page 最小为 1")
-    private Long page = 1L;
 
-    @Min(value = 1, message = "size 最小为 1")
-    @Max(value = 100, message = "size 最大为 100")
-    private Long size = 10L;
+    @Schema(description = "当前页码（从1开始）", example = "1", minimum = "1")
+    @Min(value = 1, message = "当前页码最小为 1")
+    private Integer currentPage = 1;
 
-    /**
-     * sort 示例: createdAt,desc 或 title,asc
-     */
-    @Pattern(regexp = "^[a-zA-Z0-9_.]+,(asc|desc)$", message = "sort 格式: field,asc|desc")
-    private String sort;
+    @Schema(description = "每页大小", example = "10", minimum = "1", maximum = "100")
+    @Min(value = 1, message = "每页大小最小为 1")
+    @Max(value = 100, message = "每页大小最大为 100")
+    private Integer pageSize = 10;
 
-    /* 是否返回总数 */
+    @Schema(description = "排序规则", example = "createdAt,desc", pattern = "^[a-zA-Z0-9_.]+,(asc|desc)$")
+    @Pattern(regexp = "^[a-zA-Z0-9_.]+,(asc|desc)$", message = "排序格式: field,asc|desc")
+    private String sort = "createdAt,desc";
+
+    @Schema(description = "是否返回总数", example = "true")
     private Boolean includeTotal = true;
 
-    /* 开始时间（用于时间范围查询）*/
+    @Schema(description = "开始时间（用于时间范围查询）", example = "2024-01-01 00:00:00")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
 
-    /* 结束时间（用于时间范围查询）*/
+    @Schema(description = "结束时间（用于时间范围查询）", example = "2024-12-31 23:59:59")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
 
-    /* 只查询某个日期的数据 */
+    @Schema(description = "查询指定日期的数据", example = "2024-01-01")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
 
     /**
-     * 计算偏移量
+     * 计算偏移量（用于数据库查询）
      */
-    public long getComputedOffset() {
-        long p = (page == null ? 1L : page);
-        long s = (size == null ? 10L : size);
-        return (p - 1) * s;
+    public long getOffset() {
+        return (long) (currentPage - 1) * pageSize;
     }
 
     /**
@@ -74,11 +88,20 @@ public class PageableParams {
     }
 
     /**
-     * 验证时间范围
+     * 是否为降序排序
      */
-    private void validateTimeRange() {
-        if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
-            throw new IllegalArgumentException("开始时间不能晚于结束时间");
+    public boolean isDescending() {
+        return "desc".equalsIgnoreCase(getSortDirection());
+    }
+
+    /**
+     * 验证时间范围是否合法
+     */
+    @AssertTrue(message = "开始时间不能晚于结束时间")
+    private boolean isValidTimeRange() {
+        if (startTime != null && endTime != null) {
+            return !startTime.isAfter(endTime);
         }
+        return true;
     }
 }

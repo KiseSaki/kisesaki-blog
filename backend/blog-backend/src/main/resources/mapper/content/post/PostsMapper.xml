@@ -6,50 +6,50 @@
     <!-- 文章列表响应结果映射 -->
     <resultMap id="PublishedPostListMap" type="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse">
         <!-- 文章基本信息 -->
-        <id property="id" column="post_id" />
-        <result property="title" column="post_title" />
-        <result property="slug" column="post_slug" />
-        <result property="excerpt" column="post_excerpt" />
-        <result property="coverImageUrl" column="post_cover_image_url" />
-        <result property="featuredImageUrl" column="post_featured_image_url" />
-        <result property="status" column="post_status" />
-        <result property="visibility" column="post_visibility" />
-        <result property="viewCount" column="post_view_count" />
-        <result property="likeCount" column="post_like_count" />
-        <result property="commentCount" column="post_comment_count" />
-        <result property="shareCount" column="post_share_count" />
-        <result property="readingTime" column="post_reading_time" />
-        <result property="wordCount" column="post_word_count" />
-        <result property="isFeatured" column="post_is_featured" />
-        <result property="isTop" column="post_is_top" />
-        <result property="allowComments" column="post_allow_comments" />
-        <result property="publishedAt" column="post_published_at" />
-        <result property="createdAt" column="post_created_at" />
-        <result property="updatedAt" column="post_updated_at" />
+        <id property="id" column="post_id"/>
+        <result property="title" column="post_title"/>
+        <result property="slug" column="post_slug"/>
+        <result property="excerpt" column="post_excerpt"/>
+        <result property="coverImageUrl" column="post_cover_image_url"/>
+        <result property="featuredImageUrl" column="post_featured_image_url"/>
+        <result property="status" column="post_status"/>
+        <result property="visibility" column="post_visibility"/>
+        <result property="viewCount" column="post_view_count"/>
+        <result property="likeCount" column="post_like_count"/>
+        <result property="commentCount" column="post_comment_count"/>
+        <result property="shareCount" column="post_share_count"/>
+        <result property="readingTime" column="post_reading_time"/>
+        <result property="wordCount" column="post_word_count"/>
+        <result property="isFeatured" column="post_is_featured"/>
+        <result property="isTop" column="post_is_top"/>
+        <result property="allowComments" column="post_allow_comments"/>
+        <result property="publishedAt" column="post_published_at"/>
+        <result property="createdAt" column="post_created_at"/>
+        <result property="updatedAt" column="post_updated_at"/>
 
         <!-- 作者信息 -->
         <association property="author" javaType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$AuthorInfo">
-            <id property="id" column="author_id" />
-            <result property="username" column="author_username" />
-            <result property="displayName" column="author_display_name" />
-            <result property="avatarUrl" column="author_avatar_url" />
-            <result property="bio" column="author_bio" />
+            <id property="id" column="author_id"/>
+            <result property="username" column="author_username"/>
+            <result property="displayName" column="author_display_name"/>
+            <result property="avatarUrl" column="author_avatar_url"/>
+            <result property="bio" column="author_bio"/>
         </association>
 
         <!-- 分类信息 -->
         <association property="category" javaType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$CategoryInfo">
-            <id property="id" column="category_id" />
-            <result property="name" column="category_name" />
-            <result property="slug" column="category_slug" />
-            <result property="description" column="category_description" />
+            <id property="id" column="category_id"/>
+            <result property="name" column="category_name"/>
+            <result property="slug" column="category_slug"/>
+            <result property="description" column="category_description"/>
         </association>
 
         <!-- 标签集合 -->
         <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$TagInfo">
-            <id property="id" column="tag_id" />
-            <result property="name" column="tag_name" />
-            <result property="slug" column="tag_slug" />
-            <result property="color" column="tag_color" />
+            <id property="id" column="tag_id"/>
+            <result property="name" column="tag_name"/>
+            <result property="slug" column="tag_slug"/>
+            <result property="color" column="tag_color"/>
         </collection>
     </resultMap>
 
@@ -122,7 +122,7 @@
             OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
             OR p.content ILIKE CONCAT('%', #{params.q}, '%')
             OR u.username ILIKE CONCAT('%', #{params.q}, '%')
-            OR up.display_name ILIKE CONCAT('%', #{params.q}, '%')
+            OR up.display_name ILIKE CONCAT('%', #{params.q}, '%'))
         </if>
         -- 分类ID过滤
         <if test="params.categoryId != null">
@@ -160,6 +160,14 @@
         -- 作者显示名称过滤
         <if test="params.authorDisplayName != null and params.authorDisplayName != ''">
             AND up.display_name = #{params.authorDisplayName}
+        </if>
+        -- 是否置顶过滤
+        <if test="params.isTop != null">
+            AND p.is_top = #{params.isTop}
+        </if>
+        -- 是否精选过滤
+        <if test="params.isFeatured != null">
+            AND p.is_featured = #{params.isFeatured}
         </if>
         -- 发布时间范围过滤
         <if test="params.pageable.startTime != null">
@@ -172,37 +180,35 @@
         -- 动态排序
         ORDER BY
         <choose>
-            <when test="params.pageable.sort != params.pageable.sort != ''">
-                <if test="params.pageable.sort.contains('createdAt,desc')">
-                    p.created_at DESC
-                </if>
-                <if test="params.pageable.sort.contains('createdAt,asc')">
-                    p.created_at ASC
-                </if>
-                <if test="params.pageable.sort.contains('publishedAt,desc')">
-                    p.published_at DESC
-                </if>
-                <if test="params.pageable.sort.contains('publishedAt,asc')">
-                    p.published_at ASC
-                </if>
-                <if test="params.pageable.sort.contains('title,desc')">
-                    p.title DESC
-                </if>
-                <if test="params.pageable.sort.contains('title,asc')">
-                    p.title ASC
-                </if>
-                <if test="params.pageable.sort.contains('viewCount,desc')">
-                    p.view_count DESC
-                </if>
-                <if test="params.pageable.sort.contains('viewCount,asc')">
-                    p.view_count ASC
-                </if>
-                <if test="params.pageable.sort.contains('likeCount,desc')">
-                    p.like_count DESC
-                </if>
-                <if test="params.pageable.sort.contains('likeCount,asc')">
-                    p.like_count ASC
-                </if>
+            <when test="params.pageable.sort != null and params.pageable.sort.contains('createdAt,desc')">
+                p.created_at DESC
+            </when>
+            <when test="params.pageable.sort != null and params.pageable.sort.contains('createdAt,asc')">
+                p.created_at ASC
+            </when>
+            <when test="params.pageable.sort != null and params.pageable.sort.contains('publishedAt,desc')">
+                p.published_at DESC
+            </when>
+            <when test="params.pageable.sort != null and params.pageable.sort.contains('publishedAt,asc')">
+                p.published_at ASC
+            </when>
+            <when test="params.pageable.sort != null and params.pageable.sort.contains('title,desc')">
+                p.title DESC
+            </when>
+            <when test="params.pageable.sort != null and params.pageable.sort.contains('title,asc')">
+                p.title ASC
+            </when>
+            <when test="params.pageable.sort != null and params.pageable.sort.contains('viewCount,desc')">
+                p.view_count DESC
+            </when>
+            <when test="params.pageable.sort != null and params.pageable.sort.contains('viewCount,asc')">
+                p.view_count ASC
+            </when>
+            <when test="params.pageable.sort != null and params.pageable.sort.contains('likeCount,desc')">
+                p.like_count DESC
+            </when>
+            <when test="params.pageable.sort != null and params.pageable.sort.contains('likeCount,asc')">
+                p.like_count ASC
             </when>
             <otherwise>
                 -- 默认按发布时间降序排序
@@ -211,24 +217,35 @@
         </choose>
     </select>
 
-    <!-- 按条件获取已发布文章列表总数 -->
-    <select id="countPublishedPosts" resultType="java.lang.Long" parameterType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListParams">
+    <!-- 专门的计数查询，确保正确处理DISTINCT -->
+    <select id="countPublishedPosts" resultType="long">
         SELECT COUNT(DISTINCT p.id)
         FROM posts p
+        
+        -- 关联作者信息
         LEFT JOIN "user" u ON p.author_id = u.id
         LEFT JOIN user_profiles up ON u.id = up.user_id
+
+        -- 关联分类信息
         LEFT JOIN categories c ON p.category_id = c.id
+
+        -- 关联标签信息（可能导致重复）
         LEFT JOIN post_tags pt ON p.id = pt.post_id
         LEFT JOIN tags t ON pt.tag_id = t.id
+
+        -- 只获取已发布、允许公开访问且作者为活跃状态的文章
         WHERE p.status = 'published'
         AND p.visibility = 'public'
         AND u.status = 'active'
+
+        -- 动态查询条件（与主查询保持一致）
+        -- 关键字搜索
         <if test="params.q != null and params.q != ''">
             AND (p.title ILIKE CONCAT('%', #{params.q}, '%')
             OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
             OR p.content ILIKE CONCAT('%', #{params.q}, '%')
             OR u.username ILIKE CONCAT('%', #{params.q}, '%')
-            OR up.display_name ILIKE CONCAT('%', #{params.q}, '%')
+            OR up.display_name ILIKE CONCAT('%', #{params.q}, '%'))
         </if>
         -- 分类ID过滤
         <if test="params.categoryId != null">
@@ -266,6 +283,14 @@
         -- 作者显示名称过滤
         <if test="params.authorDisplayName != null and params.authorDisplayName != ''">
             AND up.display_name = #{params.authorDisplayName}
+        </if>
+        -- 是否置顶过滤
+        <if test="params.isTop != null">
+            AND p.is_top = #{params.isTop}
+        </if>
+        -- 是否精选过滤
+        <if test="params.isFeatured != null">
+            AND p.is_featured = #{params.isFeatured}
         </if>
         -- 发布时间范围过滤
         <if test="params.pageable.startTime != null">

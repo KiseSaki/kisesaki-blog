@@ -125,251 +125,251 @@ public class SecurityConfig {
                                                 // ==================== 认证系统接口 ====================
                                                 // 本地认证：完全公开
                                                 .requestMatchers(
-                                                                "/api/auth/register",
-                                                                "/api/auth/login",
-                                                                "/api/auth/refresh",
-                                                                "/api/auth/forgot-password",
-                                                                "/api/auth/reset-password",
-                                                                "/api/auth/verify-email",
-                                                                "/api/auth/resend-verification")
+                                                                "/auth/register",
+                                                                "/auth/login",
+                                                                "/auth/refresh",
+                                                                "/auth/forgot-password",
+                                                                "/auth/reset-password",
+                                                                "/auth/verify-email",
+                                                                "/auth/resend-verification")
                                                 .permitAll()
 
                                                 // OAuth2 认证：完全公开
                                                 .requestMatchers(
-                                                                "/api/auth/oauth/*/authorize",
-                                                                "/api/auth/oauth/*/callback")
+                                                                "/auth/oauth/*/authorize",
+                                                                "/auth/oauth/*/callback")
                                                 .permitAll()
 
                                                 // 会话管理：需要登录
                                                 .requestMatchers(
-                                                                "/api/auth/logout",
-                                                                "/api/auth/sessions/**",
-                                                                "/api/auth/me")
+                                                                "/auth/logout",
+                                                                "/auth/sessions/**",
+                                                                "/auth/me")
                                                 .authenticated()
 
                                                 // OAuth2 绑定：需要登录
                                                 .requestMatchers(
-                                                                "/api/auth/oauth/*/bind",
-                                                                "/api/auth/oauth/*/unbind",
-                                                                "/api/auth/oauth/linked")
+                                                                "/auth/oauth/*/bind",
+                                                                "/auth/oauth/*/unbind",
+                                                                "/auth/oauth/linked")
                                                 .authenticated()
 
                                                 // ==================== 文章系统接口 ====================
                                                 // 公开访问的文章接口（PostQueryService）
                                                 .requestMatchers(HttpMethod.GET,
-                                                                "/api/posts",
-                                                                "/api/posts/*",
-                                                                "/api/posts/slug/*",
-                                                                "/api/categories/*/posts",
-                                                                "/api/tags/*/posts",
-                                                                "/api/posts/featured",
-                                                                "/api/posts/recent",
-                                                                "/api/posts/popular",
-                                                                "/api/posts/search")
+                                                                "/posts",
+                                                                "/posts/*",
+                                                                "/posts/slug/*",
+                                                                "/categories/*/posts",
+                                                                "/tags/*/posts",
+                                                                "/posts/featured",
+                                                                "/posts/recent",
+                                                                "/posts/popular",
+                                                                "/posts/search")
                                                 .permitAll()
 
                                                 // 文章浏览统计：公开
-                                                .requestMatchers(HttpMethod.POST, "/api/posts/*/view")
+                                                .requestMatchers(HttpMethod.POST, "/posts/*/view")
                                                 .permitAll()
 
                                                 // 用户创作接口：需要登录
                                                 .requestMatchers(
-                                                                "/api/posts/my/**",
-                                                                "/api/posts/*/preview",
-                                                                "/api/posts/*/meta",
-                                                                "/api/posts/*/meta/*")
+                                                                "/posts/my/**",
+                                                                "/posts/*/preview",
+                                                                "/posts/*/meta",
+                                                                "/posts/*/meta/*")
                                                 .authenticated()
 
-                                                .requestMatchers(HttpMethod.POST, "/api/posts")
+                                                .requestMatchers(HttpMethod.POST, "/posts")
                                                 .authenticated()
 
                                                 .requestMatchers(HttpMethod.PUT,
-                                                                "/api/posts/*",
-                                                                "/api/posts/*/publish",
-                                                                "/api/posts/*/unpublish",
-                                                                "/api/posts/*/meta")
+                                                                "/posts/*",
+                                                                "/posts/*/publish",
+                                                                "/posts/*/unpublish",
+                                                                "/posts/*/meta")
                                                 .authenticated()
 
                                                 .requestMatchers(HttpMethod.DELETE,
-                                                                "/api/posts/*",
-                                                                "/api/posts/*/meta/*")
+                                                                "/posts/*",
+                                                                "/posts/*/meta/*")
                                                 .authenticated()
 
-                                                .requestMatchers(HttpMethod.POST, "/api/posts/*/duplicate")
+                                                .requestMatchers(HttpMethod.POST, "/posts/*/duplicate")
                                                 .authenticated()
 
                                                 // 文章版本管理：需要登录
-                                                .requestMatchers("/api/posts/*/revisions/**")
+                                                .requestMatchers("/posts/*/revisions/**")
                                                 .authenticated()
 
                                                 // 文章交互：点赞需要登录
                                                 .requestMatchers(
-                                                                "/api/posts/*/like")
+                                                                "/posts/*/like")
                                                 .authenticated()
 
                                                 // ==================== 分类标签接口 ====================
                                                 // 分类公开接口
                                                 .requestMatchers(HttpMethod.GET,
-                                                                "/api/categories",
-                                                                "/api/categories/*",
-                                                                "/api/categories/slug/*",
-                                                                "/api/categories/popular")
+                                                                "/categories",
+                                                                "/categories/*",
+                                                                "/categories/slug/*",
+                                                                "/categories/popular")
                                                 .permitAll()
 
                                                 // 标签公开接口
                                                 .requestMatchers(HttpMethod.GET,
-                                                                "/api/tags",
-                                                                "/api/tags/*",
-                                                                "/api/tags/slug/*",
-                                                                "/api/tags/popular",
-                                                                "/api/tags/cloud")
+                                                                "/tags",
+                                                                "/tags/*",
+                                                                "/tags/slug/*",
+                                                                "/tags/popular",
+                                                                "/tags/cloud")
                                                 .permitAll()
 
                                                 // 标签搜索：需要登录
-                                                .requestMatchers(HttpMethod.GET, "/api/tags/search")
+                                                .requestMatchers(HttpMethod.GET, "/tags/search")
                                                 .authenticated()
 
                                                 // 用户创建标签：需要登录
-                                                .requestMatchers(HttpMethod.POST, "/api/tags")
+                                                .requestMatchers(HttpMethod.POST, "/tags")
                                                 .authenticated()
 
-                                                .requestMatchers("/api/tags/my")
+                                                .requestMatchers("/tags/my")
                                                 .authenticated()
 
                                                 // ==================== 用户系统接口 ====================
                                                 // 用户公开信息
                                                 .requestMatchers(HttpMethod.GET,
-                                                                "/api/users/*",
-                                                                "/api/users/*/profile",
-                                                                "/api/users/*/posts",
-                                                                "/api/users/*/stats",
-                                                                "/api/users/search",
-                                                                "/api/users/popular",
-                                                                "/api/users/recent")
+                                                                "/users/*",
+                                                                "/users/*/profile",
+                                                                "/users/*/posts",
+                                                                "/users/*/stats",
+                                                                "/users/search",
+                                                                "/users/popular",
+                                                                "/users/recent")
                                                 .permitAll()
 
                                                 // 用户资料管理：需要登录
                                                 .requestMatchers(
-                                                                "/api/users/profile",
-                                                                "/api/users/avatar",
-                                                                "/api/users/cover",
-                                                                "/api/users/password",
-                                                                "/api/users/dashboard",
-                                                                "/api/users/settings/**")
+                                                                "/users/profile",
+                                                                "/users/avatar",
+                                                                "/users/cover",
+                                                                "/users/password",
+                                                                "/users/dashboard",
+                                                                "/users/settings/**")
                                                 .authenticated()
 
-                                                .requestMatchers(HttpMethod.DELETE, "/api/users/account")
+                                                .requestMatchers(HttpMethod.DELETE, "/users/account")
                                                 .authenticated()
 
                                                 // 用户关注功能：需要登录
                                                 .requestMatchers(
-                                                                "/api/users/*/follow",
-                                                                "/api/users/following/posts",
-                                                                "/api/users/recommendations")
+                                                                "/users/*/follow",
+                                                                "/users/following/posts",
+                                                                "/users/recommendations")
                                                 .authenticated()
 
                                                 // ==================== 评论系统接口 ====================
                                                 // 公开访问评论
                                                 .requestMatchers(HttpMethod.GET,
-                                                                "/api/posts/*/comments",
-                                                                "/api/comments/*",
-                                                                "/api/comments/*/replies")
+                                                                "/posts/*/comments",
+                                                                "/comments/*",
+                                                                "/comments/*/replies")
                                                 .permitAll()
 
                                                 // 评论操作：需要登录
                                                 .requestMatchers(
-                                                                "/api/comments/my",
-                                                                "/api/comments/*/report")
+                                                                "/comments/my",
+                                                                "/comments/*/report")
                                                 .authenticated()
 
                                                 .requestMatchers(HttpMethod.POST,
-                                                                "/api/posts/*/comments",
-                                                                "/api/comments/*/like",
-                                                                "/api/comments/*/dislike")
+                                                                "/posts/*/comments",
+                                                                "/comments/*/like",
+                                                                "/comments/*/dislike")
                                                 .authenticated()
 
-                                                .requestMatchers(HttpMethod.PUT, "/api/comments/*")
+                                                .requestMatchers(HttpMethod.PUT, "/comments/*")
                                                 .authenticated()
 
                                                 .requestMatchers(HttpMethod.DELETE,
-                                                                "/api/comments/*",
-                                                                "/api/comments/*/like",
-                                                                "/api/comments/*/dislike")
+                                                                "/comments/*",
+                                                                "/comments/*/like",
+                                                                "/comments/*/dislike")
                                                 .authenticated()
 
                                                 // ==================== 点赞收藏关注接口 ====================
                                                 // 公开查看点赞收藏
                                                 .requestMatchers(HttpMethod.GET,
-                                                                "/api/posts/*/likes",
-                                                                "/api/posts/*/favorites",
-                                                                "/api/users/*/likes",
-                                                                "/api/users/*/favorites",
-                                                                "/api/users/*/followers",
-                                                                "/api/users/*/following")
+                                                                "/posts/*/likes",
+                                                                "/posts/*/favorites",
+                                                                "/users/*/likes",
+                                                                "/users/*/favorites",
+                                                                "/users/*/followers",
+                                                                "/users/*/following")
                                                 .permitAll()
 
                                                 // 点赞收藏操作：需要登录
                                                 .requestMatchers(
-                                                                "/api/posts/*/favorite",
-                                                                "/api/users/favorites")
+                                                                "/posts/*/favorite",
+                                                                "/users/favorites")
                                                 .authenticated()
 
                                                 // ==================== 媒体资源接口 ====================
                                                 // 文件上传：需要登录
-                                                .requestMatchers("/api/media/**")
+                                                .requestMatchers("/media/**")
                                                 .authenticated()
 
                                                 // ==================== 搜索和统计接口 ====================
                                                 // 搜索：公开
-                                                .requestMatchers("/api/search/**")
+                                                .requestMatchers("/search/**")
                                                 .permitAll()
 
                                                 // 公开统计
-                                                .requestMatchers(HttpMethod.GET, "/api/stats/overview")
+                                                .requestMatchers(HttpMethod.GET, "/stats/overview")
                                                 .permitAll()
 
                                                 // 浏览统计：公开
                                                 .requestMatchers(
-                                                                "/api/analytics/view",
-                                                                "/api/analytics/event",
-                                                                "/api/analytics/popular")
+                                                                "/analytics/view",
+                                                                "/analytics/event",
+                                                                "/analytics/popular")
                                                 .permitAll()
 
-                                                .requestMatchers(HttpMethod.GET, "/api/posts/*/views")
+                                                .requestMatchers(HttpMethod.GET, "/posts/*/views")
                                                 .permitAll()
 
                                                 // ==================== 通知订阅接口 ====================
                                                 // 通知：需要登录
-                                                .requestMatchers("/api/notifications/**")
+                                                .requestMatchers("/notifications/**")
                                                 .authenticated()
 
                                                 // 订阅：部分公开
                                                 .requestMatchers(
-                                                                "/api/subscriptions/newsletter",
-                                                                "/api/subscriptions/unsubscribe/*",
-                                                                "/api/subscriptions/verify")
+                                                                "/subscriptions/newsletter",
+                                                                "/subscriptions/unsubscribe/*",
+                                                                "/subscriptions/verify")
                                                 .permitAll()
 
-                                                .requestMatchers("/api/subscriptions/**")
+                                                .requestMatchers("/subscriptions/**")
                                                 .authenticated()
 
                                                 // ==================== 系统配置接口 ====================
                                                 // 公开系统设置
-                                                .requestMatchers(HttpMethod.GET, "/api/settings/public")
+                                                .requestMatchers(HttpMethod.GET, "/settings/public")
                                                 .permitAll()
 
                                                 // SEO 元数据：公开
-                                                .requestMatchers(HttpMethod.GET, "/api/seo/meta/*")
+                                                .requestMatchers(HttpMethod.GET, "/seo/meta/*")
                                                 .permitAll()
 
                                                 // ==================== 举报接口 ====================
                                                 // 举报：需要登录
-                                                .requestMatchers("/api/reports/**")
+                                                .requestMatchers("/reports/**")
                                                 .authenticated()
 
                                                 // ==================== 管理员接口 ====================
                                                 // 所有管理员接口：需要管理员权限
-                                                .requestMatchers("/api/admin/**")
+                                                .requestMatchers("/admin/**")
                                                 .hasRole("ADMIN")
 
                                                 // ==================== 其他接口 ====================

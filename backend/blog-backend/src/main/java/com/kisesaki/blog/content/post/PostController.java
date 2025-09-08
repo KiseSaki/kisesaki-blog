@@ -44,13 +44,35 @@ public class PostController {
         }
     }
 
+    /**
+     * 根据文章ID获取已发布文章详情
+     *
+     * @param id 文章ID
+     * @return 文章详情
+     */
     @GetMapping("/{id}")
-    public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetail(@PathVariable Long id, Authentication authentication) {
+    public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetailById(@PathVariable Long id, Authentication authentication) {
         try{
             Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            PublishedPostDetailResponse response = postQueryService.getPublishedPostDetail(id, userId);
-            return ResultUtils.success("获取文章详情成功", response);
+            return postQueryService.getPublishedPostDetail(id, null, userId);
         }catch (Exception e){
+            log.error("获取已发布文章详情失败", e);
+            return ResultUtils.error("获取已发布文章详情失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 根据文章slug获取已发布文章详情
+     *
+     * @param slug 文章slug
+     * @return 文章详情
+     */
+    @GetMapping("/slug/{slug}")
+    public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetailBySlug(@PathVariable String slug, Authentication authentication) {
+        try {
+            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+            return postQueryService.getPublishedPostDetail(null, slug, userId);
+        } catch (Exception e) {
             log.error("获取已发布文章详情失败", e);
             return ResultUtils.error("获取已发布文章详情失败: " + e.getMessage());
         }

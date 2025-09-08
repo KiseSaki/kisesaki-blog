@@ -33,12 +33,20 @@ public interface PostsMapper extends BaseMapper<Posts> {
     long countPublishedPosts(@Param("params") PublishedPostListParams params);
 
     /**
-     * 获取已发布文章详情
+     * 根据文章ID获取已发布文章详情
      *
      * @param postId 文章ID
      * @return 文章详情
      */
-    PublishedPostDetailResponse getPublishedPostDetail(@Param("postId") Long postId);
+    PublishedPostDetailResponse getPublishedPostDetailById(@Param("postId") Long postId);
+
+    /**
+     * 根据文章slug获取以发布文章详情
+     *
+     * @param slug 文章slug
+     * @return 文章详情
+     */
+    PublishedPostDetailResponse getPublishedPostDetailBySlug(@Param("slug") String slug);
 
     /**
      * 获取上一篇文章（按发布时间排序）

@@ -355,87 +355,102 @@
         </if>
     </select>
 
-    <!-- 根据文章ID获取文章详情 -->
-    <select id="getPublishedPostDetail" resultMap="PublishedPostDetailMap">
+    <!-- 公共的文章详情 SELECT/JOINS（复用点） -->
+    <sql id="PublishedPostDetailCommon">
         SELECT
-        -- 文章基本信息
-        p.id AS post_id,
-        p.title AS post_title,
-        p.slug AS post_slug,
+            -- 文章基本信息
+            p.id AS post_id,
+            p.title AS post_title,
+            p.slug AS post_slug,
 
-        p.excerpt AS post_excerpt,
-        p.html_content AS post_html_content,
-        p.reading_time AS post_reading_time,
+            p.excerpt AS post_excerpt,
+            p.html_content AS post_html_content,
+            p.reading_time AS post_reading_time,
 
-        p.cover_image_url AS post_cover_image_url,
-        p.featured_image_url AS post_featured_image_url,
-        p.is_featured AS post_is_featured,
-        p.is_top AS post_is_top,
+            p.cover_image_url AS post_cover_image_url,
+            p.featured_image_url AS post_featured_image_url,
+            p.is_featured AS post_is_featured,
+            p.is_top AS post_is_top,
 
-        p.view_count AS post_view_count,
-        p.like_count AS post_like_count,
-        p.comment_count AS post_comment_count,
-        p.share_count AS post_share_count,
+            p.view_count AS post_view_count,
+            p.like_count AS post_like_count,
+            p.comment_count AS post_comment_count,
+            p.share_count AS post_share_count,
 
-        p.seo_title AS post_seo_title,
-        p.seo_description AS post_seo_description,
-        p.seo_keywords AS post_seo_keywords,
+            p.seo_title AS post_seo_title,
+            p.seo_description AS post_seo_description,
+            p.seo_keywords AS post_seo_keywords,
 
-        p.published_at AS post_published_at,
-        p.last_modified_at AS post_last_modified_at,
+            p.published_at AS post_published_at,
+            p.last_modified_at AS post_last_modified_at,
 
-        p.allow_comments AS post_allow_comments,
+            p.allow_comments AS post_allow_comments,
 
-        -- 版本历史
-        r.id AS revision_id,
-        r.title AS revision_title,
-        r.version AS revision_version,
-        r.summary AS revision_summary,
-        r.created_at AS revision_created_at,
+            -- 版本历史
+            r.id AS revision_id,
+            r.title AS revision_title,
+            r.version AS revision_version,
+            r.summary AS revision_summary,
+            r.created_at AS revision_created_at,
 
-        -- 作者信息
-        u.id AS author_id,
-        u.username AS author_username,
-        up.display_name AS author_display_name,
-        up.avatar_url AS author_avatar_url,
-        up.bio AS author_bio,
+            -- 作者信息
+            u.id AS author_id,
+            u.username AS author_username,
+            up.display_name AS author_display_name,
+            up.avatar_url AS author_avatar_url,
+            up.bio AS author_bio,
 
-        -- 分类信息
-        c.id AS category_id,
-        c.name AS category_name,
-        c.slug AS category_slug,
-        c.description AS category_description,
+            -- 分类信息
+            c.id AS category_id,
+            c.name AS category_name,
+            c.slug AS category_slug,
+            c.description AS category_description,
 
-        -- 标签信息
-        t.id AS tag_id,
-        t.name AS tag_name,
-        t.slug AS tag_slug,
-        t.color AS tag_color
+            -- 标签信息
+            t.id AS tag_id,
+            t.name AS tag_name,
+            t.slug AS tag_slug,
+            t.color AS tag_color
 
         FROM posts p
 
-        -- 关联最新的版本信息
-        LEFT JOIN post_revisions r ON p.id = r.post_id AND r.version = (
+                 -- 关联最新的版本信息
+                 LEFT JOIN post_revisions r ON p.id = r.post_id AND r.version = (
             SELECT MAX(version) FROM post_revisions WHERE post_id = p.id
         )
 
-        -- 关联作者信息
-        LEFT JOIN "user" u ON p.author_id = u.id
-        LEFT JOIN user_profiles up ON u.id = up.user_id
+            -- 关联作者信息
+                 LEFT JOIN "user" u ON p.author_id = u.id
+                 LEFT JOIN user_profiles up ON u.id = up.user_id
 
-        -- 关联分类信息
-        LEFT JOIN categories c ON p.category_id = c.id
+            -- 关联分类信息
+                 LEFT JOIN categories c ON p.category_id = c.id
 
-        -- 关联标签信息
-        LEFT JOIN post_tags pt ON p.id = pt.post_id
-        LEFT JOIN tags t ON pt.tag_id = t.id
+            -- 关联标签信息
+                 LEFT JOIN post_tags pt ON p.id = pt.post_id
+                 LEFT JOIN tags t ON pt.tag_id = t.id
+    </sql>
 
+    <!-- 根据 文章ID 获取以发布文章详情 -->
+    <select id="getPublishedPostDetailById" resultMap="PublishedPostDetailMap">
+        <include refid="PublishedPostDetailCommon"/>
         -- 只获取指定ID且已发布、允许公开访问且作者为活跃状态的文章
         WHERE p.id = #{postId}
         AND p.status = 'published'
         AND p.visibility = 'public'
         AND u.status = 'active'
     </select>
+
+    <!-- 根据 文章slug 获取以发布文章详情 -->
+    <select id="getPublishedPostDetailBySlug" resultMap="PublishedPostDetailMap">
+        <include refid="PublishedPostDetailCommon"/>
+        -- 只获取指定slug且已发布、允许公开访问且作者为活跃状态的文章
+        WHERE p.slug = #{slug}
+        AND p.status = 'published'
+        AND p.visibility = 'public'
+        AND u.status = 'active'
+    </select>
+
 
     <!-- 获取上一篇文章（按发布时间降序，取比当前文章发布时间更早的第一篇） -->
     <select id="getPrevPost" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$AdjacentPost">

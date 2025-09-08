@@ -3,6 +3,9 @@ package com.kisesaki.blog.content.post.service;
 import java.util.List;
 import java.util.Objects;
 
+import com.kisesaki.blog.common.dto.ApiResponse;
+import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.content.post.dto.TagInfo;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -59,17 +62,26 @@ public class PostQueryService {
     }
 
     /**
-     * 获取已发布文章详情
+     * 根据文章ID获取已发布文章详情
      *
-     * @param postId 文章ID
+     * @param postId 文章ID（可选）
+     * @param slug   文章slug（可选）
      * @param userId 当前用户ID（可选，用于权限判断）
      * @return 文章详情
      */
-    public PublishedPostDetailResponse getPublishedPostDetail(Long postId, Long userId) {
-        PublishedPostDetailResponse result = postsMapper.getPublishedPostDetail(postId);
+    public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetail(Long postId, String slug, Long userId) {
+        PublishedPostDetailResponse result;
+        if(slug != null && !slug.isBlank()){
+            result = postsMapper.getPublishedPostDetailBySlug(slug);
+        }else if(userId != null){
+            result = postsMapper.getPublishedPostDetailById(postId);
+        }else {
+            return ResultUtils.error("文章ID或Slug不能为空");
+        }
+
 
         if (result == null) {
-            return null;
+            return ResultUtils.error("文章不存在或未发布");
         }
 
         // 设置权限信息
@@ -89,7 +101,7 @@ public class PostQueryService {
         result.setNextPost(recommendationService.getNextPost(result.getPublishedAt(), postId));
 
         // 获取相关推荐文章
-        List<Long> tagIds = result.getTags() != null ? result.getTags().stream().map(tag -> tag.getId()).toList()
+        List<Long> tagIds = result.getTags() != null ? result.getTags().stream().map(TagInfo::getId).toList()
                 : List.of();
 
         result.setRelatedPosts(recommendationService.getRelatedPosts(
@@ -99,6 +111,6 @@ public class PostQueryService {
                 5 // 默认推荐5篇相关文章
         ));
 
-        return result;
+        return ResultUtils.success(result);
     }
 }

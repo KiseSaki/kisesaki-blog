@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(description = "版本信息摘要")
 public class RevisionInfo {
+    @Schema(description = "版本ID", example = "1")
+    private Long id;
+
     @Schema(description = "版本号", example = "1")
     private Integer version;
 
@@ -18,9 +21,6 @@ public class RevisionInfo {
 
     @Schema(description = "摘要/说明")
     private String summary;
-
-    @Schema(description = "创建者ID")
-    private Long createdBy;
 
     @Schema(description = "创建时间")
     private OffsetDateTime createdAt;

@@ -1,11 +1,13 @@
 package com.kisesaki.blog.content.post.service;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.common.dto.PageResponse;
+import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse;
 import com.kisesaki.blog.content.post.mapper.PostsMapper;
@@ -13,12 +15,19 @@ import com.kisesaki.blog.content.post.mapper.PostsMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 文章查询服务
+ * 负责处理文章的各种查询操作
+ *
+ * @author KiseSaki
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PostQueryService {
 
     private final PostsMapper postsMapper;
+    private final PostRecommendationService recommendationService;
 
     /**
      * 按条件获取已发布文章列表
@@ -47,5 +56,49 @@ public class PostQueryService {
         result.setTotal(totalCount);
 
         return PageResponse.of(result);
+    }
+
+    /**
+     * 获取已发布文章详情
+     *
+     * @param postId 文章ID
+     * @param userId 当前用户ID（可选，用于权限判断）
+     * @return 文章详情
+     */
+    public PublishedPostDetailResponse getPublishedPostDetail(Long postId, Long userId) {
+        PublishedPostDetailResponse result = postsMapper.getPublishedPostDetail(postId);
+
+        if (result == null) {
+            return null;
+        }
+
+        // 设置权限信息
+        if (Objects.equals(result.getAuthor().getId(), userId)) {
+            result.getPermissions().setCanEdit(true);
+            result.getPermissions().setCanDelete(true);
+        } else {
+            result.getPermissions().setCanEdit(false);
+            result.getPermissions().setCanDelete(false);
+        }
+
+        // 获取自定义元数据
+        result.setMeta(recommendationService.getPostMeta(postId));
+
+        // 获取上一篇和下一篇文章
+        result.setPrevPost(recommendationService.getPrevPost(result.getPublishedAt(), postId));
+        result.setNextPost(recommendationService.getNextPost(result.getPublishedAt(), postId));
+
+        // 获取相关推荐文章
+        List<Long> tagIds = result.getTags() != null ? result.getTags().stream().map(tag -> tag.getId()).toList()
+                : List.of();
+
+        result.setRelatedPosts(recommendationService.getRelatedPosts(
+                result.getCategory() != null ? result.getCategory().getId() : null,
+                tagIds,
+                postId,
+                5 // 默认推荐5篇相关文章
+        ));
+
+        return result;
     }
 }

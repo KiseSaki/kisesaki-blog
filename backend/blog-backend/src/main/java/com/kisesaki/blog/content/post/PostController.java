@@ -3,6 +3,8 @@ package com.kisesaki.blog.content.post;
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.common.util.AuthUtils;
+import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse;
 import com.kisesaki.blog.content.post.service.PostQueryService;
@@ -10,7 +12,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,6 +41,18 @@ public class PostController {
         }catch (Exception e){
             log.error("获取已发布文章列表失败", e);
             return ResultUtils.error("获取已发布文章列表失败: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetail(@PathVariable Long id, Authentication authentication) {
+        try{
+            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+            PublishedPostDetailResponse response = postQueryService.getPublishedPostDetail(id, userId);
+            return ResultUtils.success("获取文章详情成功", response);
+        }catch (Exception e){
+            log.error("获取已发布文章详情失败", e);
+            return ResultUtils.error("获取已发布文章详情失败: " + e.getMessage());
         }
     }
 }

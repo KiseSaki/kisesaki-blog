@@ -21,8 +21,7 @@
         <result property="publishedAt" column="post_published_at"/>
 
         <!-- 作者信息 -->
-        <association property="author"
-                     javaType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$AuthorInfo">
+        <association property="author" javaType="com.kisesaki.blog.content.post.dto.AuthorInfo">
             <id property="id" column="author_id"/>
             <result property="username" column="author_username"/>
             <result property="displayName" column="author_display_name"/>
@@ -31,8 +30,7 @@
         </association>
 
         <!-- 分类信息 -->
-        <association property="category"
-                     javaType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$CategoryInfo">
+        <association property="category" javaType="com.kisesaki.blog.content.post.dto.CategoryInfo">
             <id property="id" column="category_id"/>
             <result property="name" column="category_name"/>
             <result property="slug" column="category_slug"/>
@@ -40,8 +38,75 @@
         </association>
 
         <!-- 标签集合 -->
-        <collection property="tags"
-                    ofType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse$TagInfo">
+        <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.TagInfo">
+            <id property="id" column="tag_id"/>
+            <result property="name" column="tag_name"/>
+            <result property="slug" column="tag_slug"/>
+            <result property="color" column="tag_color"/>
+        </collection>
+    </resultMap>
+
+    <!-- 根据文章ID获取文章响应结果映射 -->
+    <resultMap id="PublishedPostDetailMap" type="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse">
+        <!-- 文章基本信息 -->
+        <id property="id" column="post_id"/>
+        <result property="title" column="post_title"/>
+        <result property="slug" column="post_slug"/>
+
+        <result property="excerpt" column="post_excerpt"/>
+        <result property="htmlContent" column="post_html_content"/>
+        <result property="readingTime" column="post_reading_time"/>
+
+        <result property="coverImageUrl" column="post_cover_image_url"/>
+        <result property="featuredImageUrl" column="post_featured_image_url"/>
+        <result property="isFeatured" column="post_is_featured"/>
+        <result property="isTop" column="post_is_top"/>
+
+        <result property="viewCount" column="post_view_count"/>
+        <result property="likeCount" column="post_like_count"/>
+        <result property="commentCount" column="post_comment_count"/>
+        <result property="shareCount" column="post_share_count"/>
+
+        <result property="seoTitle" column="post_seo_title"/>
+        <result property="seoDescription" column="post_seo_description"/>
+        <result property="seoKeywords" column="post_seo_keywords"/>
+
+        <result property="publishedAt" column="post_published_at"/>
+        <result property="lastModifiedAt" column="post_last_modified_at"/>
+
+        <!-- 是否允许评论 -->
+        <association property="permissions" javaType="com.kisesaki.blog.content.post.dto.Permissions">
+            <result property="canComment" column="post_allow_comments"/>
+        </association>
+
+        <!-- 作者信息 -->
+        <association property="author" javaType="com.kisesaki.blog.content.post.dto.AuthorInfo">
+            <id property="id" column="author_id"/>
+            <result property="username" column="author_username"/>
+            <result property="displayName" column="author_display_name"/>
+            <result property="avatarUrl" column="author_avatar_url"/>
+            <result property="bio" column="author_bio"/>
+        </association>
+
+        <!-- 分类信息 -->
+        <association property="category" javaType="com.kisesaki.blog.content.post.dto.CategoryInfo">
+            <id property="id" column="category_id"/>
+            <result property="name" column="category_name"/>
+            <result property="slug" column="category_slug"/>
+            <result property="description" column="category_description"/>
+        </association>
+
+        <!-- 版本历史 -->
+        <collection property="revisions" ofType="com.kisesaki.blog.content.post.dto.RevisionInfo">
+            <result property="id" column="revision_id"/>
+            <result property="title" column="revision_title"/>
+            <result property="version" column="revision_version"/>
+            <result property="summary" column="revision_summary"/>
+            <result property="createdAt" column="revision_created_at"/>
+        </collection>
+
+        <!-- 标签集合 -->
+        <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.TagInfo">
             <id property="id" column="tag_id"/>
             <result property="name" column="tag_name"/>
             <result property="slug" column="tag_slug"/>
@@ -288,5 +353,208 @@
         <if test="params.pageable.endTime != null">
             AND p.published_at &lt;= #{params.pageable.endTime}
         </if>
+    </select>
+
+    <!-- 根据文章ID获取文章详情 -->
+    <select id="getPublishedPostDetail" resultMap="PublishedPostDetailMap">
+        SELECT
+        -- 文章基本信息
+        p.id AS post_id,
+        p.title AS post_title,
+        p.slug AS post_slug,
+
+        p.excerpt AS post_excerpt,
+        p.html_content AS post_html_content,
+        p.reading_time AS post_reading_time,
+
+        p.cover_image_url AS post_cover_image_url,
+        p.featured_image_url AS post_featured_image_url,
+        p.is_featured AS post_is_featured,
+        p.is_top AS post_is_top,
+
+        p.view_count AS post_view_count,
+        p.like_count AS post_like_count,
+        p.comment_count AS post_comment_count,
+        p.share_count AS post_share_count,
+
+        p.seo_title AS post_seo_title,
+        p.seo_description AS post_seo_description,
+        p.seo_keywords AS post_seo_keywords,
+
+        p.published_at AS post_published_at,
+        p.last_modified_at AS post_last_modified_at,
+
+        p.allow_comments AS post_allow_comments,
+
+        -- 版本历史
+        r.id AS revision_id,
+        r.title AS revision_title,
+        r.version AS revision_version,
+        r.summary AS revision_summary,
+        r.created_at AS revision_created_at,
+
+        -- 作者信息
+        u.id AS author_id,
+        u.username AS author_username,
+        up.display_name AS author_display_name,
+        up.avatar_url AS author_avatar_url,
+        up.bio AS author_bio,
+
+        -- 分类信息
+        c.id AS category_id,
+        c.name AS category_name,
+        c.slug AS category_slug,
+        c.description AS category_description,
+
+        -- 标签信息
+        t.id AS tag_id,
+        t.name AS tag_name,
+        t.slug AS tag_slug,
+        t.color AS tag_color
+
+        FROM posts p
+
+        -- 关联最新的版本信息
+        LEFT JOIN post_revisions r ON p.id = r.post_id AND r.version = (
+            SELECT MAX(version) FROM post_revisions WHERE post_id = p.id
+        )
+
+        -- 关联作者信息
+        LEFT JOIN "user" u ON p.author_id = u.id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+
+        -- 关联分类信息
+        LEFT JOIN categories c ON p.category_id = c.id
+
+        -- 关联标签信息
+        LEFT JOIN post_tags pt ON p.id = pt.post_id
+        LEFT JOIN tags t ON pt.tag_id = t.id
+
+        -- 只获取指定ID且已发布、允许公开访问且作者为活跃状态的文章
+        WHERE p.id = #{postId}
+        AND p.status = 'published'
+        AND p.visibility = 'public'
+        AND u.status = 'active'
+    </select>
+
+    <!-- 获取上一篇文章（按发布时间降序，取比当前文章发布时间更早的第一篇） -->
+    <select id="getPrevPost" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$AdjacentPost">
+        SELECT 
+            p.id,
+            p.title,
+            p.slug
+        FROM posts p
+        LEFT JOIN "user" u ON p.author_id = u.id
+        WHERE p.status = 'published'
+          AND p.visibility = 'public'
+          AND u.status = 'active'
+          AND p.id != #{currentPostId}
+          AND p.published_at &lt; #{publishedAt}
+        ORDER BY p.published_at DESC
+        LIMIT 1
+    </select>
+
+    <!-- 获取下一篇文章（按发布时间升序，取比当前文章发布时间更晚的第一篇） -->
+    <select id="getNextPost" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$AdjacentPost">
+        SELECT p.id,
+               p.title,
+               p.slug
+        FROM posts p
+                 LEFT JOIN "user" u ON p.author_id = u.id
+        WHERE p.status = 'published'
+          AND p.visibility = 'public'
+          AND u.status = 'active'
+          AND p.id != #{currentPostId}
+          AND p.published_at &gt; #{publishedAt}
+        ORDER BY p.published_at
+        LIMIT 1
+    </select>
+
+    <!-- 获取相关推荐文章 -->
+    <select id="getRelatedPosts" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$RelatedPost">
+        SELECT DISTINCT
+            p.id,
+            p.title,
+            p.slug,
+            p.cover_image_url AS coverImageUrl,
+            -- 计算相关度分数：相同分类+3分，共同标签每个+1分，浏览量权重
+            (
+                CASE WHEN p.category_id = #{categoryId} THEN 3 ELSE 0 END +
+        <if test="tagIds != null and tagIds.size() > 0">
+                COALESCE((
+                    SELECT COUNT(*)
+                    FROM post_tags pt1
+                    WHERE pt1.post_id = p.id
+                    AND pt1.tag_id IN 
+            <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
+                        #{tagId}
+            </foreach>
+                ), 0) +
+        </if>
+        <if test="tagIds == null or tagIds.size() == 0">
+                0 +
+        </if>
+                -- 浏览量权重（归一化到0-1分）
+                LEAST(p.view_count * 0.001, 1)
+            ) AS relevance_score
+        FROM posts p
+        LEFT JOIN "user" u ON p.author_id = u.id
+        WHERE p.status = 'published'
+          AND p.visibility = 'public'
+          AND u.status = 'active'
+          AND p.id != #{currentPostId}
+        <if test="categoryId != null or (tagIds != null and tagIds.size() > 0)">
+          AND (
+            <if test="categoryId != null">
+            -- 相同分类
+            p.category_id = #{categoryId}
+            </if>
+            <if test="categoryId != null and tagIds != null and tagIds.size() > 0">
+            OR
+            </if>
+            <if test="tagIds != null and tagIds.size() > 0">
+            -- 有共同标签
+            EXISTS (
+                SELECT 1 FROM post_tags pt
+                WHERE pt.post_id = p.id
+                AND pt.tag_id IN 
+                <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
+                    #{tagId}
+                </foreach>
+            )
+            </if>
+          )
+        </if>
+        ORDER BY relevance_score DESC, p.view_count DESC, p.published_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取文章元数据 -->
+    <select id="getPostMeta" resultType="map">
+        SELECT 
+            meta_key AS "key",
+            meta_value AS "value"
+        FROM post_meta
+        WHERE post_id = #{postId}
+    </select>
+
+    <!-- 获取热门文章（降级推荐策略） -->
+    <select id="getPopularPosts" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$RelatedPost">
+        SELECT 
+            p.id,
+            p.title,
+            p.slug,
+            p.cover_image_url AS coverImageUrl
+        FROM posts p
+        LEFT JOIN "user" u ON p.author_id = u.id
+        WHERE p.status = 'published'
+          AND p.visibility = 'public'
+          AND u.status = 'active'
+          AND p.id != #{currentPostId}
+        ORDER BY 
+            -- 综合热度排序：浏览量 * 0.4 + 点赞数 * 0.3 + 评论数 * 0.2 + 分享数 * 0.1
+            (p.view_count * 0.4 + p.like_count * 0.3 + p.comment_count * 0.2 + p.share_count * 0.1) DESC,
+            p.published_at DESC
+        LIMIT #{limit}
     </select>
 </mapper>

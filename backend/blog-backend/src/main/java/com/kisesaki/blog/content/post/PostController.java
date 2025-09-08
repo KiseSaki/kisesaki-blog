@@ -4,19 +4,19 @@ import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.dto.ResultUtils;
 import com.kisesaki.blog.common.util.AuthUtils;
+import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
+import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse;
+import com.kisesaki.blog.content.post.service.PostCommandService;
 import com.kisesaki.blog.content.post.service.PostQueryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 文章控制器
@@ -31,7 +31,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
 
     private final PostQueryService postQueryService;
+    private final PostCommandService postCommandService;
 
+    /*
+     * ----------------------------- 公共查询相关接口 PostQuery -----------------------------
+     */
     @GetMapping("")
     public ApiResponse<PageResponse<PublishedPostListResponse>> selectPublishedPosts(
             @Valid PublishedPostListParams params) {
@@ -121,4 +125,20 @@ public class PostController {
             return ResultUtils.error("获取热门文章列表失败: " + e.getMessage());
         }
     }
+
+    /*
+     * ----------------------------- 用户创作相关接口 PostCommand -----------------------------
+     */
+    @PostMapping("")
+    public ApiResponse<CreatePostResponse> createPost(@Valid @RequestBody CreatePostRequest request, Authentication authentication) {
+        try{
+            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+            log.info("用户 {} 创建文章: {}", userId, request);
+            return postCommandService.createPost(request, userId);
+        }catch (Exception e){
+            log.error("创建文章失败", e);
+            return ResultUtils.error("创建文章失败: " + e.getMessage());
+        }
+    }
+
 }

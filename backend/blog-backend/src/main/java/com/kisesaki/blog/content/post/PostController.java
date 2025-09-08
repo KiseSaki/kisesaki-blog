@@ -77,4 +77,48 @@ public class PostController {
             return ResultUtils.error("获取已发布文章详情失败: " + e.getMessage());
         }
     }
+
+    /**
+     * 获取精选文章列表
+     *
+     * @param params 查询参数
+     * @return 精选文章列表
+     */
+    @GetMapping("/featured")
+    public ApiResponse<PageResponse<PublishedPostListResponse>> getFeaturedPosts(@Valid PublishedPostListParams params) {
+        try{
+            params.setIsFeatured(true);
+            PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
+            return ResultUtils.success("获取精选文章列表成功", pageResponse);
+        }catch (Exception e){
+            log.error("获取精选文章列表失败", e);
+            return ResultUtils.error("获取精选文章列表失败: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/recent")
+    public ApiResponse<PageResponse<PublishedPostListResponse>> getRecentPosts(@Valid PublishedPostListParams params) {
+        try{
+            // 强制按发布时间降序排序
+            params.getPageable().setSort("publishedAt:desc");
+            PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
+            return ResultUtils.success("获取最新文章列表成功", pageResponse);
+        }catch (Exception e){
+            log.error("获取最新文章列表失败", e);
+            return ResultUtils.error("获取最新文章列表失败: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/popular")
+    public ApiResponse<PageResponse<PublishedPostListResponse>> getPopularPosts(@Valid PublishedPostListParams params) {
+        try{
+            // 强制按浏览量降序排序
+            params.getPageable().setSort("viewCount:desc");
+            PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
+            return ResultUtils.success("获取热门文章列表成功", pageResponse);
+        }catch (Exception e){
+            log.error("获取热门文章列表失败", e);
+            return ResultUtils.error("获取热门文章列表失败: " + e.getMessage());
+        }
+    }
 }

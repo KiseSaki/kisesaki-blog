@@ -250,4 +250,64 @@ public class BusinessException extends RuntimeException {
     public static BusinessException commentNotFound() {
         return new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
     }
+
+    /**
+     * 创建文章链接已存在异常
+     * 
+     * @param slug 重复的文章链接
+     * @return 文章链接已存在的BusinessException实例
+     */
+    public static BusinessException slugAlreadyExists(String slug) {
+        return new BusinessException(ErrorCode.POST_SLUG_ALREADY_EXISTS, String.format("文章链接 '%s' 已存在，请使用其他链接", slug));
+    }
+
+    /**
+     * 创建文章链接格式无效异常
+     * 
+     * @param slug 无效的文章链接
+     * @return 文章链接格式无效的BusinessException实例
+     */
+    public static BusinessException invalidSlugFormat(String slug) {
+        return new BusinessException(ErrorCode.POST_SLUG_INVALID_FORMAT,
+                String.format("文章链接格式无效 '%s'。链接只能包含小写字母、数字和短横线，且不能以短横线开头或结尾", slug));
+    }
+
+    /**
+     * 创建文章链接过长异常
+     * 
+     * @param maxLength 允许的最大长度
+     * @return 文章链接过长的BusinessException实例
+     */
+    public static BusinessException slugTooLong(int maxLength) {
+        return new BusinessException(ErrorCode.POST_SLUG_TOO_LONG, String.format("文章链接过长，最大长度为 %d 个字符", maxLength));
+    }
+
+    /**
+     * 创建分类不存在异常
+     * 
+     * @param categoryId 不存在的分类ID
+     * @return 分类不存在的BusinessException实例
+     */
+    public static BusinessException categoryNotFound(Long categoryId) {
+        return new BusinessException(ErrorCode.POST_CATEGORY_NOT_FOUND, String.format("分类 ID '%d' 不存在", categoryId));
+    }
+
+    /**
+     * 创建密码保护文章需要设置访问密码异常
+     * 
+     * @return 密码保护文章需要设置访问密码的BusinessException实例
+     */
+    public static BusinessException passwordRequired() {
+        return new BusinessException(ErrorCode.POST_PASSWORD_REQUIRED);
+    }
+
+    /**
+     * 创建无效的文章可见性设置异常
+     * 
+     * @param visibility 无效的可见性设置
+     * @return 无效的文章可见性设置的BusinessException实例
+     */
+    public static BusinessException invalidVisibility(String visibility) {
+        return new BusinessException(ErrorCode.POST_INVALID_VISIBILITY, String.format("无效的可见性设置: %s", visibility));
+    }
 }

@@ -2,15 +2,18 @@ package com.kisesaki.blog.content.post.service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.regex.Pattern;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.kisesaki.blog.common.dto.ApiResponse;
+import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.markdown.MarkdownService;
+import com.kisesaki.blog.common.util.SlugGenerator;
 import com.kisesaki.blog.content.category.entity.Categories;
 import com.kisesaki.blog.content.category.mapper.CategoriesMapper;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
@@ -42,140 +45,213 @@ public class PostCommandService {
      */
     @Transactional(rollbackFor = Exception.class)
     public ApiResponse<CreatePostResponse> createPost(CreatePostRequest request, Long userId) {
-        OffsetDateTime now = OffsetDateTime.now();
+        try {
+            // 1. 参数验证
+            validateCreatePostRequest(request);
 
-        Posts post = new Posts();
-        post.setAuthorId(userId);
-        post.setCategoryId(request.getCategoryId());
-        post.setTitle(request.getTitle());
+            // 2. 验证分类是否存在
+            validateCategoryExists(request.getCategoryId());
 
-        // 生成或使用用户提供的slug
-        post.setSlug(generateSlug(request.getSlug(), request.getTitle()));
+            OffsetDateTime now = OffsetDateTime.now();
 
-        post.setExcerpt(request.getExcerpt());
-        post.setContent(request.getContent());
+            Posts post = new Posts();
+            post.setAuthorId(userId);
+            post.setCategoryId(request.getCategoryId());
+            post.setTitle(request.getTitle());
 
-        // 生成HTML内容
-        post.setHtmlContent(convertMarkdownToHtml(request.getContent()));
+            // 3. 生成或使用用户提供的slug，确保唯一性
+            post.setSlug(generateUniqueSlug(request.getSlug(), request.getTitle()));
 
-        // 计算阅读时间和字数统计
-        post.setReadingTime(markdownService.estimateReadingTime(request.getContent()));
-        post.setWordCount(markdownService.countWords(request.getContent()));
+            post.setExcerpt(request.getExcerpt());
+            post.setContent(request.getContent());
 
-        post.setCoverImageUrl(request.getCoverImageUrl());
-        post.setFeaturedImageUrl(request.getFeaturedImageUrl());
-        post.setStatus(Boolean.TRUE.equals(request.getPublishNow()) ? "published" : "draft");
-        post.setVisibility(request.getVisibility() == null ? "public" : request.getVisibility());
-        post.setIsFeatured(request.getIsFeatured() != null && request.getIsFeatured());
-        post.setIsTop(request.getIsTop() != null && request.getIsTop());
-        post.setAllowComments(request.getAllowComments() != null && request.getAllowComments());
-        post.setCreatedAt(now);
-        post.setUpdatedAt(now);
+            // 4. 生成HTML内容
+            post.setHtmlContent(convertMarkdownToHtml(request.getContent()));
 
-        // 生成SEO相关字段
-        generateSeoFields(post, request);
+            // 5. 计算阅读时间和字数统计
+            post.setReadingTime(markdownService.estimateReadingTime(request.getContent()));
+            post.setWordCount(markdownService.countWords(request.getContent()));
 
-        // 如果visibility是password_protected，password不能为空
-        if ("password_protected".equals(post.getVisibility())
-                && (request.getPassword() == null || request.getPassword().isEmpty())) {
-            throw new IllegalArgumentException("当可见性为密码保护时，访问密码不能为空");
+            post.setCoverImageUrl(request.getCoverImageUrl());
+            post.setFeaturedImageUrl(request.getFeaturedImageUrl());
+            post.setStatus(Boolean.TRUE.equals(request.getPublishNow()) ? "published" : "draft");
+            post.setVisibility(request.getVisibility() == null ? "public" : request.getVisibility());
+            post.setIsFeatured(request.getIsFeatured() != null && request.getIsFeatured());
+            post.setIsTop(request.getIsTop() != null && request.getIsTop());
+            post.setAllowComments(request.getAllowComments() != null && request.getAllowComments());
+            post.setCreatedAt(now);
+            post.setUpdatedAt(now);
+
+            // 6. 生成SEO相关字段
+            generateSeoFields(post, request);
+
+            // 7. 处理密码保护逻辑
+            handlePasswordProtection(post, request);
+
+            // 8. 设置发布时间
+            if (request.getScheduledAt() == null && Boolean.TRUE.equals(request.getPublishNow())) {
+                post.setPublishedAt(now);
+            }
+
+            // 9. 插入数据库
+            try {
+                postsMapper.insert(post);
+            } catch (DataIntegrityViolationException e) {
+                handleDataIntegrityViolation(e, post.getSlug());
+            }
+
+            // 获取插入后的ID
+            Long postId = post.getId();
+
+            // 10. 处理标签关联
+            handlePostTags(postId, request.getTagIds());
+
+            // 11. 更新分类文章数量
+            incrementCategoryPostCount(request.getCategoryId());
+
+            return ApiResponse.success(CreatePostResponse.fromEntity(post));
+
+        } catch (BusinessException e) {
+            log.warn("创建文章业务异常: {}", e.getMessage());
+            return ApiResponse.error(e.getErrorCode().getCode(), e.getMessage());
+        } catch (Exception e) {
+            log.error("创建文章系统异常", e);
+            return ApiResponse.error("创建文章失败，请稍后重试");
         }
-        // 如果visibility不是password_protected，password必须为空
-        if (!"password_protected".equals(post.getVisibility())) {
-            post.setPassword(null);
+    }
+
+    /**
+     * 验证创建文章请求参数
+     */
+    private void validateCreatePostRequest(CreatePostRequest request) {
+        if (!StringUtils.hasText(request.getTitle())) {
+            throw BusinessException.paramError("文章标题不能为空");
+        }
+
+        if (!StringUtils.hasText(request.getContent())) {
+            throw BusinessException.paramError("文章内容不能为空");
+        }
+
+        // 验证可见性设置
+        if (request.getVisibility() != null &&
+                !List.of("public", "private", "password_protected").contains(request.getVisibility())) {
+            throw BusinessException.invalidVisibility(request.getVisibility());
+        }
+    }
+
+    /**
+     * 验证分类是否存在
+     */
+    private void validateCategoryExists(Long categoryId) {
+        if (categoryId == null) {
+            return; // 允许不指定分类
+        }
+
+        LambdaQueryWrapper<Categories> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Categories::getId, categoryId);
+
+        if (categoriesMapper.selectCount(queryWrapper) == 0) {
+            throw BusinessException.categoryNotFound(categoryId);
+        }
+    }
+
+    /**
+     * 生成唯一的slug
+     */
+    private String generateUniqueSlug(String providedSlug, String title) {
+        String baseSlug;
+
+        // 1. 处理用户提供的slug
+        if (StringUtils.hasText(providedSlug)) {
+            String sanitizedSlug = SlugGenerator.sanitizeUserSlug(providedSlug);
+            if (sanitizedSlug != null) {
+                baseSlug = sanitizedSlug;
+            } else {
+                log.warn("用户提供的slug格式无效: {}, 将使用标题生成", providedSlug);
+                baseSlug = SlugGenerator.generateFromTitle(title);
+            }
         } else {
+            // 2. 根据标题生成slug
+            baseSlug = SlugGenerator.generateFromTitle(title);
+        }
+
+        // 3. 确保slug的唯一性
+        String finalSlug = baseSlug;
+        int counter = 1;
+
+        while (slugExists(finalSlug)) {
+            counter++;
+            finalSlug = SlugGenerator.generateUniqueSlug(baseSlug, counter);
+        }
+
+        return finalSlug;
+    }
+
+    /**
+     * 检查slug是否已存在
+     */
+    private boolean slugExists(String slug) {
+        LambdaQueryWrapper<Posts> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Posts::getSlug, slug);
+        return postsMapper.selectCount(queryWrapper) > 0;
+    }
+
+    /**
+     * 处理密码保护逻辑
+     */
+    private void handlePasswordProtection(Posts post, CreatePostRequest request) {
+        if ("password_protected".equals(post.getVisibility())) {
+            if (!StringUtils.hasText(request.getPassword())) {
+                throw BusinessException.passwordRequired();
+            }
             post.setPassword(request.getPassword());
+        } else {
+            post.setPassword(null);
+        }
+    }
+
+    /**
+     * 处理数据库约束异常
+     */
+    private void handleDataIntegrityViolation(DataIntegrityViolationException e, String slug) {
+        String message = e.getMessage();
+        if (message != null && message.toLowerCase().contains("ux_posts_slug")) {
+            throw BusinessException.slugAlreadyExists(slug);
         }
 
-        // 设置发布时间
-        if (request.getScheduledAt() == null && Boolean.TRUE.equals(request.getPublishNow())) {
-            post.setPublishedAt(now);
+        // 其他约束异常
+        log.error("数据库约束异常: {}", message, e);
+        throw BusinessException.of(com.kisesaki.blog.common.enums.ErrorCode.DATABASE_ERROR, "数据保存失败，请检查数据完整性");
+    }
+
+    /**
+     * 处理文章标签关联
+     */
+    private void handlePostTags(Long postId, List<Long> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return;
         }
 
-        // 插入数据库
-        postsMapper.insert(post);
-        // 获取插入后的ID
-        Long postId = post.getId();
+        tagIds.forEach(tagId -> {
+            PostTags postTag = new PostTags();
+            postTag.setPostId(postId);
+            postTag.setTagId(tagId);
+            postTagsMapper.insert(postTag);
+        });
+    }
 
-        // 处理标签
-        List<Long> tagIds = request.getTagIds();
-        if (tagIds != null && !tagIds.isEmpty()) {
-            tagIds.stream().map(id -> {
-                PostTags pt = new PostTags();
-                pt.setPostId(postId);
-                pt.setTagId(id);
-                return pt;
-            }).forEach(postTagsMapper::insert);
+    /**
+     * 增加分类的文章数量
+     */
+    private void incrementCategoryPostCount(Long categoryId) {
+        if (categoryId == null) {
+            return;
         }
 
-        // 添加该分类的文章数量
         new LambdaUpdateChainWrapper<>(categoriesMapper)
-                .eq(Categories::getId, request.getCategoryId())
+                .eq(Categories::getId, categoryId)
                 .setSql("post_count = post_count + 1")
                 .update();
-
-        return ApiResponse.success(CreatePostResponse.fromEntity(post));
-    }
-
-    /**
-     * 生成或验证slug
-     *
-     * @param providedSlug 用户提供的slug
-     * @param title        文章标题
-     * @return 最终的slug
-     */
-    private String generateSlug(String providedSlug, String title) {
-        if (StringUtils.hasText(providedSlug)) {
-            // 验证用户提供的slug格式
-            if (isValidSlug(providedSlug)) {
-                return providedSlug;
-            } else {
-                log.warn("用户提供的slug格式不正确: {}, 将使用标题生成", providedSlug);
-            }
-        }
-
-        // 根据标题生成slug
-        return generateSlugFromTitle(title);
-    }
-
-    /**
-     * 验证slug格式是否正确
-     *
-     * @param slug 待验证的slug
-     * @return 是否有效
-     */
-    private boolean isValidSlug(String slug) {
-        if (slug == null || slug.trim().isEmpty()) {
-            return false;
-        }
-        // 只允许小写字母、数字和短横线，不能以短横线开头或结尾
-        return Pattern.compile("^[a-z0-9]+(-[a-z0-9]+)*$").matcher(slug.trim()).matches();
-    }
-
-    /**
-     * 根据标题生成slug
-     *
-     * @param title 文章标题
-     * @return 生成的slug
-     */
-    private String generateSlugFromTitle(String title) {
-        if (!StringUtils.hasText(title)) {
-            return "untitled-post";
-        }
-
-        String s = title.toLowerCase()
-                // 替换中文字符为拼音或移除（这里简化处理，实际可以使用pinyin4j库）
-                .replaceAll("[\\u4e00-\\u9fa5]", "")
-                // 保留字母数字，其他字符替换为短横线
-                .replaceAll("[^a-z0-9]+", "-")
-                // 移除开头和结尾的短横线
-                .replaceAll("^-+|-+$", "")
-                // 压缩多个连续的短横线为一个
-                .replaceAll("-+", "-");
-        return s
-                // 如果为空则使用默认值
-                .isEmpty() ? "untitled-post"
-                : s;
     }
 
     /**

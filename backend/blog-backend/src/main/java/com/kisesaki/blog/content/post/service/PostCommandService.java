@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.kisesaki.blog.common.dto.ApiResponse;
+import com.kisesaki.blog.common.markdown.MarkdownService;
 import com.kisesaki.blog.content.category.entity.Categories;
 import com.kisesaki.blog.content.category.mapper.CategoriesMapper;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
@@ -30,6 +31,7 @@ public class PostCommandService {
     private final PostsMapper postsMapper;
     private final PostTagsMapper postTagsMapper;
     private final CategoriesMapper categoriesMapper;
+    private final MarkdownService markdownService;
 
     /**
      * 创建文章
@@ -55,6 +57,10 @@ public class PostCommandService {
 
         // 生成HTML内容
         post.setHtmlContent(convertMarkdownToHtml(request.getContent()));
+
+        // 计算阅读时间和字数统计
+        post.setReadingTime(markdownService.estimateReadingTime(request.getContent()));
+        post.setWordCount(markdownService.countWords(request.getContent()));
 
         post.setCoverImageUrl(request.getCoverImageUrl());
         post.setFeaturedImageUrl(request.getFeaturedImageUrl());
@@ -157,7 +163,7 @@ public class PostCommandService {
             return "untitled-post";
         }
 
-        return title.toLowerCase()
+        String s = title.toLowerCase()
                 // 替换中文字符为拼音或移除（这里简化处理，实际可以使用pinyin4j库）
                 .replaceAll("[\\u4e00-\\u9fa5]", "")
                 // 保留字母数字，其他字符替换为短横线
@@ -165,14 +171,11 @@ public class PostCommandService {
                 // 移除开头和结尾的短横线
                 .replaceAll("^-+|-+$", "")
                 // 压缩多个连续的短横线为一个
-                .replaceAll("-+", "-")
+                .replaceAll("-+", "-");
+        return s
                 // 如果为空则使用默认值
                 .isEmpty() ? "untitled-post"
-                        : title.toLowerCase()
-                                .replaceAll("[\\u4e00-\\u9fa5]", "")
-                                .replaceAll("[^a-z0-9]+", "-")
-                                .replaceAll("^-+|-+$", "")
-                                .replaceAll("-+", "-");
+                : s;
     }
 
     /**
@@ -202,7 +205,7 @@ public class PostCommandService {
         if (StringUtils.hasText(request.getSeoKeywords())) {
             post.setSeoKeywords(request.getSeoKeywords());
         } else {
-            post.setSeoKeywords(generateKeywordsFromContent(post.getTitle(), request.getContent()));
+            post.setSeoKeywords(generateKeywordsFromContent(post.getTitle()));
         }
     }
 
@@ -213,45 +216,25 @@ public class PostCommandService {
      * @return 生成的描述
      */
     private String generateDescriptionFromContent(String content) {
-        if (!StringUtils.hasText(content)) {
-            return "";
-        }
-
-        // 移除Markdown语法，获取纯文本
-        String plainText = content
-                .replaceAll("#+\\s*", "") // 移除标题标记
-                .replaceAll("\\*\\*(.+?)\\*\\*", "$1") // 移除粗体标记
-                .replaceAll("\\*(.+?)\\*", "$1") // 移除斜体标记
-                .replaceAll("\\[(.+?)\\]\\(.+?\\)", "$1") // 移除链接，保留文本
-                .replaceAll("```[\\s\\S]*?```", "") // 移除代码块
-                .replaceAll("`(.+?)`", "$1") // 移除行内代码标记
-                .replaceAll("\\n+", " ") // 将换行替换为空格
-                .trim();
-
-        // 截取前150个字符作为描述
-        if (plainText.length() > 150) {
-            return plainText.substring(0, 150) + "...";
-        }
-        return plainText;
+        return markdownService.generateExcerpt(content, 150);
     }
 
     /**
      * 从标题和内容中生成关键词
      *
-     * @param title   文章标题
-     * @param content 文章内容
+     * @param title 文章标题
      * @return 生成的关键词
      */
-    private String generateKeywordsFromContent(String title, String content) {
+    private String generateKeywordsFromContent(String title) {
         // 这里简化处理，实际可以使用更复杂的NLP算法
         StringBuilder keywords = new StringBuilder();
 
         if (StringUtils.hasText(title)) {
             // 从标题中提取关键词
-            String[] titleWords = title.split("[\\s,，。！？；：\"\"'']+");
+            String[] titleWords = title.split("[\\s,，。！？；：\"']+");
             for (String word : titleWords) {
                 if (word.length() > 1) {
-                    if (keywords.length() > 0) {
+                    if (!keywords.isEmpty()) {
                         keywords.append(",");
                     }
                     keywords.append(word.trim());
@@ -269,12 +252,6 @@ public class PostCommandService {
      * @return HTML内容
      */
     private String convertMarkdownToHtml(String markdownContent) {
-        if (!StringUtils.hasText(markdownContent)) {
-            return "";
-        }
-
-        // TODO: 这里应该使用专门的Markdown解析库，如flexmark-java
-        // 现在先简单处理，返回原内容
-        return markdownContent;
+        return markdownService.convertToHtml(markdownContent);
     }
 }

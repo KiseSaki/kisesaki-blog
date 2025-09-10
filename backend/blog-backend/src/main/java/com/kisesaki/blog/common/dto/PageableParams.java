@@ -3,7 +3,6 @@ package com.kisesaki.blog.common.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,6 +13,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * 分页参数 DTO
@@ -49,10 +49,12 @@ public class PageableParams {
 
     @Schema(description = "开始时间（用于时间范围查询）", example = "2024-01-01 00:00:00")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startTime;
 
     @Schema(description = "结束时间（用于时间范围查询）", example = "2024-12-31 23:59:59")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endTime;
 
     @Schema(description = "查询指定日期的数据", example = "2024-01-01")

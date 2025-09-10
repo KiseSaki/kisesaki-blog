@@ -3,13 +3,15 @@ package com.kisesaki.blog.content.post.service;
 import java.util.List;
 import java.util.Objects;
 
-import com.kisesaki.blog.common.dto.ApiResponse;
-import com.kisesaki.blog.common.dto.ResultUtils;
-import com.kisesaki.blog.content.post.dto.TagInfo;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
+import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.content.post.dto.TagInfo;
+import com.kisesaki.blog.content.post.dto.PostQuery.GetMyPostsListParams;
+import com.kisesaki.blog.content.post.dto.PostQuery.MyPostsListResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse;
@@ -71,14 +73,13 @@ public class PostQueryService {
      */
     public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetail(Long postId, String slug, Long userId) {
         PublishedPostDetailResponse result;
-        if(slug != null && !slug.isBlank()){
+        if (slug != null && !slug.isBlank()) {
             result = postsMapper.getPublishedPostDetailBySlug(slug);
-        }else if(userId != null){
+        } else if (userId != null) {
             result = postsMapper.getPublishedPostDetailById(postId);
-        }else {
+        } else {
             return ResultUtils.error("文章ID或Slug不能为空");
         }
-
 
         if (result == null) {
             return ResultUtils.error("文章不存在或未发布");
@@ -112,5 +113,35 @@ public class PostQueryService {
         ));
 
         return ResultUtils.success(result);
+    }
+
+    /**
+     * 获取我的文章列表（包括草稿）
+     *
+     * @param params 查询参数
+     * @param userId 当前用户ID
+     * @return 文章列表
+     */
+    public PageResponse<MyPostsListResponse> getMyPosts(GetMyPostsListParams params, Long userId) {
+        // 手动获取总数以避免MyBatis Plus自动count查询的DISTINCT问题
+        long totalCount = postsMapper.countMyPosts(params, userId);
+
+        // 如果总数为0，直接返回空结果
+        if (totalCount == 0) {
+            return PageResponse.of(List.of(), 0L, params.getPageable());
+        }
+
+        // 查询分页数据（禁用自动count查询）
+        Page<MyPostsListResponse> page = new Page<>(
+                params.getPageable().getCurrentPage(),
+                params.getPageable().getPageSize(),
+                false // 禁用自动count查询
+        );
+        Page<MyPostsListResponse> result = postsMapper.selectMyPostsPage(page, params, userId);
+
+        // 手动设置总数
+        result.setTotal(totalCount);
+
+        return PageResponse.of(result);
     }
 }

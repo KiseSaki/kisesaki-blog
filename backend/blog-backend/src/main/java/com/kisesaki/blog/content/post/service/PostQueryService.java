@@ -6,9 +6,8 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
-import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.content.post.dto.TagInfo;
 import com.kisesaki.blog.content.post.dto.PostQuery.GetMyPostsListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.MyPostsListResponse;
@@ -71,18 +70,18 @@ public class PostQueryService {
      * @param userId 当前用户ID（可选，用于权限判断）
      * @return 文章详情
      */
-    public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetail(Long postId, String slug, Long userId) {
+    public PublishedPostDetailResponse getPublishedPostDetail(Long postId, String slug, Long userId) {
         PublishedPostDetailResponse result;
         if (slug != null && !slug.isBlank()) {
             result = postsMapper.getPublishedPostDetailBySlug(slug);
-        } else if (userId != null) {
+        } else if (postId != null) {
             result = postsMapper.getPublishedPostDetailById(postId);
         } else {
-            return ResultUtils.error("文章ID或Slug不能为空");
+            throw BusinessException.paramError("文章ID或Slug不能为空");
         }
 
         if (result == null) {
-            return ResultUtils.error("文章不存在或未发布");
+            throw BusinessException.notFound("文章");
         }
 
         // 设置权限信息
@@ -112,7 +111,7 @@ public class PostQueryService {
                 5 // 默认推荐5篇相关文章
         ));
 
-        return ResultUtils.success(result);
+        return result;
     }
 
     /**

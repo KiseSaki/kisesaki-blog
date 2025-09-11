@@ -68,7 +68,8 @@ public class PostController {
     public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetailById(@PathVariable Long id,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-        return postQueryService.getPublishedPostDetail(id, null, userId);
+        PublishedPostDetailResponse result = postQueryService.getPublishedPostDetail(id, null, userId);
+        return ResultUtils.success("获取文章详情成功", result);
     }
 
     /**
@@ -81,7 +82,8 @@ public class PostController {
     public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetailBySlug(@PathVariable String slug,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-        return postQueryService.getPublishedPostDetail(null, slug, userId);
+        PublishedPostDetailResponse result = postQueryService.getPublishedPostDetail(null, slug, userId);
+        return ResultUtils.success("获取文章详情成功", result);
     }
 
     /**
@@ -123,7 +125,8 @@ public class PostController {
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 创建文章: {}", userId, request);
-        return postCommandService.createPost(request, userId);
+        CreatePostResponse result = postCommandService.createPost(request, userId);
+        return ResultUtils.success("创建文章成功", result);
     }
 
     /**
@@ -135,7 +138,8 @@ public class PostController {
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 更新文章 {}: {}", userId, id, request);
-        return postCommandService.updatePost(id, request, userId);
+        UpdatePostResponse result = postCommandService.updatePost(id, request, userId);
+        return ResultUtils.success("更新文章成功", result);
     }
 
     /**
@@ -145,7 +149,8 @@ public class PostController {
     public ApiResponse<Void> deletePost(@PathVariable Long id, Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 删除文章 {}", userId, id);
-        return postCommandService.deletePost(id, userId);
+        postCommandService.deletePost(id, userId);
+        return ResultUtils.success("删除文章成功");
     }
 
     /**
@@ -155,7 +160,8 @@ public class PostController {
     public ApiResponse<Void> publishPost(@PathVariable Long id, Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 发布文章 {}", userId, id);
-        return postCommandService.publishPost(id, userId);
+        postCommandService.publishPost(id, userId);
+        return ResultUtils.success("发布文章成功");
     }
 
     /**
@@ -165,7 +171,8 @@ public class PostController {
     public ApiResponse<Void> unpublishPost(@PathVariable Long id, Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 取消发布文章 {}", userId, id);
-        return postCommandService.unpublishPost(id, userId);
+        postCommandService.unpublishPost(id, userId);
+        return ResultUtils.success("取消发布文章成功");
     }
 
     /**
@@ -175,7 +182,8 @@ public class PostController {
     public ApiResponse<Long> duplicatePost(@PathVariable Long id, Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 复制文章 {}", userId, id);
-        return postCommandService.duplicatePost(id, userId);
+        Long newPostId = postCommandService.duplicatePost(id, userId);
+        return ResultUtils.success("复制文章成功", newPostId);
     }
 
     /**

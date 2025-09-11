@@ -10,7 +10,6 @@ import org.springframework.util.StringUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
-import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.markdown.MarkdownService;
 import com.kisesaki.blog.common.util.SlugGenerator;
@@ -48,7 +47,7 @@ public class PostCommandService {
      */
     // TODO 定时发布未完成
     @Transactional(rollbackFor = Exception.class)
-    public ApiResponse<CreatePostResponse> createPost(CreatePostRequest request, Long userId) {
+    public CreatePostResponse createPost(CreatePostRequest request, Long userId) {
         // 1. 参数验证
         validateCreateOrUpdatePostRequest(request);
 
@@ -112,7 +111,7 @@ public class PostCommandService {
         // 11. 更新分类文章数量
         incrementCategoryPostCount(request.getCategoryId());
 
-        return ApiResponse.success(CreatePostResponse.fromEntity(post));
+        return CreatePostResponse.fromEntity(post);
     }
 
     /**
@@ -123,7 +122,7 @@ public class PostCommandService {
      * @return 更新文章响应DTO
      */
     @Transactional(rollbackFor = Exception.class)
-    public ApiResponse<UpdatePostResponse> updatePost(Long postId, UpdatePostRequest request, Long userId) {
+    public UpdatePostResponse updatePost(Long postId, UpdatePostRequest request, Long userId) {
         // 首先获取文章，确保存在且属于当前用户
         Posts existingPost = getPostByIdAndUserId(postId, userId);
         if (existingPost == null) {
@@ -205,7 +204,7 @@ public class PostCommandService {
         response.setLastModifiedAt(existingPost.getUpdatedAt());
         response.setUpdatedAt(existingPost.getUpdatedAt());
 
-        return ApiResponse.success(response);
+        return response;
     }
 
     /**
@@ -214,7 +213,7 @@ public class PostCommandService {
      * @param postId 文章ID
      * @param userId 当前用户ID
      */
-    public ApiResponse<Void> deletePost(Long postId, Long userId) {
+    public void deletePost(Long postId, Long userId) {
         Posts existingPost = getPostByIdAndUserId(postId, userId);
         if (existingPost == null) {
             throw BusinessException.notFound("文章");
@@ -222,8 +221,6 @@ public class PostCommandService {
         existingPost.setStatus("deleted");
         existingPost.setUpdatedAt(OffsetDateTime.now());
         postsMapper.updateById(existingPost);
-
-        return ApiResponse.success("删除文章成功");
     }
 
     /**
@@ -232,7 +229,7 @@ public class PostCommandService {
      * @param postId 文章ID
      * @param userId 当前用户ID
      */
-    public ApiResponse<Void> publishPost(Long postId, Long userId) {
+    public void publishPost(Long postId, Long userId) {
         Posts existingPost = getPostByIdAndUserId(postId, userId);
         if (existingPost == null) {
             throw BusinessException.notFound("文章");
@@ -241,8 +238,6 @@ public class PostCommandService {
         existingPost.setPublishedAt(OffsetDateTime.now());
         existingPost.setUpdatedAt(OffsetDateTime.now());
         postsMapper.updateById(existingPost);
-
-        return ApiResponse.success("发布文章成功");
     }
 
     /**
@@ -251,7 +246,7 @@ public class PostCommandService {
      * @param postId 文章ID
      * @param userId 当前用户ID
      */
-    public ApiResponse<Void> unpublishPost(Long postId, Long userId) {
+    public void unpublishPost(Long postId, Long userId) {
         Posts existingPost = getPostByIdAndUserId(postId, userId);
         if (existingPost == null) {
             throw BusinessException.notFound("文章");
@@ -259,8 +254,6 @@ public class PostCommandService {
         existingPost.setStatus("draft");
         existingPost.setUpdatedAt(OffsetDateTime.now());
         postsMapper.updateById(existingPost);
-
-        return ApiResponse.success("取消发布文章成功");
     }
 
     /**
@@ -270,7 +263,7 @@ public class PostCommandService {
      * @param userId 当前用户ID
      * @return 新文章ID
      */
-    public ApiResponse<Long> duplicatePost(Long postId, Long userId) {
+    public Long duplicatePost(Long postId, Long userId) {
         Posts existingPost = getPostByIdAndUserId(postId, userId);
         if (existingPost == null) {
             throw BusinessException.notFound("文章");
@@ -316,7 +309,7 @@ public class PostCommandService {
             postTagsMapper.insert(newTag);
         }
 
-        return ApiResponse.success("复制文章成功", newPostId);
+        return newPostId;
     }
 
     /**

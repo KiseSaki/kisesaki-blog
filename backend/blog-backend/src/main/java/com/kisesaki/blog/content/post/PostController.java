@@ -1,6 +1,7 @@
 package com.kisesaki.blog.content.post;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -173,6 +174,21 @@ public class PostController {
         } catch (Exception e) {
             log.error("更新文章失败", e);
             return ResultUtils.error("更新文章失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 删除文章
+     */
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deletePost(@PathVariable Long id, Authentication authentication) {
+        try {
+            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+            log.info("用户 {} 删除文章 {}", userId, id);
+            return postCommandService.deletePost(id, userId);
+        } catch (Exception e) {
+            log.error("删除文章失败", e);
+            return ResultUtils.error("删除文章失败: " + e.getMessage());
         }
     }
 

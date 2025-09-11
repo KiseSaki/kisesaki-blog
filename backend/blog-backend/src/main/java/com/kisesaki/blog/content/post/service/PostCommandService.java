@@ -225,6 +225,26 @@ public class PostCommandService {
         }
     }
 
+    public ApiResponse<Void> deletePost(Long postId, Long userId) {
+        try {
+            LambdaQueryWrapper<Posts> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Posts::getId, postId);
+            queryWrapper.eq(Posts::getAuthorId, userId);
+            Posts existingPost = postsMapper.selectOne(queryWrapper);
+            if (existingPost == null) {
+                return ApiResponse.error("文章不存在或无权限删除");
+            }
+            existingPost.setStatus("deleted");
+            existingPost.setUpdatedAt(OffsetDateTime.now());
+            postsMapper.updateById(existingPost);
+
+            return ApiResponse.success("删除文章成功");
+        } catch (Exception e) {
+            log.error("删除文章系统异常", e);
+            return ApiResponse.error("删除文章失败，请稍后重试");
+        }
+    }
+
     /**
      * 验证创建或更新文章请求参数
      */

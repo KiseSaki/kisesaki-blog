@@ -49,79 +49,70 @@ public class PostCommandService {
     // TODO 定时发布未完成
     @Transactional(rollbackFor = Exception.class)
     public ApiResponse<CreatePostResponse> createPost(CreatePostRequest request, Long userId) {
-        try {
-            // 1. 参数验证
-            validateCreateOrUpdatePostRequest(request);
+        // 1. 参数验证
+        validateCreateOrUpdatePostRequest(request);
 
-            // 2. 验证分类是否存在
-            validateCategoryExists(request.getCategoryId());
+        // 2. 验证分类是否存在
+        validateCategoryExists(request.getCategoryId());
 
-            OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
 
-            Posts post = new Posts();
-            post.setAuthorId(userId);
-            post.setCategoryId(request.getCategoryId());
-            post.setTitle(request.getTitle());
+        Posts post = new Posts();
+        post.setAuthorId(userId);
+        post.setCategoryId(request.getCategoryId());
+        post.setTitle(request.getTitle());
 
-            // 3. 生成或使用用户提供的slug，确保唯一性
-            post.setSlug(generateUniqueSlug(request.getSlug(), request.getTitle()));
+        // 3. 生成或使用用户提供的slug，确保唯一性
+        post.setSlug(generateUniqueSlug(request.getSlug(), request.getTitle()));
 
-            post.setExcerpt(request.getExcerpt());
-            post.setContent(request.getContent());
+        post.setExcerpt(request.getExcerpt());
+        post.setContent(request.getContent());
 
-            // 4. 生成HTML内容
-            post.setHtmlContent(convertMarkdownToHtml(request.getContent()));
+        // 4. 生成HTML内容
+        post.setHtmlContent(convertMarkdownToHtml(request.getContent()));
 
-            // 5. 计算阅读时间和字数统计
-            post.setReadingTime(markdownService.estimateReadingTime(request.getContent()));
-            post.setWordCount(markdownService.countWords(request.getContent()));
+        // 5. 计算阅读时间和字数统计
+        post.setReadingTime(markdownService.estimateReadingTime(request.getContent()));
+        post.setWordCount(markdownService.countWords(request.getContent()));
 
-            post.setCoverImageUrl(request.getCoverImageUrl());
-            post.setFeaturedImageUrl(request.getFeaturedImageUrl());
-            post.setStatus(Boolean.TRUE.equals(request.getPublishNow()) ? "published" : "draft");
-            post.setVisibility(request.getVisibility() == null ? "public" : request.getVisibility());
-            post.setIsFeatured(request.getIsFeatured() != null && request.getIsFeatured());
-            post.setIsTop(request.getIsTop() != null && request.getIsTop());
-            post.setAllowComments(request.getAllowComments() != null && request.getAllowComments());
-            post.setCreatedAt(now);
-            post.setUpdatedAt(now);
+        post.setCoverImageUrl(request.getCoverImageUrl());
+        post.setFeaturedImageUrl(request.getFeaturedImageUrl());
+        post.setStatus(Boolean.TRUE.equals(request.getPublishNow()) ? "published" : "draft");
+        post.setVisibility(request.getVisibility() == null ? "public" : request.getVisibility());
+        post.setIsFeatured(request.getIsFeatured() != null && request.getIsFeatured());
+        post.setIsTop(request.getIsTop() != null && request.getIsTop());
+        post.setAllowComments(request.getAllowComments() != null && request.getAllowComments());
+        post.setCreatedAt(now);
+        post.setUpdatedAt(now);
 
-            // 6. 生成SEO相关字段
-            generateSeoFields(post, request);
+        // 6. 生成SEO相关字段
+        generateSeoFields(post, request);
 
-            // 7. 处理密码保护逻辑
-            handlePasswordProtection(post, request);
+        // 7. 处理密码保护逻辑
+        handlePasswordProtection(post, request);
 
-            // 8. 设置发布时间
-            if (request.getScheduledAt() == null && Boolean.TRUE.equals(request.getPublishNow())) {
-                post.setPublishedAt(now);
-            }
-
-            // 9. 插入数据库
-            try {
-                postsMapper.insert(post);
-            } catch (DataIntegrityViolationException e) {
-                handleDataIntegrityViolation(e, post.getSlug());
-            }
-
-            // 获取插入后的ID
-            Long postId = post.getId();
-
-            // 10. 处理标签关联
-            handlePostTags(postId, request.getTagIds());
-
-            // 11. 更新分类文章数量
-            incrementCategoryPostCount(request.getCategoryId());
-
-            return ApiResponse.success(CreatePostResponse.fromEntity(post));
-
-        } catch (BusinessException e) {
-            log.warn("创建文章业务异常: {}", e.getMessage());
-            return ApiResponse.error(e.getErrorCode().getCode(), e.getMessage());
-        } catch (Exception e) {
-            log.error("创建文章系统异常", e);
-            return ApiResponse.error("创建文章失败，请稍后重试");
+        // 8. 设置发布时间
+        if (request.getScheduledAt() == null && Boolean.TRUE.equals(request.getPublishNow())) {
+            post.setPublishedAt(now);
         }
+
+        // 9. 插入数据库
+        try {
+            postsMapper.insert(post);
+        } catch (DataIntegrityViolationException e) {
+            handleDataIntegrityViolation(e, post.getSlug());
+        }
+
+        // 获取插入后的ID
+        Long postId = post.getId();
+
+        // 10. 处理标签关联
+        handlePostTags(postId, request.getTagIds());
+
+        // 11. 更新分类文章数量
+        incrementCategoryPostCount(request.getCategoryId());
+
+        return ApiResponse.success(CreatePostResponse.fromEntity(post));
     }
 
     /**
@@ -133,97 +124,88 @@ public class PostCommandService {
      */
     @Transactional(rollbackFor = Exception.class)
     public ApiResponse<UpdatePostResponse> updatePost(Long postId, UpdatePostRequest request, Long userId) {
-        try {
-            // 首先获取文章，确保存在且属于当前用户
-            Posts existingPost = getPostByIdAndUserId(postId, userId);
-            if (existingPost == null) {
-                return ApiResponse.error("文章不存在或无权限修改");
-            }
-
-            if (existingPost.getStatus().equals("deleted")) {
-                return ApiResponse.error("文章已被删除，无法修改");
-            }
-
-            // 1. 参数验证
-            validateCreateOrUpdatePostRequest(request);
-
-            // 2. 验证分类是否存在
-            validateCategoryExists(request.getCategoryId());
-
-            OffsetDateTime now = OffsetDateTime.now();
-
-            // 3. 更新文章字段
-            existingPost.setCategoryId(request.getCategoryId());
-            existingPost.setTitle(request.getTitle());
-
-            // 4. 处理slug更新，确保唯一性
-            String newSlug = generateUniqueSlug(request.getSlug(), request.getTitle());
-            if (!newSlug.equals(existingPost.getSlug())) {
-                existingPost.setSlug(newSlug);
-            }
-
-            existingPost.setExcerpt(request.getExcerpt());
-            existingPost.setContent(request.getContent());
-
-            // 5. 生成HTML内容
-            existingPost.setHtmlContent(convertMarkdownToHtml(request.getContent()));
-
-            // 6. 计算阅读时间和字数统计
-            existingPost.setReadingTime(markdownService.estimateReadingTime(request.getContent()));
-            existingPost.setWordCount(markdownService.countWords(request.getContent()));
-
-            existingPost.setStatus(request.getStatus() != null ? request.getStatus() : existingPost.getStatus());
-            existingPost.setVisibility(request.getVisibility() == null ? "public" : request.getVisibility());
-            existingPost.setIsFeatured(request.getIsFeatured() != null && request.getIsFeatured());
-            existingPost.setIsTop(request.getIsTop() != null && request.getIsTop());
-            existingPost.setAllowComments(request.getAllowComments() != null && request.getAllowComments());
-            existingPost.setUpdatedAt(now);
-
-            // 7. 生成SEO相关字段
-            generateSeoFields(existingPost, request);
-
-            // 8. 处理密码保护逻辑
-            handlePasswordProtection(existingPost, request);
-
-            // 9. 设置发布时间
-            if (request.getScheduledAt() == null && "published".equals(request.getStatus())) {
-                existingPost.setPublishedAt(now);
-            }
-
-            // 10. 更新数据库
-            try {
-                postsMapper.updateById(existingPost);
-            } catch (DataIntegrityViolationException e) {
-                handleDataIntegrityViolation(e, existingPost.getSlug());
-            }
-
-            // 11. 处理标签关联更新
-            updatePostTags(existingPost.getId(), request.getTagIds());
-
-            // 12. 更新分类文章数量
-            updateCategoryPostCount(existingPost.getId(), existingPost.getCategoryId(), request.getCategoryId());
-
-            // 13. 构建响应
-            UpdatePostResponse response = new UpdatePostResponse();
-            response.setId(existingPost.getId());
-            response.setTitle(existingPost.getTitle());
-            response.setSlug(existingPost.getSlug());
-            response.setStatus(existingPost.getStatus());
-            response.setVisibility(existingPost.getVisibility());
-            response.setRevisionCreated(Boolean.FALSE); // 暂时不支持版本控制
-            response.setCurrentVersion(1); // 暂时不支持版本控制
-            response.setLastModifiedAt(existingPost.getUpdatedAt());
-            response.setUpdatedAt(existingPost.getUpdatedAt());
-
-            return ApiResponse.success(response);
-
-        } catch (BusinessException e) {
-            log.warn("更新文章业务异常: {}", e.getMessage());
-            return ApiResponse.error(e.getErrorCode().getCode(), e.getMessage());
-        } catch (Exception e) {
-            log.error("更新文章系统异常", e);
-            return ApiResponse.error("更新文章失败，请稍后重试");
+        // 首先获取文章，确保存在且属于当前用户
+        Posts existingPost = getPostByIdAndUserId(postId, userId);
+        if (existingPost == null) {
+            throw BusinessException.notFound("文章");
         }
+
+        if (existingPost.getStatus().equals("deleted")) {
+            throw BusinessException.of(com.kisesaki.blog.common.enums.ErrorCode.BUSINESS_ERROR, "文章已被删除，无法修改");
+        }
+
+        // 1. 参数验证
+        validateCreateOrUpdatePostRequest(request);
+
+        // 2. 验证分类是否存在
+        validateCategoryExists(request.getCategoryId());
+
+        OffsetDateTime now = OffsetDateTime.now();
+
+        // 3. 更新文章字段
+        existingPost.setCategoryId(request.getCategoryId());
+        existingPost.setTitle(request.getTitle());
+
+        // 4. 处理slug更新，确保唯一性
+        String newSlug = generateUniqueSlug(request.getSlug(), request.getTitle());
+        if (!newSlug.equals(existingPost.getSlug())) {
+            existingPost.setSlug(newSlug);
+        }
+
+        existingPost.setExcerpt(request.getExcerpt());
+        existingPost.setContent(request.getContent());
+
+        // 5. 生成HTML内容
+        existingPost.setHtmlContent(convertMarkdownToHtml(request.getContent()));
+
+        // 6. 计算阅读时间和字数统计
+        existingPost.setReadingTime(markdownService.estimateReadingTime(request.getContent()));
+        existingPost.setWordCount(markdownService.countWords(request.getContent()));
+
+        existingPost.setStatus(request.getStatus() != null ? request.getStatus() : existingPost.getStatus());
+        existingPost.setVisibility(request.getVisibility() == null ? "public" : request.getVisibility());
+        existingPost.setIsFeatured(request.getIsFeatured() != null && request.getIsFeatured());
+        existingPost.setIsTop(request.getIsTop() != null && request.getIsTop());
+        existingPost.setAllowComments(request.getAllowComments() != null && request.getAllowComments());
+        existingPost.setUpdatedAt(now);
+
+        // 7. 生成SEO相关字段
+        generateSeoFields(existingPost, request);
+
+        // 8. 处理密码保护逻辑
+        handlePasswordProtection(existingPost, request);
+
+        // 9. 设置发布时间
+        if (request.getScheduledAt() == null && "published".equals(request.getStatus())) {
+            existingPost.setPublishedAt(now);
+        }
+
+        // 10. 更新数据库
+        try {
+            postsMapper.updateById(existingPost);
+        } catch (DataIntegrityViolationException e) {
+            handleDataIntegrityViolation(e, existingPost.getSlug());
+        }
+
+        // 11. 处理标签关联更新
+        updatePostTags(existingPost.getId(), request.getTagIds());
+
+        // 12. 更新分类文章数量
+        updateCategoryPostCount(existingPost.getId(), existingPost.getCategoryId(), request.getCategoryId());
+
+        // 13. 构建响应
+        UpdatePostResponse response = new UpdatePostResponse();
+        response.setId(existingPost.getId());
+        response.setTitle(existingPost.getTitle());
+        response.setSlug(existingPost.getSlug());
+        response.setStatus(existingPost.getStatus());
+        response.setVisibility(existingPost.getVisibility());
+        response.setRevisionCreated(Boolean.FALSE); // 暂时不支持版本控制
+        response.setCurrentVersion(1); // 暂时不支持版本控制
+        response.setLastModifiedAt(existingPost.getUpdatedAt());
+        response.setUpdatedAt(existingPost.getUpdatedAt());
+
+        return ApiResponse.success(response);
     }
 
     /**
@@ -233,20 +215,15 @@ public class PostCommandService {
      * @param userId 当前用户ID
      */
     public ApiResponse<Void> deletePost(Long postId, Long userId) {
-        try {
-            Posts existingPost = getPostByIdAndUserId(postId, userId);
-            if (existingPost == null) {
-                return ApiResponse.error("文章不存在或无权限删除");
-            }
-            existingPost.setStatus("deleted");
-            existingPost.setUpdatedAt(OffsetDateTime.now());
-            postsMapper.updateById(existingPost);
-
-            return ApiResponse.success("删除文章成功");
-        } catch (Exception e) {
-            log.error("删除文章系统异常", e);
-            return ApiResponse.error("删除文章失败，请稍后重试");
+        Posts existingPost = getPostByIdAndUserId(postId, userId);
+        if (existingPost == null) {
+            throw BusinessException.notFound("文章");
         }
+        existingPost.setStatus("deleted");
+        existingPost.setUpdatedAt(OffsetDateTime.now());
+        postsMapper.updateById(existingPost);
+
+        return ApiResponse.success("删除文章成功");
     }
 
     /**
@@ -256,21 +233,16 @@ public class PostCommandService {
      * @param userId 当前用户ID
      */
     public ApiResponse<Void> publishPost(Long postId, Long userId) {
-        try {
-            Posts existingPost = getPostByIdAndUserId(postId, userId);
-            if (existingPost == null) {
-                return ApiResponse.error("文章不存在或无权限发布");
-            }
-            existingPost.setStatus("published");
-            existingPost.setPublishedAt(OffsetDateTime.now());
-            existingPost.setUpdatedAt(OffsetDateTime.now());
-            postsMapper.updateById(existingPost);
-
-            return ApiResponse.success("发布文章成功");
-        } catch (Exception e) {
-            log.error("发布文章系统异常", e);
-            return ApiResponse.error("发布文章失败，请稍后重试");
+        Posts existingPost = getPostByIdAndUserId(postId, userId);
+        if (existingPost == null) {
+            throw BusinessException.notFound("文章");
         }
+        existingPost.setStatus("published");
+        existingPost.setPublishedAt(OffsetDateTime.now());
+        existingPost.setUpdatedAt(OffsetDateTime.now());
+        postsMapper.updateById(existingPost);
+
+        return ApiResponse.success("发布文章成功");
     }
 
     /**
@@ -280,20 +252,15 @@ public class PostCommandService {
      * @param userId 当前用户ID
      */
     public ApiResponse<Void> unpublishPost(Long postId, Long userId) {
-        try {
-            Posts existingPost = getPostByIdAndUserId(postId, userId);
-            if (existingPost == null) {
-                return ApiResponse.error("文章不存在或无权限取消发布");
-            }
-            existingPost.setStatus("draft");
-            existingPost.setUpdatedAt(OffsetDateTime.now());
-            postsMapper.updateById(existingPost);
-
-            return ApiResponse.success("取消发布文章成功");
-        } catch (Exception e) {
-            log.error("取消发布文章系统异常", e);
-            return ApiResponse.error("取消发布文章失败，请稍后重试");
+        Posts existingPost = getPostByIdAndUserId(postId, userId);
+        if (existingPost == null) {
+            throw BusinessException.notFound("文章");
         }
+        existingPost.setStatus("draft");
+        existingPost.setUpdatedAt(OffsetDateTime.now());
+        postsMapper.updateById(existingPost);
+
+        return ApiResponse.success("取消发布文章成功");
     }
 
     /**
@@ -304,57 +271,52 @@ public class PostCommandService {
      * @return 新文章ID
      */
     public ApiResponse<Long> duplicatePost(Long postId, Long userId) {
-        try {
-            Posts existingPost = getPostByIdAndUserId(postId, userId);
-            if (existingPost == null) {
-                return ApiResponse.error("文章不存在或无权限复制");
-            }
-
-            OffsetDateTime now = OffsetDateTime.now();
-
-            Posts newPost = new Posts();
-            newPost.setAuthorId(userId);
-            newPost.setCategoryId(existingPost.getCategoryId());
-            newPost.setTitle(existingPost.getTitle() + " (副本)");
-            newPost.setSlug(generateUniqueSlug(null, existingPost.getTitle() + " (副本)"));
-            newPost.setExcerpt(existingPost.getExcerpt());
-            newPost.setContent(existingPost.getContent());
-            newPost.setHtmlContent(existingPost.getHtmlContent());
-            newPost.setReadingTime(existingPost.getReadingTime());
-            newPost.setWordCount(existingPost.getWordCount());
-            newPost.setCoverImageUrl(existingPost.getCoverImageUrl());
-            newPost.setFeaturedImageUrl(existingPost.getFeaturedImageUrl());
-            newPost.setStatus("draft");
-            newPost.setVisibility(existingPost.getVisibility());
-            newPost.setIsFeatured(existingPost.getIsFeatured());
-            newPost.setIsTop(existingPost.getIsTop());
-            newPost.setAllowComments(existingPost.getAllowComments());
-            newPost.setCreatedAt(now);
-            newPost.setUpdatedAt(now);
-            newPost.setSeoTitle(existingPost.getSeoTitle());
-            newPost.setSeoDescription(existingPost.getSeoDescription());
-            newPost.setSeoKeywords(existingPost.getSeoKeywords());
-            newPost.setPassword(existingPost.getPassword());
-
-            postsMapper.insert(newPost);
-            Long newPostId = newPost.getId();
-
-            // 复制标签关联
-            LambdaQueryWrapper<PostTags> tagWrapper = new LambdaQueryWrapper<>();
-            tagWrapper.eq(PostTags::getPostId, existingPost.getId());
-            List<PostTags> oldTags = postTagsMapper.selectList(tagWrapper);
-            for (PostTags oldTag : oldTags) {
-                PostTags newTag = new PostTags();
-                newTag.setPostId(newPostId);
-                newTag.setTagId(oldTag.getTagId());
-                postTagsMapper.insert(newTag);
-            }
-
-            return ApiResponse.success("复制文章成功", newPostId);
-        } catch (Exception e) {
-            log.error("复制文章系统异常", e);
-            return ApiResponse.error("复制文章失败，请稍后重试");
+        Posts existingPost = getPostByIdAndUserId(postId, userId);
+        if (existingPost == null) {
+            throw BusinessException.notFound("文章");
         }
+
+        OffsetDateTime now = OffsetDateTime.now();
+
+        Posts newPost = new Posts();
+        newPost.setAuthorId(userId);
+        newPost.setCategoryId(existingPost.getCategoryId());
+        newPost.setTitle(existingPost.getTitle() + " (副本)");
+        newPost.setSlug(generateUniqueSlug(null, existingPost.getTitle() + " (副本)"));
+        newPost.setExcerpt(existingPost.getExcerpt());
+        newPost.setContent(existingPost.getContent());
+        newPost.setHtmlContent(existingPost.getHtmlContent());
+        newPost.setReadingTime(existingPost.getReadingTime());
+        newPost.setWordCount(existingPost.getWordCount());
+        newPost.setCoverImageUrl(existingPost.getCoverImageUrl());
+        newPost.setFeaturedImageUrl(existingPost.getFeaturedImageUrl());
+        newPost.setStatus("draft");
+        newPost.setVisibility(existingPost.getVisibility());
+        newPost.setIsFeatured(existingPost.getIsFeatured());
+        newPost.setIsTop(existingPost.getIsTop());
+        newPost.setAllowComments(existingPost.getAllowComments());
+        newPost.setCreatedAt(now);
+        newPost.setUpdatedAt(now);
+        newPost.setSeoTitle(existingPost.getSeoTitle());
+        newPost.setSeoDescription(existingPost.getSeoDescription());
+        newPost.setSeoKeywords(existingPost.getSeoKeywords());
+        newPost.setPassword(existingPost.getPassword());
+
+        postsMapper.insert(newPost);
+        Long newPostId = newPost.getId();
+
+        // 复制标签关联
+        LambdaQueryWrapper<PostTags> tagWrapper = new LambdaQueryWrapper<>();
+        tagWrapper.eq(PostTags::getPostId, existingPost.getId());
+        List<PostTags> oldTags = postTagsMapper.selectList(tagWrapper);
+        for (PostTags oldTag : oldTags) {
+            PostTags newTag = new PostTags();
+            newTag.setPostId(newPostId);
+            newTag.setTagId(oldTag.getTagId());
+            postTagsMapper.insert(newTag);
+        }
+
+        return ApiResponse.success("复制文章成功", newPostId);
     }
 
     /**

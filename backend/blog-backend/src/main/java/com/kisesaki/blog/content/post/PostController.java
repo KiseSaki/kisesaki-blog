@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.util.AuthUtils;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
@@ -53,13 +54,8 @@ public class PostController {
     @GetMapping("")
     public ApiResponse<PageResponse<PublishedPostListResponse>> selectPublishedPosts(
             @Valid PublishedPostListParams params) {
-        try {
-            PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
-            return ResultUtils.success("获取文章列表成功", pageResponse);
-        } catch (Exception e) {
-            log.error("获取已发布文章列表失败", e);
-            return ResultUtils.error("获取已发布文章列表失败: " + e.getMessage());
-        }
+        PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
+        return ResultUtils.success("获取文章列表成功", pageResponse);
     }
 
     /**
@@ -71,13 +67,8 @@ public class PostController {
     @GetMapping("/{id}")
     public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetailById(@PathVariable Long id,
             Authentication authentication) {
-        try {
-            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            return postQueryService.getPublishedPostDetail(id, null, userId);
-        } catch (Exception e) {
-            log.error("获取已发布文章详情失败", e);
-            return ResultUtils.error("获取已发布文章详情失败: " + e.getMessage());
-        }
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        return postQueryService.getPublishedPostDetail(id, null, userId);
     }
 
     /**
@@ -89,13 +80,8 @@ public class PostController {
     @GetMapping("/slug/{slug}")
     public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetailBySlug(@PathVariable String slug,
             Authentication authentication) {
-        try {
-            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            return postQueryService.getPublishedPostDetail(null, slug, userId);
-        } catch (Exception e) {
-            log.error("获取已发布文章详情失败", e);
-            return ResultUtils.error("获取已发布文章详情失败: " + e.getMessage());
-        }
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        return postQueryService.getPublishedPostDetail(null, slug, userId);
     }
 
     /**
@@ -107,40 +93,25 @@ public class PostController {
     @GetMapping("/featured")
     public ApiResponse<PageResponse<PublishedPostListResponse>> getFeaturedPosts(
             @Valid PublishedPostListParams params) {
-        try {
-            params.setIsFeatured(true);
-            PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
-            return ResultUtils.success("获取精选文章列表成功", pageResponse);
-        } catch (Exception e) {
-            log.error("获取精选文章列表失败", e);
-            return ResultUtils.error("获取精选文章列表失败: " + e.getMessage());
-        }
+        params.setIsFeatured(true);
+        PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
+        return ResultUtils.success("获取精选文章列表成功", pageResponse);
     }
 
     @GetMapping("/recent")
     public ApiResponse<PageResponse<PublishedPostListResponse>> getRecentPosts(@Valid PublishedPostListParams params) {
-        try {
-            // 强制按发布时间降序排序
-            params.getPageable().setSort("publishedAt:desc");
-            PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
-            return ResultUtils.success("获取最新文章列表成功", pageResponse);
-        } catch (Exception e) {
-            log.error("获取最新文章列表失败", e);
-            return ResultUtils.error("获取最新文章列表失败: " + e.getMessage());
-        }
+        // 强制按发布时间降序排序
+        params.getPageable().setSort("publishedAt:desc");
+        PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
+        return ResultUtils.success("获取最新文章列表成功", pageResponse);
     }
 
     @GetMapping("/popular")
     public ApiResponse<PageResponse<PublishedPostListResponse>> getPopularPosts(@Valid PublishedPostListParams params) {
-        try {
-            // 强制按浏览量降序排序
-            params.getPageable().setSort("viewCount:desc");
-            PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
-            return ResultUtils.success("获取热门文章列表成功", pageResponse);
-        } catch (Exception e) {
-            log.error("获取热门文章列表失败", e);
-            return ResultUtils.error("获取热门文章列表失败: " + e.getMessage());
-        }
+        // 强制按浏览量降序排序
+        params.getPageable().setSort("viewCount:desc");
+        PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
+        return ResultUtils.success("获取热门文章列表成功", pageResponse);
     }
 
     /*
@@ -150,14 +121,9 @@ public class PostController {
     @PostMapping("")
     public ApiResponse<CreatePostResponse> createPost(@Valid @RequestBody CreatePostRequest request,
             Authentication authentication) {
-        try {
-            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            log.info("用户 {} 创建文章: {}", userId, request);
-            return postCommandService.createPost(request, userId);
-        } catch (Exception e) {
-            log.error("创建文章失败", e);
-            return ResultUtils.error("创建文章失败: " + e.getMessage());
-        }
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        log.info("用户 {} 创建文章: {}", userId, request);
+        return postCommandService.createPost(request, userId);
     }
 
     /**
@@ -167,14 +133,9 @@ public class PostController {
     public ApiResponse<UpdatePostResponse> updatePost(@PathVariable Long id,
             @Valid @RequestBody UpdatePostRequest request,
             Authentication authentication) {
-        try {
-            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            log.info("用户 {} 更新文章 {}: {}", userId, id, request);
-            return postCommandService.updatePost(id, request, userId);
-        } catch (Exception e) {
-            log.error("更新文章失败", e);
-            return ResultUtils.error("更新文章失败: " + e.getMessage());
-        }
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        log.info("用户 {} 更新文章 {}: {}", userId, id, request);
+        return postCommandService.updatePost(id, request, userId);
     }
 
     /**
@@ -182,14 +143,9 @@ public class PostController {
      */
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deletePost(@PathVariable Long id, Authentication authentication) {
-        try {
-            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            log.info("用户 {} 删除文章 {}", userId, id);
-            return postCommandService.deletePost(id, userId);
-        } catch (Exception e) {
-            log.error("删除文章失败", e);
-            return ResultUtils.error("删除文章失败: " + e.getMessage());
-        }
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        log.info("用户 {} 删除文章 {}", userId, id);
+        return postCommandService.deletePost(id, userId);
     }
 
     /**
@@ -197,14 +153,9 @@ public class PostController {
      */
     @PutMapping("/{id}/publish")
     public ApiResponse<Void> publishPost(@PathVariable Long id, Authentication authentication) {
-        try {
-            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            log.info("用户 {} 发布文章 {}", userId, id);
-            return postCommandService.publishPost(id, userId);
-        } catch (Exception e) {
-            log.error("发布文章失败", e);
-            return ResultUtils.error("发布文章失败: " + e.getMessage());
-        }
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        log.info("用户 {} 发布文章 {}", userId, id);
+        return postCommandService.publishPost(id, userId);
     }
 
     /**
@@ -212,14 +163,9 @@ public class PostController {
      */
     @PutMapping("/{id}/unpublish")
     public ApiResponse<Void> unpublishPost(@PathVariable Long id, Authentication authentication) {
-        try {
-            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            log.info("用户 {} 取消发布文章 {}", userId, id);
-            return postCommandService.unpublishPost(id, userId);
-        } catch (Exception e) {
-            log.error("取消发布文章失败", e);
-            return ResultUtils.error("取消发布文章失败: " + e.getMessage());
-        }
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        log.info("用户 {} 取消发布文章 {}", userId, id);
+        return postCommandService.unpublishPost(id, userId);
     }
 
     /**
@@ -227,14 +173,9 @@ public class PostController {
      */
     @PostMapping("/{id}/duplicate")
     public ApiResponse<Long> duplicatePost(@PathVariable Long id, Authentication authentication) {
-        try {
-            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            log.info("用户 {} 复制文章 {}", userId, id);
-            return postCommandService.duplicatePost(id, userId);
-        } catch (Exception e) {
-            log.error("复制文章失败", e);
-            return ResultUtils.error("复制文章失败: " + e.getMessage());
-        }
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        log.info("用户 {} 复制文章 {}", userId, id);
+        return postCommandService.duplicatePost(id, userId);
     }
 
     /**
@@ -248,18 +189,13 @@ public class PostController {
     public ApiResponse<PageResponse<MyPostsListResponse>> getMyPosts(
             @Valid GetMyPostsListParams params,
             Authentication authentication) {
-        try {
-            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            if (userId == null) {
-                return ResultUtils.error("用户未登录");
-            }
-
-            PageResponse<MyPostsListResponse> pageResponse = postQueryService.getMyPosts(params, userId);
-            return ResultUtils.success("获取我的文章列表成功", pageResponse);
-        } catch (Exception e) {
-            log.error("获取我的文章列表失败", e);
-            return ResultUtils.error("获取我的文章列表失败: " + e.getMessage());
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            throw BusinessException.of(com.kisesaki.blog.common.enums.ErrorCode.UNAUTHORIZED, "用户未登录");
         }
+
+        PageResponse<MyPostsListResponse> pageResponse = postQueryService.getMyPosts(params, userId);
+        return ResultUtils.success("获取我的文章列表成功", pageResponse);
     }
 
 }

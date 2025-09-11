@@ -4,6 +4,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,8 @@ import com.kisesaki.blog.common.dto.ResultUtils;
 import com.kisesaki.blog.common.util.AuthUtils;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
+import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostRequest;
+import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.GetMyPostsListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.MyPostsListResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
@@ -153,6 +156,23 @@ public class PostController {
         } catch (Exception e) {
             log.error("创建文章失败", e);
             return ResultUtils.error("创建文章失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 更新文章
+     */
+    @PutMapping("/{id}")
+    public ApiResponse<UpdatePostResponse> updatePost(@PathVariable Long id,
+            @Valid @RequestBody UpdatePostRequest request,
+            Authentication authentication) {
+        try {
+            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+            log.info("用户 {} 更新文章 {}: {}", userId, id, request);
+            return postCommandService.updatePost(id, request, userId);
+        } catch (Exception e) {
+            log.error("更新文章失败", e);
+            return ResultUtils.error("更新文章失败: " + e.getMessage());
         }
     }
 

@@ -16,8 +16,11 @@ import com.kisesaki.blog.common.markdown.MarkdownService;
 import com.kisesaki.blog.common.util.SlugGenerator;
 import com.kisesaki.blog.content.category.entity.Categories;
 import com.kisesaki.blog.content.category.mapper.CategoriesMapper;
+import com.kisesaki.blog.content.post.dto.BasePostDto;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
+import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostRequest;
+import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostResponse;
 import com.kisesaki.blog.content.post.entity.PostTags;
 import com.kisesaki.blog.content.post.entity.Posts;
 import com.kisesaki.blog.content.post.mapper.PostTagsMapper;
@@ -48,7 +51,7 @@ public class PostCommandService {
     public ApiResponse<CreatePostResponse> createPost(CreatePostRequest request, Long userId) {
         try {
             // 1. 参数验证
-            validateCreatePostRequest(request);
+            validateCreateOrUpdatePostRequest(request);
 
             // 2. 验证分类是否存在
             validateCategoryExists(request.getCategoryId());
@@ -122,9 +125,110 @@ public class PostCommandService {
     }
 
     /**
-     * 验证创建文章请求参数
+     * 更新文章
+     * 
+     * @param request 更新文章请求DTO
+     * @param userId  当前用户ID
+     * @return 更新文章响应DTO
      */
-    private void validateCreatePostRequest(CreatePostRequest request) {
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResponse<UpdatePostResponse> updatePost(Long postId, UpdatePostRequest request, Long userId) {
+        try {
+            // 首先获取文章，确保存在且属于当前用户
+            LambdaQueryWrapper<Posts> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Posts::getId, postId);
+            queryWrapper.eq(Posts::getAuthorId, userId);
+            Posts existingPost = postsMapper.selectOne(queryWrapper);
+            if (existingPost == null) {
+                return ApiResponse.error("文章不存在或无权限修改");
+            }
+
+            // 1. 参数验证
+            validateCreateOrUpdatePostRequest(request);
+
+            // 2. 验证分类是否存在
+            validateCategoryExists(request.getCategoryId());
+
+            OffsetDateTime now = OffsetDateTime.now();
+
+            // 3. 更新文章字段
+            existingPost.setCategoryId(request.getCategoryId());
+            existingPost.setTitle(request.getTitle());
+
+            // 4. 处理slug更新，确保唯一性
+            String newSlug = generateUniqueSlug(request.getSlug(), request.getTitle());
+            if (!newSlug.equals(existingPost.getSlug())) {
+                existingPost.setSlug(newSlug);
+            }
+
+            existingPost.setExcerpt(request.getExcerpt());
+            existingPost.setContent(request.getContent());
+
+            // 5. 生成HTML内容
+            existingPost.setHtmlContent(convertMarkdownToHtml(request.getContent()));
+
+            // 6. 计算阅读时间和字数统计
+            existingPost.setReadingTime(markdownService.estimateReadingTime(request.getContent()));
+            existingPost.setWordCount(markdownService.countWords(request.getContent()));
+
+            existingPost.setStatus(request.getStatus() != null ? request.getStatus() : existingPost.getStatus());
+            existingPost.setVisibility(request.getVisibility() == null ? "public" : request.getVisibility());
+            existingPost.setIsFeatured(request.getIsFeatured() != null && request.getIsFeatured());
+            existingPost.setIsTop(request.getIsTop() != null && request.getIsTop());
+            existingPost.setAllowComments(request.getAllowComments() != null && request.getAllowComments());
+            existingPost.setUpdatedAt(now);
+
+            // 7. 生成SEO相关字段
+            generateSeoFields(existingPost, request);
+
+            // 8. 处理密码保护逻辑
+            handlePasswordProtection(existingPost, request);
+
+            // 9. 设置发布时间
+            if (request.getScheduledAt() == null && "published".equals(request.getStatus())) {
+                existingPost.setPublishedAt(now);
+            }
+
+            // 10. 更新数据库
+            try {
+                postsMapper.updateById(existingPost);
+            } catch (DataIntegrityViolationException e) {
+                handleDataIntegrityViolation(e, existingPost.getSlug());
+            }
+
+            // 11. 处理标签关联更新
+            updatePostTags(existingPost.getId(), request.getTagIds());
+
+            // 12. 更新分类文章数量
+            updateCategoryPostCount(existingPost.getId(), existingPost.getCategoryId(), request.getCategoryId());
+
+            // 13. 构建响应
+            UpdatePostResponse response = new UpdatePostResponse();
+            response.setId(existingPost.getId());
+            response.setTitle(existingPost.getTitle());
+            response.setSlug(existingPost.getSlug());
+            response.setStatus(existingPost.getStatus());
+            response.setVisibility(existingPost.getVisibility());
+            response.setRevisionCreated(Boolean.FALSE); // 暂时不支持版本控制
+            response.setCurrentVersion(1); // 暂时不支持版本控制
+            response.setLastModifiedAt(existingPost.getUpdatedAt());
+            response.setUpdatedAt(existingPost.getUpdatedAt());
+
+            return ApiResponse.success(response);
+
+        } catch (BusinessException e) {
+            log.warn("更新文章业务异常: {}", e.getMessage());
+            return ApiResponse.error(e.getErrorCode().getCode(), e.getMessage());
+        } catch (Exception e) {
+            log.error("更新文章系统异常", e);
+            return ApiResponse.error("更新文章失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 验证创建或更新文章请求参数
+     */
+    private void validateCreateOrUpdatePostRequest(BasePostDto request) {
         if (!StringUtils.hasText(request.getTitle())) {
             throw BusinessException.paramError("文章标题不能为空");
         }
@@ -200,7 +304,7 @@ public class PostCommandService {
     /**
      * 处理密码保护逻辑
      */
-    private void handlePasswordProtection(Posts post, CreatePostRequest request) {
+    private void handlePasswordProtection(Posts post, BasePostDto request) {
         if ("password_protected".equals(post.getVisibility())) {
             if (!StringUtils.hasText(request.getPassword())) {
                 throw BusinessException.passwordRequired();
@@ -242,6 +346,53 @@ public class PostCommandService {
     }
 
     /**
+     * 更新文章标签关联
+     */
+    private void updatePostTags(Long postId, List<Long> newTagIds) {
+        // 删除旧的标签关联
+        LambdaQueryWrapper<PostTags> deleteWrapper = new LambdaQueryWrapper<>();
+        deleteWrapper.eq(PostTags::getPostId, postId);
+        postTagsMapper.delete(deleteWrapper);
+
+        // 添加新的标签关联
+        if (newTagIds != null && !newTagIds.isEmpty()) {
+            newTagIds.forEach(tagId -> {
+                PostTags postTag = new PostTags();
+                postTag.setPostId(postId);
+                postTag.setTagId(tagId);
+                postTagsMapper.insert(postTag);
+            });
+        }
+    }
+
+    /**
+     * 更新分类文章数量
+     */
+    private void updateCategoryPostCount(Long postId, Long oldCategoryId, Long newCategoryId) {
+        // 如果分类没有改变，不需要更新
+        if ((oldCategoryId == null && newCategoryId == null) ||
+                (oldCategoryId != null && oldCategoryId.equals(newCategoryId))) {
+            return;
+        }
+
+        // 减少旧分类的文章数量
+        if (oldCategoryId != null) {
+            new LambdaUpdateChainWrapper<>(categoriesMapper)
+                    .eq(Categories::getId, oldCategoryId)
+                    .setSql("post_count = post_count - 1")
+                    .update();
+        }
+
+        // 增加新分类的文章数量
+        if (newCategoryId != null) {
+            new LambdaUpdateChainWrapper<>(categoriesMapper)
+                    .eq(Categories::getId, newCategoryId)
+                    .setSql("post_count = post_count + 1")
+                    .update();
+        }
+    }
+
+    /**
      * 增加分类的文章数量
      */
     private void incrementCategoryPostCount(Long categoryId) {
@@ -261,7 +412,7 @@ public class PostCommandService {
      * @param post    文章实体
      * @param request 请求DTO
      */
-    private void generateSeoFields(Posts post, CreatePostRequest request) {
+    private void generateSeoFields(Posts post, BasePostDto request) {
         // SEO标题：优先使用用户提供的，否则使用文章标题
         if (StringUtils.hasText(request.getSeoTitle())) {
             post.setSeoTitle(request.getSeoTitle());

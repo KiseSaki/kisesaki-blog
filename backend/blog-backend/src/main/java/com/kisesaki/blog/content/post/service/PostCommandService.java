@@ -142,6 +142,10 @@ public class PostCommandService {
             if (existingPost == null) {
                 return ApiResponse.error("文章不存在或无权限修改");
             }
+            
+            if (existingPost.getStatus().equals("deleted")) {
+                return ApiResponse.error("文章已被删除，无法修改");
+            }
 
             // 1. 参数验证
             validateCreateOrUpdatePostRequest(request);

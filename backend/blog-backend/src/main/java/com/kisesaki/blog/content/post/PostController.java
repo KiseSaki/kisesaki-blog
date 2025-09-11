@@ -193,6 +193,51 @@ public class PostController {
     }
 
     /**
+     * 发布文章
+     */
+    @PutMapping("/{id}/publish")
+    public ApiResponse<Void> publishPost(@PathVariable Long id, Authentication authentication) {
+        try {
+            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+            log.info("用户 {} 发布文章 {}", userId, id);
+            return postCommandService.publishPost(id, userId);
+        } catch (Exception e) {
+            log.error("发布文章失败", e);
+            return ResultUtils.error("发布文章失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 取消发布（变为草稿）
+     */
+    @PutMapping("/{id}/unpublish")
+    public ApiResponse<Void> unpublishPost(@PathVariable Long id, Authentication authentication) {
+        try {
+            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+            log.info("用户 {} 取消发布文章 {}", userId, id);
+            return postCommandService.unpublishPost(id, userId);
+        } catch (Exception e) {
+            log.error("取消发布文章失败", e);
+            return ResultUtils.error("取消发布文章失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 复制文章
+     */
+    @PostMapping("/{id}/duplicate")
+    public ApiResponse<Long> duplicatePost(@PathVariable Long id, Authentication authentication) {
+        try {
+            Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+            log.info("用户 {} 复制文章 {}", userId, id);
+            return postCommandService.duplicatePost(id, userId);
+        } catch (Exception e) {
+            log.error("复制文章失败", e);
+            return ResultUtils.error("复制文章失败: " + e.getMessage());
+        }
+    }
+
+    /**
      * 获取我的文章列表（包括草稿）
      *
      * @param params         查询参数

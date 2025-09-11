@@ -135,14 +135,11 @@ public class PostCommandService {
     public ApiResponse<UpdatePostResponse> updatePost(Long postId, UpdatePostRequest request, Long userId) {
         try {
             // 首先获取文章，确保存在且属于当前用户
-            LambdaQueryWrapper<Posts> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Posts::getId, postId);
-            queryWrapper.eq(Posts::getAuthorId, userId);
-            Posts existingPost = postsMapper.selectOne(queryWrapper);
+            Posts existingPost = getPostByIdAndUserId(postId, userId);
             if (existingPost == null) {
                 return ApiResponse.error("文章不存在或无权限修改");
             }
-            
+
             if (existingPost.getStatus().equals("deleted")) {
                 return ApiResponse.error("文章已被删除，无法修改");
             }
@@ -229,12 +226,15 @@ public class PostCommandService {
         }
     }
 
+    /**
+     * 删除文章
+     * 
+     * @param postId 文章ID
+     * @param userId 当前用户ID
+     */
     public ApiResponse<Void> deletePost(Long postId, Long userId) {
         try {
-            LambdaQueryWrapper<Posts> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Posts::getId, postId);
-            queryWrapper.eq(Posts::getAuthorId, userId);
-            Posts existingPost = postsMapper.selectOne(queryWrapper);
+            Posts existingPost = getPostByIdAndUserId(postId, userId);
             if (existingPost == null) {
                 return ApiResponse.error("文章不存在或无权限删除");
             }
@@ -247,6 +247,127 @@ public class PostCommandService {
             log.error("删除文章系统异常", e);
             return ApiResponse.error("删除文章失败，请稍后重试");
         }
+    }
+
+    /**
+     * 发布文章
+     * 
+     * @param postId 文章ID
+     * @param userId 当前用户ID
+     */
+    public ApiResponse<Void> publishPost(Long postId, Long userId) {
+        try {
+            Posts existingPost = getPostByIdAndUserId(postId, userId);
+            if (existingPost == null) {
+                return ApiResponse.error("文章不存在或无权限发布");
+            }
+            existingPost.setStatus("published");
+            existingPost.setPublishedAt(OffsetDateTime.now());
+            existingPost.setUpdatedAt(OffsetDateTime.now());
+            postsMapper.updateById(existingPost);
+
+            return ApiResponse.success("发布文章成功");
+        } catch (Exception e) {
+            log.error("发布文章系统异常", e);
+            return ApiResponse.error("发布文章失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 取消发布（变为草稿）
+     * 
+     * @param postId 文章ID
+     * @param userId 当前用户ID
+     */
+    public ApiResponse<Void> unpublishPost(Long postId, Long userId) {
+        try {
+            Posts existingPost = getPostByIdAndUserId(postId, userId);
+            if (existingPost == null) {
+                return ApiResponse.error("文章不存在或无权限取消发布");
+            }
+            existingPost.setStatus("draft");
+            existingPost.setUpdatedAt(OffsetDateTime.now());
+            postsMapper.updateById(existingPost);
+
+            return ApiResponse.success("取消发布文章成功");
+        } catch (Exception e) {
+            log.error("取消发布文章系统异常", e);
+            return ApiResponse.error("取消发布文章失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 复制文章
+     * 
+     * @param postId 文章ID
+     * @param userId 当前用户ID
+     * @return 新文章ID
+     */
+    public ApiResponse<Long> duplicatePost(Long postId, Long userId) {
+        try {
+            Posts existingPost = getPostByIdAndUserId(postId, userId);
+            if (existingPost == null) {
+                return ApiResponse.error("文章不存在或无权限复制");
+            }
+
+            OffsetDateTime now = OffsetDateTime.now();
+
+            Posts newPost = new Posts();
+            newPost.setAuthorId(userId);
+            newPost.setCategoryId(existingPost.getCategoryId());
+            newPost.setTitle(existingPost.getTitle() + " (副本)");
+            newPost.setSlug(generateUniqueSlug(null, existingPost.getTitle() + " (副本)"));
+            newPost.setExcerpt(existingPost.getExcerpt());
+            newPost.setContent(existingPost.getContent());
+            newPost.setHtmlContent(existingPost.getHtmlContent());
+            newPost.setReadingTime(existingPost.getReadingTime());
+            newPost.setWordCount(existingPost.getWordCount());
+            newPost.setCoverImageUrl(existingPost.getCoverImageUrl());
+            newPost.setFeaturedImageUrl(existingPost.getFeaturedImageUrl());
+            newPost.setStatus("draft");
+            newPost.setVisibility(existingPost.getVisibility());
+            newPost.setIsFeatured(existingPost.getIsFeatured());
+            newPost.setIsTop(existingPost.getIsTop());
+            newPost.setAllowComments(existingPost.getAllowComments());
+            newPost.setCreatedAt(now);
+            newPost.setUpdatedAt(now);
+            newPost.setSeoTitle(existingPost.getSeoTitle());
+            newPost.setSeoDescription(existingPost.getSeoDescription());
+            newPost.setSeoKeywords(existingPost.getSeoKeywords());
+            newPost.setPassword(existingPost.getPassword());
+
+            postsMapper.insert(newPost);
+            Long newPostId = newPost.getId();
+
+            // 复制标签关联
+            LambdaQueryWrapper<PostTags> tagWrapper = new LambdaQueryWrapper<>();
+            tagWrapper.eq(PostTags::getPostId, existingPost.getId());
+            List<PostTags> oldTags = postTagsMapper.selectList(tagWrapper);
+            for (PostTags oldTag : oldTags) {
+                PostTags newTag = new PostTags();
+                newTag.setPostId(newPostId);
+                newTag.setTagId(oldTag.getTagId());
+                postTagsMapper.insert(newTag);
+            }
+
+            return ApiResponse.success("复制文章成功", newPostId);
+        } catch (Exception e) {
+            log.error("复制文章系统异常", e);
+            return ApiResponse.error("复制文章失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 根据用户id和文章id查询文章
+     * 
+     * @param postId 文章ID
+     * @param userId 当前用户ID
+     */
+    private Posts getPostByIdAndUserId(Long postId, Long userId) {
+        LambdaQueryWrapper<Posts> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Posts::getId, postId);
+        queryWrapper.eq(Posts::getAuthorId, userId);
+        return postsMapper.selectOne(queryWrapper);
     }
 
     /**

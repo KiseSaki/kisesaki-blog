@@ -17,6 +17,7 @@ import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.util.AuthUtils;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
+import com.kisesaki.blog.content.post.dto.PostCommand.MetaDataDto;
 import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.GetMyPostsListParams;
@@ -204,6 +205,61 @@ public class PostController {
 
         PageResponse<MyPostsListResponse> pageResponse = postQueryService.getMyPosts(params, userId);
         return ResultUtils.success("获取我的文章列表成功", pageResponse);
+    }
+
+    /*
+     * ----------------------------- 文章元数据相关接口
+     * -----------------------------
+     */
+
+    /**
+     * 获取文章元数据
+     *
+     * @param id             文章ID
+     * @param authentication 认证信息
+     * @return 文章元数据
+     */
+    @GetMapping("/{id}/meta")
+    public ApiResponse<MetaDataDto.PostMetaResponse> getPostMeta(@PathVariable Long id,
+            Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        MetaDataDto.PostMetaResponse result = postCommandService.getPostMeta(id, userId);
+        return ResultUtils.success("获取文章元数据成功", result);
+    }
+
+    /**
+     * 更新文章元数据
+     *
+     * @param id             文章ID
+     * @param request        更新请求
+     * @param authentication 认证信息
+     * @return 更新后的元数据
+     */
+    @PutMapping("/{id}/meta")
+    public ApiResponse<MetaDataDto.PostMetaResponse> updatePostMeta(@PathVariable Long id,
+            @Valid @RequestBody MetaDataDto.UpdatePostMetaRequest request,
+            Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        log.info("用户 {} 更新文章 {} 元数据: {}", userId, id, request);
+        MetaDataDto.PostMetaResponse result = postCommandService.updatePostMeta(id, request, userId);
+        return ResultUtils.success("更新文章元数据成功", result);
+    }
+
+    /**
+     * 删除指定元数据
+     *
+     * @param id             文章ID
+     * @param key            元数据键
+     * @param authentication 认证信息
+     * @return 删除结果
+     */
+    @DeleteMapping("/{id}/meta/{key}")
+    public ApiResponse<Void> deletePostMeta(@PathVariable Long id, @PathVariable String key,
+            Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        log.info("用户 {} 删除文章 {} 的元数据: {}", userId, id, key);
+        postCommandService.deletePostMeta(id, key, userId);
+        return ResultUtils.success("删除元数据成功");
     }
 
 }

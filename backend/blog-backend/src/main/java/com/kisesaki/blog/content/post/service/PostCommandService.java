@@ -18,10 +18,13 @@ import com.kisesaki.blog.content.category.mapper.CategoriesMapper;
 import com.kisesaki.blog.content.post.dto.BasePostDto;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
+import com.kisesaki.blog.content.post.dto.PostCommand.MetaDataDto;
 import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostResponse;
+import com.kisesaki.blog.content.post.entity.PostMeta;
 import com.kisesaki.blog.content.post.entity.PostTags;
 import com.kisesaki.blog.content.post.entity.Posts;
+import com.kisesaki.blog.content.post.mapper.PostMetaMapper;
 import com.kisesaki.blog.content.post.mapper.PostTagsMapper;
 import com.kisesaki.blog.content.post.mapper.PostsMapper;
 
@@ -35,6 +38,7 @@ public class PostCommandService {
 
     private final PostsMapper postsMapper;
     private final PostTagsMapper postTagsMapper;
+    private final PostMetaMapper postMetaMapper;
     private final CategoriesMapper categoriesMapper;
     private final MarkdownService markdownService;
 
@@ -581,5 +585,117 @@ public class PostCommandService {
      */
     private String convertMarkdownToHtml(String markdownContent) {
         return markdownService.convertToHtml(markdownContent);
+    }
+
+    // ========== 文章元数据相关方法 ==========
+
+    /**
+     * 获取文章元数据
+     *
+     * @param postId 文章ID
+     * @param userId 当前用户ID
+     * @return 文章元数据
+     */
+    public MetaDataDto.PostMetaResponse getPostMeta(Long postId, Long userId) {
+        // 验证文章存在且属于当前用户
+        Posts post = getPostByIdAndUserId(postId, userId);
+        if (post == null) {
+            throw BusinessException.notFound("文章");
+        }
+
+        // 查询元数据
+        LambdaQueryWrapper<PostMeta> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PostMeta::getPostId, postId)
+                .orderByAsc(PostMeta::getMetaKey);
+
+        List<PostMeta> postMetaList = postMetaMapper.selectList(queryWrapper);
+
+        // 转换为响应格式
+        List<MetaDataDto.MetaDataItem> metaDataItems = postMetaList.stream()
+                .map(meta -> {
+                    MetaDataDto.MetaDataItem item = new MetaDataDto.MetaDataItem();
+                    item.setKey(meta.getMetaKey());
+                    item.setValue(meta.getMetaValue());
+                    return item;
+                })
+                .toList();
+
+        MetaDataDto.PostMetaResponse response = new MetaDataDto.PostMetaResponse();
+        response.setPostId(postId);
+        response.setMetaData(metaDataItems);
+
+        return response;
+    }
+
+    /**
+     * 更新文章元数据
+     *
+     * @param postId  文章ID
+     * @param request 更新请求
+     * @param userId  当前用户ID
+     * @return 更新后的元数据
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public MetaDataDto.PostMetaResponse updatePostMeta(Long postId, MetaDataDto.UpdatePostMetaRequest request,
+            Long userId) {
+        // 验证文章存在且属于当前用户
+        Posts post = getPostByIdAndUserId(postId, userId);
+        if (post == null) {
+            throw BusinessException.notFound("文章");
+        }
+
+        OffsetDateTime now = OffsetDateTime.now();
+
+        // 删除旧的元数据
+        LambdaQueryWrapper<PostMeta> deleteWrapper = new LambdaQueryWrapper<>();
+        deleteWrapper.eq(PostMeta::getPostId, postId);
+        postMetaMapper.delete(deleteWrapper);
+
+        // 插入新的元数据
+        if (request.getMetaData() != null && !request.getMetaData().isEmpty()) {
+            for (MetaDataDto.MetaDataItem item : request.getMetaData()) {
+                PostMeta meta = new PostMeta();
+                meta.setPostId(postId);
+                meta.setMetaKey(item.getKey());
+                meta.setMetaValue(item.getValue());
+                meta.setCreatedAt(now);
+                meta.setUpdatedAt(now);
+                postMetaMapper.insert(meta);
+            }
+        }
+
+        // 返回更新后的元数据
+        return getPostMeta(postId, userId);
+    }
+
+    /**
+     * 删除指定的文章元数据
+     *
+     * @param postId  文章ID
+     * @param metaKey 元数据键
+     * @param userId  当前用户ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deletePostMeta(Long postId, String metaKey, Long userId) {
+        // 验证文章存在且属于当前用户
+        Posts post = getPostByIdAndUserId(postId, userId);
+        if (post == null) {
+            throw BusinessException.notFound("文章");
+        }
+
+        // 验证元数据键不为空
+        if (!StringUtils.hasText(metaKey)) {
+            throw BusinessException.paramError("元数据键不能为空");
+        }
+
+        // 删除指定的元数据
+        LambdaQueryWrapper<PostMeta> deleteWrapper = new LambdaQueryWrapper<>();
+        deleteWrapper.eq(PostMeta::getPostId, postId)
+                .eq(PostMeta::getMetaKey, metaKey);
+
+        int deletedCount = postMetaMapper.delete(deleteWrapper);
+        if (deletedCount == 0) {
+            throw BusinessException.notFound("指定的元数据");
+        }
     }
 }

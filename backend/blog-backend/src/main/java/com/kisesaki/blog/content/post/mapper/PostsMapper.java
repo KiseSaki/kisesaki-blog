@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostQueryDto;
+import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostStatsDto;
 import com.kisesaki.blog.content.post.dto.PostQuery.GetMyPostsListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.MyPostsListResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
@@ -124,4 +126,32 @@ public interface PostsMapper extends BaseMapper<Posts> {
          * @return 文章总数
          */
         long countMyPosts(@Param("params") GetMyPostsListParams params, @Param("userId") Long userId);
+
+        // ========== 管理员专用方法 ==========
+
+        /**
+         * 分页查询管理员文章列表（包含所有状态的文章）
+         *
+         * @param page   分页对象，MyBatis Plus 会自动处理分页和计数
+         * @param params 查询参数
+         * @return 分页结果
+         */
+        Page<AdminPostQueryDto.AdminPostListResponse> selectAdminPostsPage(
+                        Page<AdminPostQueryDto.AdminPostListResponse> page,
+                        @Param("params") AdminPostQueryDto.AdminPostListParams params);
+
+        /**
+         * 计算管理员文章数量（处理DISTINCT和JOIN的情况）
+         *
+         * @param params 查询参数
+         * @return 文章总数
+         */
+        long countAdminPosts(@Param("params") AdminPostQueryDto.AdminPostListParams params);
+
+        /**
+         * 获取文章统计数据
+         *
+         * @return 统计数据
+         */
+        AdminPostStatsDto.PostStatsResponse getPostStats();
 }

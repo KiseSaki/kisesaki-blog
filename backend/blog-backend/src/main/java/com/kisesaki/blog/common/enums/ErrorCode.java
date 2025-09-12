@@ -38,11 +38,15 @@ public enum ErrorCode {
 
     // ========== 文章相关错误码 ==========
     POST_NOT_FOUND(4020, "文章不存在"),
-    POST_SLUG_ALREADY_EXISTS(4021, "文章URL已存在"),
+    POST_SLUG_ALREADY_EXISTS(4021, "文章链接已存在"),
     POST_TITLE_EMPTY(4022, "文章标题不能为空"),
     POST_CONTENT_EMPTY(4023, "文章内容不能为空"),
     POST_CATEGORY_NOT_FOUND(4024, "文章分类不存在"),
     POST_ACCESS_DENIED(4025, "无权访问该文章"),
+    POST_SLUG_INVALID_FORMAT(4026, "文章链接格式无效"),
+    POST_SLUG_TOO_LONG(4027, "文章链接过长"),
+    POST_PASSWORD_REQUIRED(4028, "密码保护文章需要设置访问密码"),
+    POST_INVALID_VISIBILITY(4029, "无效的文章可见性设置"),
 
     // ========== 评论相关错误码 ==========
     COMMENT_NOT_FOUND(4030, "评论不存在"),

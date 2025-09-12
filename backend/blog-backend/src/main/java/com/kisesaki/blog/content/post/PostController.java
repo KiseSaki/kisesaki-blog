@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.util.AuthUtils;
+import com.kisesaki.blog.content.post.dto.RevisionInfo;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
 import com.kisesaki.blog.content.post.dto.PostCommand.MetaDataDto;
@@ -25,8 +27,11 @@ import com.kisesaki.blog.content.post.dto.PostQuery.MyPostsListResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse;
+import com.kisesaki.blog.content.post.dto.PostRevision.PostRevisionContentResponse;
+import com.kisesaki.blog.content.post.dto.PostRevision.PostRevisionListParams;
 import com.kisesaki.blog.content.post.service.PostCommandService;
 import com.kisesaki.blog.content.post.service.PostQueryService;
+import com.kisesaki.blog.content.post.service.PostRevisionService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -47,6 +52,7 @@ public class PostController {
 
     private final PostQueryService postQueryService;
     private final PostCommandService postCommandService;
+    private final PostRevisionService postRevisionService;
 
     /*
      * ----------------------------- 公共查询相关接口 PostQuery
@@ -200,7 +206,7 @@ public class PostController {
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         if (userId == null) {
-            throw BusinessException.of(com.kisesaki.blog.common.enums.ErrorCode.UNAUTHORIZED, "用户未登录");
+            throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
         }
 
         PageResponse<MyPostsListResponse> pageResponse = postQueryService.getMyPosts(params, userId);
@@ -262,4 +268,82 @@ public class PostController {
         return ResultUtils.success("删除元数据成功");
     }
 
+    /*
+     * ----------------------------- 文章版本相关接口
+     * -----------------------------
+     */
+    /**
+     * 获取指定文章的版本列表
+     * 
+     * @param postId         文章ID
+     * @param params         分页参数
+     * @param authentication 认证信息
+     * @return 文章版本列表
+     */
+    @GetMapping("/{postId}/revisions")
+    public ApiResponse<PageResponse<RevisionInfo>> getPostRevisions(@PathVariable Long postId,
+            @Valid PostRevisionListParams params,
+            Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
+        }
+
+        PageResponse<RevisionInfo> pageResponse = postRevisionService.getPostRevisionListByPostId(postId, userId,
+                params);
+        return ResultUtils.success("获取文章版本列表成功", pageResponse);
+    }
+
+    /**
+     * 获取指定文章的指定版本内容
+     * 
+     * @param postId         文章ID
+     * @param revisionId     版本ID
+     * @param authentication 认证信息
+     * @return 文章版本内容
+     */
+    @GetMapping("/{postId}/revisions/{revisionId}")
+    public ApiResponse<PostRevisionContentResponse> getPostRevisionContent(@PathVariable Long postId,
+            @PathVariable Long revisionId,
+            Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
+        }
+
+        PostRevisionContentResponse response = postRevisionService.getPostRevisionContent(postId, revisionId);
+        return ResultUtils.success("获取文章版本内容成功", response);
+    }
+
+    /**
+     * 恢复文章到指定版本
+     * 
+     * @param postId         文章ID
+     * @param revisionId     版本ID
+     * @param authentication 认证信息
+     * @return 操作结果
+     */
+    @PostMapping("/{postId}/revisions/{revisionId}/restore")
+    public ApiResponse<Void> restorePostRevision(@PathVariable Long postId, @PathVariable Long revisionId,
+            Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
+        }
+
+        postRevisionService.restorePostToRevision(postId, revisionId, userId);
+        return ResultUtils.success("恢复文章版本成功");
+    }
+
+    @DeleteMapping("/{postId}/revisions/{revisionId}")
+    public ApiResponse<Void> deletePostRevision(@PathVariable Long postId, @PathVariable Long revisionId,
+            Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
+        }
+
+        postRevisionService.deleteRevisionByPostId(postId, revisionId, userId);
+        return ResultUtils.success("删除文章版本成功");
+    }
 }

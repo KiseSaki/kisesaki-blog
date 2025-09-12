@@ -103,6 +103,15 @@ public class AdminPostQueryDto {
         @Schema(description = "评论数量", example = "3")
         private Integer commentCount;
 
+        @Schema(description = "分享数量", example = "2")
+        private Integer shareCount;
+
+        @Schema(description = "阅读时长（分钟）", example = "5")
+        private Integer readingTime;
+
+        @Schema(description = "字数统计", example = "1200")
+        private Integer wordCount;
+
         @Schema(description = "是否为精选文章", example = "false")
         private Boolean isFeatured;
 
@@ -124,10 +133,16 @@ public class AdminPostQueryDto {
         @Schema(description = "发布时间")
         private OffsetDateTime publishedAt;
 
+        @Schema(description = "定时发布时间")
+        private OffsetDateTime scheduledAt;
+
         @Schema(description = "创建时间")
         private OffsetDateTime createdAt;
 
         @Schema(description = "更新时间")
         private OffsetDateTime updatedAt;
+
+        @Schema(description = "最后修改时间")
+        private OffsetDateTime lastModifiedAt;
     }
 }

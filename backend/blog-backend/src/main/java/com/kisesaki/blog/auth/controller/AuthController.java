@@ -2,7 +2,6 @@ package com.kisesaki.blog.auth.controller;
 
 import java.util.Set;
 
-import com.kisesaki.blog.auth.dto.request.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
+import com.kisesaki.blog.auth.dto.auth.request.*;
+import com.kisesaki.blog.auth.dto.auth.response.LoginResponseDto;
 import com.kisesaki.blog.auth.service.AuthService;
 import com.kisesaki.blog.common.dto.ApiResponse;
 

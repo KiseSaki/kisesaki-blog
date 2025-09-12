@@ -1,4 +1,4 @@
-package com.kisesaki.blog.auth;
+package com.kisesaki.blog.auth.controller;
 
 import java.util.Set;
 
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
+import com.kisesaki.blog.auth.service.AuthService;
 import com.kisesaki.blog.common.dto.ApiResponse;
 
 import io.swagger.v3.oas.annotations.Operation;

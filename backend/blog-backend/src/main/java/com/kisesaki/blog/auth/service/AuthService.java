@@ -1,4 +1,4 @@
-package com.kisesaki.blog.auth;
+package com.kisesaki.blog.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.Map;

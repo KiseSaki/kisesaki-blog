@@ -1,4 +1,4 @@
-package com.kisesaki.blog.auth.dto.request;
+package com.kisesaki.blog.auth.dto.auth.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

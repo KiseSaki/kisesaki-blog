@@ -9,6 +9,7 @@ import org.springframework.util.StringUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.markdown.MarkdownService;
@@ -40,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PostAdminService {
+public class AdminPostService {
 
     private final PostsMapper postsMapper;
     private final PostTagsMapper postTagsMapper;
@@ -66,7 +67,7 @@ public class PostAdminService {
         }
 
         // 创建分页对象
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<AdminPostQueryDto.AdminPostListResponse> page = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(
+        Page<AdminPostQueryDto.AdminPostListResponse> page = new Page<>(
                 params.getPageable().getCurrentPage(),
                 params.getPageable().getPageSize());
 

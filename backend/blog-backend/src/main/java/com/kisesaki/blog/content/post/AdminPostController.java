@@ -19,7 +19,7 @@ import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostQueryDto;
 import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostStatsDto;
 import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostStatusDto;
 import com.kisesaki.blog.content.post.dto.AdminCommand.AdminUpdatePostRequest;
-import com.kisesaki.blog.content.post.service.PostAdminService;
+import com.kisesaki.blog.content.post.service.AdminPostService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminPostController {
 
-    private final PostAdminService postAdminService;
+    private final AdminPostService postAdminService;
 
     /**
      * 获取所有文章列表（包含草稿、已删除等）

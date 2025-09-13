@@ -827,7 +827,7 @@
     <!-- ========== 管理员专用查询 ========== -->
 
     <!-- 管理员文章列表响应结果映射 -->
-    <resultMap id="AdminPostListMap" type="com.kisesaki.blog.admin.dto.AdminCommand.AdminPostQueryDto$AdminPostListResponse">
+    <resultMap id="AdminPostListMap" type="com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostQueryDto$AdminPostListResponse">
         <!-- 文章基本信息 -->
         <id property="id" column="post_id"/>
         <result property="title" column="post_title"/>
@@ -1164,7 +1164,7 @@
     </select>
 
     <!-- 获取文章统计数据 -->
-    <select id="getPostStats" resultType="com.kisesaki.blog.admin.dto.AdminCommand.AdminPostStatsDto$PostStatsResponse">
+    <select id="getPostStats" resultType="com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostStatsDto$PostStatsResponse">
         SELECT 
             -- 基础统计
             COUNT(*) AS totalPosts,

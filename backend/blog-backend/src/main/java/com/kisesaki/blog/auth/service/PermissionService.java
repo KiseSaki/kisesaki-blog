@@ -1,17 +1,20 @@
 package com.kisesaki.blog.auth.service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kisesaki.blog.auth.dto.permission.PermissionCreateRequest;
 import com.kisesaki.blog.auth.dto.permission.PermissionDetailResponse;
 import com.kisesaki.blog.auth.dto.permission.PermissionListParams;
 import com.kisesaki.blog.auth.dto.permission.PermissionListResponse;
 import com.kisesaki.blog.auth.entity.Permission;
 import com.kisesaki.blog.auth.mapper.PermissionMapper;
 import com.kisesaki.blog.common.dto.PageResponse;
+import com.kisesaki.blog.common.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -95,5 +98,29 @@ public class PermissionService {
             response.setCreatedAt(permission.getCreatedAt());
         }
         return response;
+    }
+
+    /**
+     * 创建权限
+     * 
+     * @param request 创建请求参数
+     */
+    public void createPermission(PermissionCreateRequest request) {
+        Permission existing = permissionMapper.selectOne(new LambdaQueryWrapper<Permission>()
+                .eq(Permission::getName, request.getName())
+                .eq(Permission::getResource, request.getResource())
+                .eq(Permission::getAction, request.getAction()));
+
+        if (existing != null) {
+            throw BusinessException.paramError("权限已存在");
+        }
+
+        Permission permission = new Permission();
+        permission.setName(request.getName());
+        permission.setDescription(request.getDescription());
+        permission.setResource(request.getResource());
+        permission.setAction(request.getAction());
+        permission.setCreatedAt(OffsetDateTime.now());
+        permissionMapper.insert(permission);
     }
 }

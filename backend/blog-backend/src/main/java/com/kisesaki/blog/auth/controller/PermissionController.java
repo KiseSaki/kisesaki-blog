@@ -2,10 +2,13 @@ package com.kisesaki.blog.auth.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kisesaki.blog.auth.dto.permission.PermissionCreateRequest;
 import com.kisesaki.blog.auth.dto.permission.PermissionDetailResponse;
 import com.kisesaki.blog.auth.dto.permission.PermissionListParams;
 import com.kisesaki.blog.auth.dto.permission.PermissionListResponse;
@@ -45,6 +48,15 @@ public class PermissionController {
         // 这里调用service层的方法获取权限详情
         PermissionDetailResponse detailResponse = permissionService.getPermissionById(id);
         return ApiResponse.success(detailResponse);
+    }
+
+    /**
+     * 创建权限
+     */
+    @PostMapping("")
+    public ApiResponse<Void> createPermission(@Valid @RequestBody PermissionCreateRequest request) {
+        permissionService.createPermission(request);
+        return ApiResponse.success("权限创建成功");
     }
 
 }

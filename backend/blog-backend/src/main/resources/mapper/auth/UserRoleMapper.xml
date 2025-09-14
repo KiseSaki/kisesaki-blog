@@ -2,9 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.kisesaki.blog.auth.mapper.UserRoleMapper">
 
-    <!-- 批量为用户分配角色 -->
-    <insert id="batchAssignRolesToUser">
-        INSERT INTO user_roles (user_id, role_id, assigned_at) VALUES
+    <!-- 批量为用户分配角色 - 复杂的批量插入操作 -->
+    <insert id="batchAssignRolesToUser" parameterType="map">
+        INSERT INTO user_roles (user_id, role_id, assigned_at) 
+        VALUES
         <foreach collection="roleIds" item="roleId" separator=",">
             (#{userId}, #{roleId}, NOW())
         </foreach>

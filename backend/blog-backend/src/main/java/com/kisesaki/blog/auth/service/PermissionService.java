@@ -1,6 +1,7 @@
 package com.kisesaki.blog.auth.service;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -11,7 +12,11 @@ import com.kisesaki.blog.auth.dto.permission.PermissionCreateRequest;
 import com.kisesaki.blog.auth.dto.permission.PermissionDetailResponse;
 import com.kisesaki.blog.auth.dto.permission.PermissionListParams;
 import com.kisesaki.blog.auth.dto.permission.PermissionListResponse;
+import com.kisesaki.blog.auth.dto.permission.PermissionOptionResponse;
+import com.kisesaki.blog.auth.dto.permission.PermissionUpdateRequest;
 import com.kisesaki.blog.auth.entity.Permission;
+import com.kisesaki.blog.auth.enums.PermissionAction;
+import com.kisesaki.blog.auth.enums.PermissionResource;
 import com.kisesaki.blog.auth.mapper.PermissionMapper;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.exception.BusinessException;
@@ -122,5 +127,77 @@ public class PermissionService {
         permission.setAction(request.getAction());
         permission.setCreatedAt(OffsetDateTime.now());
         permissionMapper.insert(permission);
+    }
+
+    /**
+     * 更新权限
+     * 
+     * @param id      权限ID
+     * @param request 更新请求参数
+     */
+    public void updatePermission(Long id, PermissionUpdateRequest request) {
+        Permission existing = permissionMapper.selectById(id);
+        if (existing == null) {
+            throw BusinessException.notFound("权限不存在");
+        }
+
+        // 检查权限名称、资源、操作的组合是否已被其他权限使用
+        Permission duplicate = permissionMapper.selectOne(new LambdaQueryWrapper<Permission>()
+                .eq(Permission::getName, request.getName())
+                .eq(Permission::getResource, request.getResource())
+                .eq(Permission::getAction, request.getAction())
+                .ne(Permission::getId, id));
+
+        if (duplicate != null) {
+            throw BusinessException.paramError("权限组合已存在");
+        }
+
+        existing.setName(request.getName());
+        existing.setDescription(request.getDescription());
+        existing.setResource(request.getResource());
+        existing.setAction(request.getAction());
+
+        permissionMapper.updateById(existing);
+        log.info("权限已更新: id={}, name={}", id, request.getName());
+    }
+
+    /**
+     * 删除权限
+     * 
+     * @param id 权限ID
+     */
+    public void deletePermission(Long id) {
+        Permission existing = permissionMapper.selectById(id);
+        if (existing == null) {
+            throw BusinessException.notFound("权限不存在");
+        }
+
+        // TODO: 检查权限是否被角色引用，如果被引用则不允许删除
+        // 这部分需要在实现角色权限关联表后进行
+
+        permissionMapper.deleteById(id);
+        log.info("权限已删除: id={}, name={}", id, existing.getName());
+    }
+
+    /**
+     * 获取权限资源类型列表
+     * 
+     * @return 资源类型列表
+     */
+    public List<PermissionOptionResponse> getPermissionResources() {
+        return Arrays.stream(PermissionResource.values())
+                .map(resource -> new PermissionOptionResponse(resource.getCode(), resource.getDescription()))
+                .toList();
+    }
+
+    /**
+     * 获取权限操作类型列表
+     * 
+     * @return 操作类型列表
+     */
+    public List<PermissionOptionResponse> getPermissionActions() {
+        return Arrays.stream(PermissionAction.values())
+                .map(action -> new PermissionOptionResponse(action.getCode(), action.getDescription()))
+                .toList();
     }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -100,16 +101,17 @@ public class UserController {
     }
 
     @PostMapping("/upload-avatar")
+    @PreAuthorize("hasAuthority('MEDIA_UPLOAD')")
     @Operation(summary = "上传用户头像", description = "上传并更新当前用户的头像文件")
     public ResponseEntity<ApiResponse<UserInfoDto>> uploadAvatar(
             Authentication authentication,
             @RequestParam("file") MultipartFile file) {
         try {
             Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-            
+
             // 上传文件并获取URL
             String avatarUrl = fileUploadService.uploadFile(file, userId);
-            
+
             // 更新用户头像
             UserInfoDto updatedUserInfo = userService.updateUserAvatar(userId, avatarUrl);
             return ResponseEntity.ok(ApiResponse.success(updatedUserInfo));
@@ -169,7 +171,7 @@ public class UserController {
             @Parameter(description = "用户ID", required = true) @PathVariable Long id) {
         Long currentUserId = AuthUtils.getUserIdFromAuthentication(authentication);
         boolean success = userFollowService.followUser(currentUserId, id);
-        
+
         if (success) {
             return ResponseEntity.ok(ApiResponse.success("关注成功"));
         } else {
@@ -184,7 +186,7 @@ public class UserController {
             @Parameter(description = "用户ID", required = true) @PathVariable Long id) {
         Long currentUserId = AuthUtils.getUserIdFromAuthentication(authentication);
         boolean success = userFollowService.unfollowUser(currentUserId, id);
-        
+
         if (success) {
             return ResponseEntity.ok(ApiResponse.success("取消关注成功"));
         } else {
@@ -224,12 +226,11 @@ public class UserController {
             @Parameter(description = "用户ID", required = true) @PathVariable Long id) {
         long followingCount = userFollowService.getFollowingCount(id);
         long followersCount = userFollowService.getFollowersCount(id);
-        
+
         Map<String, Long> counts = Map.of(
                 "followingCount", followingCount,
-                "followersCount", followersCount
-        );
-        
+                "followersCount", followersCount);
+
         return ResponseEntity.ok(ApiResponse.success(counts));
     }
 

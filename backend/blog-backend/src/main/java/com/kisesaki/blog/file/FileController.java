@@ -1,6 +1,7 @@
 package com.kisesaki.blog.file;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ class FileController {
     private final FileUploadService fileUploadService;
 
     @PostMapping("/upload")
+    @PreAuthorize("hasAuthority('MEDIA_UPLOAD')")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, Authentication authentication) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("上传的文件不能为空");

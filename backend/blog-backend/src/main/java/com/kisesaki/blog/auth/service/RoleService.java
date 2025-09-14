@@ -1,5 +1,12 @@
 package com.kisesaki.blog.auth.service;
 
+import java.util.List;
+
+import com.kisesaki.blog.auth.dto.role.RoleDetailResponse;
+import com.kisesaki.blog.auth.entity.RolePermission;
+import com.kisesaki.blog.common.exception.BusinessException;
+import org.springframework.stereotype.Service;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.auth.dto.role.RoleListParams;
@@ -7,13 +14,12 @@ import com.kisesaki.blog.auth.dto.role.RoleListResponse;
 import com.kisesaki.blog.auth.entity.Role;
 import com.kisesaki.blog.auth.mapper.PermissionMapper;
 import com.kisesaki.blog.auth.mapper.RoleMapper;
+import com.kisesaki.blog.auth.mapper.RolePermissionMapper;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.user.mapper.UserMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +29,7 @@ public class RoleService {
     private final RoleMapper roleMapper;
     private final UserMapper userMapper;
     private final PermissionMapper permissionMapper;
+    private final RolePermissionMapper rolePermissionMapper;
 
     public PageResponse<RoleListResponse> getRoleList(RoleListParams params) {
         LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
@@ -59,5 +66,47 @@ public class RoleService {
         dtoPage.setRecords(roleList);
 
         return PageResponse.of(dtoPage);
+    }
+
+    /**
+     * 获取角色详情（包括权限列表）
+     *
+     * @param roleId 角色 ID
+     * @return 角色详情
+     */
+    public RoleDetailResponse getRoleDetail(Long roleId) {
+        Role role = roleMapper.selectById(roleId);
+        if (role == null) {
+            throw BusinessException.notFound("角色不存在");
+        }
+
+        // 查询角色对应的权限列表
+        LambdaQueryWrapper<RolePermission> queryWrapper = new LambdaQueryWrapper<RolePermission>()
+                .eq(RolePermission::getRoleId, role.getId());
+        List<RolePermission> rolePermissions = rolePermissionMapper.selectList(queryWrapper);
+        // 提取权限 ID 列表
+        List<Long> permissionIds = rolePermissions.stream()
+                .map(RolePermission::getPermissionId)
+                .toList();
+        // 查询权限详情
+        List<RoleDetailResponse.PermissionDto> permissions = permissionMapper.selectBatchIds(permissionIds).stream().map(permission -> {
+            RoleDetailResponse.PermissionDto dto = new RoleDetailResponse.PermissionDto();
+            dto.setId(permission.getId());
+            dto.setName(permission.getName());
+            dto.setDescription(permission.getDescription());
+            return dto;
+        }).toList();
+
+        // 构造响应对象
+        RoleDetailResponse response = new RoleDetailResponse();
+        response.setId(role.getId());
+        response.setName(role.getName());
+        response.setDescription(role.getDescription());
+        if (role.getCreatedAt() != null) {
+            response.setCreatedAt(role.getCreatedAt().toString());
+        }
+        response.setPermissions(permissions);
+
+        return response;
     }
 }

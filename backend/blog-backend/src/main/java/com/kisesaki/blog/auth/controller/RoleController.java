@@ -1,6 +1,8 @@
 package com.kisesaki.blog.auth.controller;
 
+import com.kisesaki.blog.auth.dto.role.RoleDetailResponse;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,5 +31,13 @@ public class RoleController {
     public ApiResponse<PageResponse<RoleListResponse>> getRoleList(
             @Valid RoleListParams params) {
         return ApiResponse.success(roleService.getRoleList(params));
+    }
+
+    /**
+     * 获取角色详情（包含权限列表）
+     */
+    @GetMapping("/{id}")
+    public ApiResponse<RoleDetailResponse> getRoleDetail(@PathVariable Long id) {
+        return ApiResponse.success(roleService.getRoleDetail(id));
     }
 }

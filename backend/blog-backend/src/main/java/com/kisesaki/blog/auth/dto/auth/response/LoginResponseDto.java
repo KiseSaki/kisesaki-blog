@@ -1,4 +1,4 @@
-package com.kisesaki.blog.auth.dto.response;
+package com.kisesaki.blog.auth.dto.auth.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

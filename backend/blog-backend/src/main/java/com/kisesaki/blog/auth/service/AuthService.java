@@ -1,4 +1,4 @@
-package com.kisesaki.blog.auth;
+package com.kisesaki.blog.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import com.kisesaki.blog.auth.dto.request.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kisesaki.blog.auth.dto.DeviceInfo;
-import com.kisesaki.blog.auth.dto.response.LoginResponseDto;
+import com.kisesaki.blog.auth.dto.auth.request.*;
+import com.kisesaki.blog.auth.dto.auth.response.LoginResponseDto;
 import com.kisesaki.blog.auth.event.UserRegistrationEvent;
 import com.kisesaki.blog.auth.security.jwt.DeviceFingerprintService;
 import com.kisesaki.blog.auth.security.jwt.JwtTokenProvider;

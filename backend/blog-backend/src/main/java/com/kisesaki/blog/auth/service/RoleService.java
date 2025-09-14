@@ -2,20 +2,20 @@ package com.kisesaki.blog.auth.service;
 
 import java.util.List;
 
-import com.kisesaki.blog.auth.dto.role.RoleDetailResponse;
-import com.kisesaki.blog.auth.entity.RolePermission;
-import com.kisesaki.blog.common.exception.BusinessException;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kisesaki.blog.auth.dto.role.RoleDetailResponse;
 import com.kisesaki.blog.auth.dto.role.RoleListParams;
 import com.kisesaki.blog.auth.dto.role.RoleListResponse;
 import com.kisesaki.blog.auth.entity.Role;
+import com.kisesaki.blog.auth.entity.RolePermission;
 import com.kisesaki.blog.auth.mapper.PermissionMapper;
 import com.kisesaki.blog.auth.mapper.RoleMapper;
 import com.kisesaki.blog.auth.mapper.RolePermissionMapper;
 import com.kisesaki.blog.common.dto.PageResponse;
+import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.user.mapper.UserMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -31,6 +31,12 @@ public class RoleService {
     private final PermissionMapper permissionMapper;
     private final RolePermissionMapper rolePermissionMapper;
 
+    /**
+     * 获取角色列表，支持分页和按名称模糊搜索
+     * 
+     * @param params 查询参数
+     * @return 角色列表分页数据
+     */
     public PageResponse<RoleListResponse> getRoleList(RoleListParams params) {
         LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
         if (params.getName() != null) {
@@ -89,13 +95,14 @@ public class RoleService {
                 .map(RolePermission::getPermissionId)
                 .toList();
         // 查询权限详情
-        List<RoleDetailResponse.PermissionDto> permissions = permissionMapper.selectBatchIds(permissionIds).stream().map(permission -> {
-            RoleDetailResponse.PermissionDto dto = new RoleDetailResponse.PermissionDto();
-            dto.setId(permission.getId());
-            dto.setName(permission.getName());
-            dto.setDescription(permission.getDescription());
-            return dto;
-        }).toList();
+        List<RoleDetailResponse.PermissionDto> permissions = permissionMapper.selectBatchIds(permissionIds).stream()
+                .map(permission -> {
+                    RoleDetailResponse.PermissionDto dto = new RoleDetailResponse.PermissionDto();
+                    dto.setId(permission.getId());
+                    dto.setName(permission.getName());
+                    dto.setDescription(permission.getDescription());
+                    return dto;
+                }).toList();
 
         // 构造响应对象
         RoleDetailResponse response = new RoleDetailResponse();

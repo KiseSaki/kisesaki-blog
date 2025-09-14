@@ -22,6 +22,12 @@ public class PermissionService {
 
     private final PermissionMapper permissionMapper;
 
+    /**
+     * 获取权限列表
+     * 
+     * @param params 查询参数
+     * @return 分页结果
+     */
     public PageResponse<PermissionListResponse> getPermissionsList(PermissionListParams params) {
         LambdaQueryWrapper<Permission> queryWrapper = new LambdaQueryWrapper<Permission>();
         if (params.getName() != null) {

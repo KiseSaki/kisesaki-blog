@@ -1,9 +1,8 @@
 package com.kisesaki.blog.auth.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import com.kisesaki.blog.auth.dto.permission.PermissionDetailResponse;
 import com.kisesaki.blog.auth.dto.permission.PermissionListParams;
 import com.kisesaki.blog.auth.dto.permission.PermissionListResponse;
 import com.kisesaki.blog.auth.service.PermissionService;
@@ -30,6 +29,16 @@ public class PermissionController {
     public ApiResponse<PageResponse<PermissionListResponse>> getPermissionsList(PermissionListParams params) {
         PageResponse<PermissionListResponse> pageResponse = permissionService.getPermissionsList(params);
         return ApiResponse.success(pageResponse);
+    }
+
+    /**
+     * 根据ID获取权限详情
+     */
+    @GetMapping("/{id}")
+    public ApiResponse<PermissionDetailResponse> getPermissionById(@PathVariable Long id) {
+        // 这里调用service层的方法获取权限详情
+        PermissionDetailResponse detailResponse = permissionService.getPermissionById(id);
+        return ApiResponse.success(detailResponse);
     }
 
 }

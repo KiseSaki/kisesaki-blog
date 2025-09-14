@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kisesaki.blog.auth.dto.permission.PermissionDetailResponse;
 import com.kisesaki.blog.auth.dto.permission.PermissionListParams;
 import com.kisesaki.blog.auth.dto.permission.PermissionListResponse;
 import com.kisesaki.blog.auth.entity.Permission;
@@ -71,5 +72,28 @@ public class PermissionService {
         dtoPage.setRecords(responseList);
 
         return PageResponse.of(dtoPage);
+    }
+
+    /**
+     * 根据ID获取权限详情
+     * 
+     * @param id 权限ID
+     * @return 权限详情，若不存在则返回null
+     */
+    public PermissionDetailResponse getPermissionById(Long id) {
+        Permission permission = permissionMapper.selectById(id);
+        if (permission == null) {
+            return null;
+        }
+        PermissionDetailResponse response = new PermissionDetailResponse();
+        response.setId(permission.getId());
+        response.setName(permission.getName());
+        response.setDescription(permission.getDescription());
+        response.setResource(permission.getResource());
+        response.setAction(permission.getAction());
+        if (permission.getCreatedAt() != null) {
+            response.setCreatedAt(permission.getCreatedAt());
+        }
+        return response;
     }
 }

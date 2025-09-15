@@ -1,4 +1,4 @@
-package com.kisesaki.blog.content.tag.dto;
+package com.kisesaki.blog.content.tag.dto.TagQuery;
 
 import java.time.OffsetDateTime;
 

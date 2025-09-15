@@ -11,6 +11,7 @@ import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.dto.ResultUtils;
 import com.kisesaki.blog.content.tag.dto.TagQuery.PopularTagResponse;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagCloudItem;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListResponse;
@@ -61,5 +62,13 @@ public class TagController {
     @GetMapping("/popular")
     public ApiResponse<List<PopularTagResponse>> getPopularTag() {
         return ResultUtils.success(tagService.getPopularTag());
+    }
+
+    /**
+     * 获取标签云
+     */
+    @GetMapping("/cloud")
+    public ApiResponse<List<TagCloudItem>> getTagCloud() {
+        return ResultUtils.success(tagService.getTagCloud());
     }
 }

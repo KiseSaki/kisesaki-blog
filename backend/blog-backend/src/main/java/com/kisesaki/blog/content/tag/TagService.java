@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.util.PageQueryUtils;
 import com.kisesaki.blog.content.tag.dto.TagQuery.PopularTagResponse;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagCloudItem;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListResponse;
@@ -101,6 +102,59 @@ public class TagService {
             response.setLastUsedAt(tag.getLastUsedAt());
             return response;
         }).toList();
+    }
+
+    /**
+     * 获取标签云
+     * 
+     * @return 标签云列表，按热度权重排序
+     */
+    public List<TagCloudItem> getTagCloud() {
+        try {
+            // 查询所有标签，按热度权重降序排序，限制数量为50
+            LambdaQueryWrapper<Tags> queryWrapper = new LambdaQueryWrapper<Tags>()
+                    .orderByDesc(Tags::getPopularityScore)
+                    .last("LIMIT 50");
+
+            List<Tags> tags = tagsMapper.selectList(queryWrapper);
+
+            if (tags.isEmpty()) {
+                log.info("标签云查询结果为空");
+                return List.of();
+            }
+
+            // 计算字体权重：基于 popularityScore 或 postCount 映射到 1-10
+            // 找到最大和最小值用于线性映射
+            double maxScore = tags.stream()
+                    .mapToDouble(
+                            tag -> tag.getPopularityScore() != null ? tag.getPopularityScore() : tag.getPostCount())
+                    .max().orElse(1.0);
+            double minScore = tags.stream()
+                    .mapToDouble(
+                            tag -> tag.getPopularityScore() != null ? tag.getPopularityScore() : tag.getPostCount())
+                    .min().orElse(0.0);
+
+            return tags.stream().map(tag -> {
+                TagCloudItem item = new TagCloudItem();
+                item.setId(tag.getId());
+                item.setName(tag.getName());
+                item.setSlug(tag.getSlug());
+                item.setColor(tag.getColor());
+                item.setPostCount(tag.getPostCount());
+                item.setPopularityScore(tag.getPopularityScore());
+
+                // 计算字体权重（1-10），避免除零
+                double score = tag.getPopularityScore() != null ? tag.getPopularityScore() : tag.getPostCount();
+                int fontWeight = (maxScore == minScore) ? 5
+                        : (int) Math.round(1 + 9 * (score - minScore) / (maxScore - minScore));
+                item.setFontWeight(Math.max(1, Math.min(10, fontWeight))); // 确保在 1-10 范围内
+
+                return item;
+            }).toList();
+        } catch (Exception e) {
+            log.error("获取标签云失败", e);
+            throw new RuntimeException("获取标签云失败，请稍后重试");
+        }
     }
 
     /**

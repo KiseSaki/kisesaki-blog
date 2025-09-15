@@ -36,4 +36,31 @@ public class Tags {
     /* 创建时间 */
     private OffsetDateTime createdAt;
 
+    /* 更新时间 */
+    private OffsetDateTime updatedAt;
+
+    /* 创建者ID */
+    private Long createdBy;
+
+    /* 是否已审核通过 */
+    private Boolean isApproved;
+
+    /* 审核状态：pending, approved, rejected */
+    private String approvalStatus;
+
+    /* 审核者ID */
+    private Long approvedBy;
+
+    /* 审核时间 */
+    private OffsetDateTime approvedAt;
+
+    /* 审核备注 */
+    private String approvalNote;
+
+    /* 最近使用时间 */
+    private OffsetDateTime lastUsedAt;
+
+    /* 热度权重（基于文章数量、阅读量等计算） */
+    private Double popularityScore;
+
 }

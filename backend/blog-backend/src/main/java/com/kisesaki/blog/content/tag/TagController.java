@@ -1,5 +1,7 @@
 package com.kisesaki.blog.content.tag;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.content.tag.dto.TagQuery.PopularTagResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListResponse;
@@ -50,5 +53,13 @@ public class TagController {
     @GetMapping("/slug/{slug}")
     public ApiResponse<TagDetailResponse> getTagDetailBySlug(@PathVariable String slug) {
         return ResultUtils.success(tagService.getTagDetailBySlug(slug));
+    }
+
+    /**
+     * 获取热门标签
+     */
+    @GetMapping("/popular")
+    public ApiResponse<List<PopularTagResponse>> getPopularTag() {
+        return ResultUtils.success(tagService.getPopularTag());
     }
 }

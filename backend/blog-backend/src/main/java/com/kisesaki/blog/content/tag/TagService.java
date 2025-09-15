@@ -1,10 +1,13 @@
 package com.kisesaki.blog.content.tag;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.util.PageQueryUtils;
+import com.kisesaki.blog.content.tag.dto.TagQuery.PopularTagResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListResponse;
@@ -73,6 +76,31 @@ public class TagService {
      */
     public TagDetailResponse getTagDetailBySlug(String slug) {
         return tagsMapper.getTagDetailBySlug(slug);
+    }
+
+    /**
+     * 获取热门标签
+     * 
+     * @return 热门标签
+     */
+    public List<PopularTagResponse> getPopularTag() {
+        // 构建查询条件，按热度权重排序，限制返回数量为10
+        LambdaQueryWrapper<Tags> queryWrapper = new LambdaQueryWrapper<Tags>()
+                .orderByDesc(Tags::getPopularityScore).last("LIMIT 10");
+
+        // 执行查询
+        List<Tags> popularTag = tagsMapper.selectList(queryWrapper);
+        return popularTag.stream().map(tag -> {
+            PopularTagResponse response = new PopularTagResponse();
+            response.setId(tag.getId());
+            response.setName(tag.getName());
+            response.setSlug(tag.getSlug());
+            response.setColor(tag.getColor());
+            response.setPostCount(tag.getPostCount());
+            response.setPopularityScore(tag.getPopularityScore());
+            response.setLastUsedAt(tag.getLastUsedAt());
+            return response;
+        }).toList();
     }
 
     /**

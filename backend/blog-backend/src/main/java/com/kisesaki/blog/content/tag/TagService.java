@@ -5,8 +5,9 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.util.PageQueryUtils;
-import com.kisesaki.blog.content.tag.dto.TagListParams;
-import com.kisesaki.blog.content.tag.dto.TagListResponse;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagListParams;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagListResponse;
 import com.kisesaki.blog.content.tag.entity.Tags;
 import com.kisesaki.blog.content.tag.mapper.TagsMapper;
 
@@ -52,6 +53,16 @@ public class TagService {
                 queryWrapper,
                 params.getPageable(),
                 this::convertToResponse);
+    }
+
+    /**
+     * 获取标签详情
+     * 
+     * @param tagId 标签ID
+     * @return 标签详情
+     */
+    public TagDetailResponse getTagDetailById(Long tagId) {
+        return tagsMapper.getTagDetailById(tagId);
     }
 
     /**

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kisesaki.blog.content.tag.mapper.TagsMapper">
+    <resultMap id="TagDetailResponse" type="com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse">
+        <id property="id" column="id"/>
+        <result property="name" column="tag_name"/>
+        <result property="slug" column="tag_slug"/>
+        <result property="description" column="tag_description"/>
+        <result property="color" column="tag_color"/>
+        <result property="postCount" column="tag_post_count"/>
+        <result property="createdAt" column="tag_created_at"/>
+        <result property="updatedAt" column="tag_updated_at"/>
+        <result property="createdBy" column="tag_created_by"/>
+        <result property="createdByUsername" column="user_username"/>
+        <result property="isApproved" column="tag_is_approved"/>
+    </resultMap>
+
+    <!-- 根据Id查询标签详情 -->
+    <select id="getTagDetailById" resultMap="TagDetailResponse" parameterType="long">
+        SELECT
+            t.id,
+            t.name AS tag_name,
+            t.slug AS tag_slug,
+            t.description AS tag_description,
+            t.color AS tag_color,
+            t.post_count AS tag_post_count,
+            t.created_at AS tag_created_at,
+            t.updated_at AS tag_updated_at,
+            t.created_by AS tag_created_by,
+            u.username AS user_username,
+            t.is_approved AS tag_is_approved
+        FROM
+            tags t
+        LEFT JOIN
+            "user" u ON t.created_by = u.id
+        WHERE
+            t.id = #{id}
+    </select>
+</mapper>

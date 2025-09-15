@@ -50,32 +50,26 @@ public class PageQueryUtils {
             PageableParams pageable,
             Function<T, R> converter) {
 
-        // 根据 includeTotal 参数决定是否计算总数
-        Long totalCount = null;
-        if (pageable.getIncludeTotal()) {
-            totalCount = mapper.selectCount(queryWrapper);
-            if (totalCount == 0) {
-                return PageResponse.of(List.of(), totalCount, pageable);
-            }
-        }
-
         // 构建分页对象
         Page<T> page = new Page<>(pageable.getCurrentPage(), pageable.getPageSize());
+
+        // 根据 includeTotal 参数决定是否需要计算总数
+        if (!pageable.getIncludeTotal()) {
+            page.setSearchCount(false); // 禁用自动计算总数
+        }
 
         // 执行分页查询
         Page<T> result = mapper.selectPage(page, queryWrapper);
 
-        // 如果没有预先计算总数，则从分页结果中获取
-        if (totalCount == null) {
-            totalCount = result.getTotal();
-        }
+        // 获取总数
+        Long totalCount = pageable.getIncludeTotal() ? result.getTotal() : null;
 
         // 转换成响应对象
         List<R> responseList = result.getRecords().stream()
                 .map(converter)
                 .toList();
 
-        return PageResponse.of(responseList, totalCount, pageable);
+        return PageResponse.of(responseList, totalCount != null ? totalCount : 0L, pageable);
     }
 
     /**
@@ -158,7 +152,6 @@ public class PageQueryUtils {
 
         /**
          * 设置默认排序字段
-         * 设置当没有指定排序字段时使用的默认排序
          */
         public SortBuilder<T> defaultSort(SFunction<T, ?> defaultSortField, boolean descending) {
             this.defaultSortField = defaultSortField;
@@ -170,13 +163,10 @@ public class PageQueryUtils {
          * 添加排序字段映射
          */
         public SortBuilder<T> addSortField(String fieldName, SFunction<T, ?> fieldFunction) {
-            // 从分页参数中获取排序字段名
             String sortField = pageable.getSortField();
-            // 获取排序方向
             boolean isDescending = pageable.isDescending();
 
             if (sortField != null && sortField.equals(fieldName)) {
-                // 如果当前字段匹配，则应用排序
                 queryWrapper.orderBy(true, !isDescending, fieldFunction);
                 return this;
             }

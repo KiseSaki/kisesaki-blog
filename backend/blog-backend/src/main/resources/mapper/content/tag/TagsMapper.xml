@@ -38,4 +38,26 @@
         WHERE
             t.id = #{id}
     </select>
+
+    <!-- 根据Slug查询标签详情 -->
+    <select id="getTagDetailBySlug" resultMap="TagDetailResponse" parameterType="string">
+        SELECT
+            t.id,
+            t.name AS tag_name,
+            t.slug AS tag_slug,
+            t.description AS tag_description,
+            t.color AS tag_color,
+            t.post_count AS tag_post_count,
+            t.created_at AS tag_created_at,
+            t.updated_at AS tag_updated_at,
+            t.created_by AS tag_created_by,
+            u.username AS user_username,
+            t.is_approved AS tag_is_approved
+        FROM
+            tags t
+        LEFT JOIN
+            "user" u ON t.created_by = u.id
+        WHERE
+            t.slug = #{slug}
+    </select>
 </mapper>

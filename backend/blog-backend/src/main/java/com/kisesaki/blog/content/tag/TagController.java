@@ -43,4 +43,12 @@ public class TagController {
     public ApiResponse<TagDetailResponse> getTagDetailById(@PathVariable Long id) {
         return ResultUtils.success(tagService.getTagDetailById(id));
     }
+
+    /**
+     * 根据Slug获取标签详情
+     */
+    @GetMapping("/slug/{slug}")
+    public ApiResponse<TagDetailResponse> getTagDetailBySlug(@PathVariable String slug) {
+        return ResultUtils.success(tagService.getTagDetailBySlug(slug));
+    }
 }

@@ -66,6 +66,16 @@ public class TagService {
     }
 
     /**
+     * 根据Slug获取标签详情
+     * 
+     * @param slug 标签Slug
+     * @return 标签详情
+     */
+    public TagDetailResponse getTagDetailBySlug(String slug) {
+        return tagsMapper.getTagDetailBySlug(slug);
+    }
+
+    /**
      * 构建查询条件
      */
     private LambdaQueryWrapper<Tags> buildQueryWrapper(TagListParams params) {

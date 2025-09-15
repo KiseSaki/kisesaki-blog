@@ -5,13 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import com.kisesaki.blog.auth.entity.UserRole;
+import com.kisesaki.blog.auth.entity.Role;
+
+import lombok.Getter;
 
 /**
  * 自定义的用户主体类，是 Spring Security 中用户身份的核心表示。
@@ -28,6 +29,28 @@ public class CustomUserPrincipal implements UserDetails, OAuth2User {
     private final Collection<? extends GrantedAuthority> authorities;
     // OAuth2用户信息
     private final Map<String, Object> attributes;
+    // 用户角色信息
+    @Getter
+    private final List<Role> roles;
+
+    /**
+     * 用于本地用户认证的构造函数。
+     *
+     * @param id       用户ID
+     * @param username 用户名
+     * @param password 加密后的密码
+     * @param roles    角色列表
+     */
+    public CustomUserPrincipal(Long id, String username, String password, List<Role> roles) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.roles = roles;
+        this.authorities = roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()))
+                .collect(Collectors.toList());
+        this.attributes = null;
+    }
 
     /**
      * 用于 OAuth2 用户的构造函数。
@@ -37,14 +60,15 @@ public class CustomUserPrincipal implements UserDetails, OAuth2User {
      * @param roles      角色列表
      * @param attributes 从 OAuth2 提供商获取的原始属性
      */
-    public CustomUserPrincipal(Long id, String username, String password, List<UserRole> roles) {
+    public CustomUserPrincipal(Long id, String username, List<Role> roles, Map<String, Object> attributes) {
         this.id = id;
         this.username = username;
-        this.password = password;
+        this.password = null; // OAuth2用户没有密码
+        this.roles = roles;
         this.authorities = roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleId().toString()))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()))
                 .collect(Collectors.toList());
-        this.attributes = null;
+        this.attributes = attributes;
     }
 
     // --- UserDetails 接口方法实现 ---

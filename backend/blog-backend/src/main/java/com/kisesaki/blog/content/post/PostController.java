@@ -1,5 +1,6 @@
 package com.kisesaki.blog.content.post;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -128,6 +129,7 @@ public class PostController {
      * -----------------------------
      */
     @PostMapping("")
+    @PreAuthorize("hasAuthority('POST_CREATE')")
     public ApiResponse<CreatePostResponse> createPost(@Valid @RequestBody CreatePostRequest request,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
@@ -140,6 +142,7 @@ public class PostController {
      * 更新文章
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('POST_UPDATE')")
     public ApiResponse<UpdatePostResponse> updatePost(@PathVariable Long id,
             @Valid @RequestBody UpdatePostRequest request,
             Authentication authentication) {
@@ -153,6 +156,7 @@ public class PostController {
      * 删除文章
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('POST_DELETE')")
     public ApiResponse<Void> deletePost(@PathVariable Long id, Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 删除文章 {}", userId, id);
@@ -164,6 +168,7 @@ public class PostController {
      * 发布文章
      */
     @PutMapping("/{id}/publish")
+    @PreAuthorize("hasAuthority('POST_PUBLISH')")
     public ApiResponse<Void> publishPost(@PathVariable Long id, Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 发布文章 {}", userId, id);
@@ -175,6 +180,7 @@ public class PostController {
      * 取消发布（变为草稿）
      */
     @PutMapping("/{id}/unpublish")
+    @PreAuthorize("hasAuthority('POST_PUBLISH')")
     public ApiResponse<Void> unpublishPost(@PathVariable Long id, Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 取消发布文章 {}", userId, id);
@@ -186,6 +192,7 @@ public class PostController {
      * 复制文章
      */
     @PostMapping("/{id}/duplicate")
+    @PreAuthorize("hasAuthority('POST_CREATE')")
     public ApiResponse<Long> duplicatePost(@PathVariable Long id, Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 复制文章 {}", userId, id);

@@ -9,8 +9,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import com.kisesaki.blog.auth.entity.UserRole;
-import com.kisesaki.blog.auth.mapper.UserRoleMapper;
+import com.kisesaki.blog.auth.entity.Role;
+import com.kisesaki.blog.auth.mapper.RoleMapper;
 import com.kisesaki.blog.auth.security.user.CustomUserPrincipal;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.mapper.UserMapper;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserMapper userMapper;
-    private final UserRoleMapper userRoleMapper;
+    private final RoleMapper roleMapper;
 
     /**
      * 当 OAuth2 登录成功后，Spring Security 会调用此方法。
@@ -45,7 +45,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
      * 处理 OAuth2 用户信息
      * 
      * @param userRequest 请求
-     * @param oauth2User 从第三方获取的用户信息
+     * @param oauth2User  从第三方获取的用户信息
      * @return 自定义的用户详情对象
      */
     private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oauth2User) {
@@ -70,8 +70,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         // 获取用户角色信息
-        List<UserRole> userRoles = userRoleMapper.findByUserId(user.getId());
+        List<Role> userRoles = roleMapper.findRolesByUserId(user.getId());
 
-        return new CustomUserPrincipal(user.getId(), user.getUsername(), user.getPassword(), userRoles);
+        return new CustomUserPrincipal(user.getId(), user.getUsername(), userRoles, oauth2User.getAttributes());
     }
 }

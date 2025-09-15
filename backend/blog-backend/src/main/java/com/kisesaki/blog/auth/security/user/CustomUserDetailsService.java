@@ -2,18 +2,20 @@ package com.kisesaki.blog.auth.security.user;
 
 import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.kisesaki.blog.auth.entity.UserRole;
-import com.kisesaki.blog.auth.mapper.UserRoleMapper;
+import com.kisesaki.blog.auth.entity.Role;
+import com.kisesaki.blog.auth.mapper.RoleMapper;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.mapper.UserMapper;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 实现了 Spring Security 的 UserDetailsService 接口。
@@ -21,10 +23,11 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserMapper userMapper;
-    private final UserRoleMapper userRoleMapper;
+    private final RoleMapper roleMapper;
 
     /**
      * Spring Security 进行用户名密码认证时，会调用此方法。
@@ -39,7 +42,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userMapper.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("该用户不存在"));
 
-        List<UserRole> roles = userRoleMapper.findByUserId(user.getId());
+        List<Role> roles = roleMapper.findRolesByUserId(user.getId());
 
         return new CustomUserPrincipal(user.getId(), user.getUsername(), user.getPassword(), roles);
 
@@ -57,7 +60,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userMapper.findById(id)
                 .orElseThrow(() -> new UserPrincipalNotFoundException("该用户不存在"));
 
-        List<UserRole> roles = userRoleMapper.findByUserId(user.getId());
+        List<Role> roles = roleMapper.findRolesByUserId(user.getId());
+        log.info("User {} loaded with roles: {}", user.getUsername(),
+                roles.stream().map(Role::getName).collect(Collectors.toList()));
 
         return new CustomUserPrincipal(user.getId(), user.getUsername(), user.getPassword(), roles);
     }

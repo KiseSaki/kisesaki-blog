@@ -12,6 +12,8 @@ import com.kisesaki.blog.content.tag.dto.TagQuery.TagCloudItem;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListResponse;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagSearchItem;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagSearchParams;
 import com.kisesaki.blog.content.tag.entity.Tags;
 import com.kisesaki.blog.content.tag.mapper.TagsMapper;
 
@@ -155,6 +157,116 @@ public class TagQueryService {
             log.error("获取标签云失败", e);
             throw new RuntimeException("获取标签云失败，请稍后重试");
         }
+    }
+
+    /**
+     * 搜索标签
+     * 
+     * @param params 搜索参数
+     * @return 搜索结果列表
+     */
+    public List<TagSearchItem> searchTags(TagSearchParams params) {
+        try {
+            LambdaQueryWrapper<Tags> queryWrapper = new LambdaQueryWrapper<>();
+            
+            // 搜索关键词
+            if (params.getQ() != null && !params.getQ().trim().isEmpty()) {
+                String keyword = params.getQ().trim();
+                queryWrapper.and(wrapper -> wrapper
+                    .like(Tags::getName, keyword)
+                    .or()
+                    .like(Tags::getDescription, keyword)
+                );
+            }
+            
+            // 是否只显示已审核通过的标签
+            if (params.getApprovedOnly() != null && params.getApprovedOnly()) {
+                queryWrapper.eq(Tags::getIsApproved, true);
+            }
+            
+            // 排序
+            switch (params.getSort()) {
+                case "name":
+                    queryWrapper.orderByAsc(Tags::getName);
+                    break;
+                case "created_at":
+                    queryWrapper.orderByDesc(Tags::getCreatedAt);
+                    break;
+                case "popularity":
+                default:
+                    queryWrapper.orderByDesc(Tags::getPopularityScore)
+                              .orderByDesc(Tags::getPostCount);
+                    break;
+            }
+            
+            // 限制返回数量
+            queryWrapper.last("LIMIT " + Math.min(params.getLimit(), 50));
+            
+            List<Tags> tags = tagsMapper.selectList(queryWrapper);
+            
+            return tags.stream().map(tag -> {
+                TagSearchItem item = new TagSearchItem();
+                item.setId(tag.getId());
+                item.setName(tag.getName());
+                item.setSlug(tag.getSlug());
+                item.setDescription(tag.getDescription());
+                item.setColor(tag.getColor());
+                item.setPostCount(tag.getPostCount());
+                
+                // 计算匹配得分（简化版本，实际可以更复杂）
+                double matchScore = calculateMatchScore(tag, params.getQ());
+                item.setMatchScore(matchScore);
+                
+                return item;
+            }).toList();
+            
+        } catch (Exception e) {
+            log.error("搜索标签失败", e);
+            throw new RuntimeException("搜索标签失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 计算匹配得分（简化版本）
+     */
+    private double calculateMatchScore(Tags tag, String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return 1.0;
+        }
+        
+        String lowerKeyword = keyword.toLowerCase();
+        String lowerName = tag.getName().toLowerCase();
+        String lowerDesc = tag.getDescription() != null ? tag.getDescription().toLowerCase() : "";
+        
+        double score = 0.0;
+        
+        // 名称完全匹配得分最高
+        if (lowerName.equals(lowerKeyword)) {
+            score = 1.0;
+        } 
+        // 名称开头匹配
+        else if (lowerName.startsWith(lowerKeyword)) {
+            score = 0.8;
+        }
+        // 名称包含关键词
+        else if (lowerName.contains(lowerKeyword)) {
+            score = 0.6;
+        }
+        // 描述包含关键词
+        else if (lowerDesc.contains(lowerKeyword)) {
+            score = 0.4;
+        }
+        // 默认得分
+        else {
+            score = 0.1;
+        }
+        
+        // 根据流行度调整得分
+        if (tag.getPopularityScore() != null && tag.getPopularityScore() > 0) {
+            score *= (1 + Math.log10(tag.getPopularityScore()) / 10);
+        }
+        
+        return Math.min(1.0, score);
     }
 
     /**

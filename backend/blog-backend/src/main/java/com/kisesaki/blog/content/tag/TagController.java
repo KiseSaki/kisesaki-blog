@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
@@ -15,6 +16,8 @@ import com.kisesaki.blog.content.tag.dto.TagQuery.TagCloudItem;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListResponse;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagSearchItem;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagSearchParams;
 import com.kisesaki.blog.content.tag.service.TagQueryService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -71,5 +74,14 @@ public class TagController {
     @GetMapping("/cloud")
     public ApiResponse<List<TagCloudItem>> getTagCloud() {
         return ResultUtils.success(tagService.getTagCloud());
+    }
+
+    /**
+     * 搜索标签（用于创作时的标签建议）
+     */
+    @GetMapping("/search")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<List<TagSearchItem>> searchTags(TagSearchParams params) {
+        return ResultUtils.success(tagService.searchTags(params));
     }
 }

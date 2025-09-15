@@ -15,6 +15,7 @@ import com.kisesaki.blog.content.tag.dto.TagQuery.TagCloudItem;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListResponse;
+import com.kisesaki.blog.content.tag.service.TagQueryService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TagController {
 
-    private final TagService tagService;
+    private final TagQueryService tagService;
 
     /**
      * 获取标签列表

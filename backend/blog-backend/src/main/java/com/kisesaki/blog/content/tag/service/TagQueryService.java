@@ -1,4 +1,4 @@
-package com.kisesaki.blog.content.tag;
+package com.kisesaki.blog.content.tag.service;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TagService {
+public class TagQueryService {
 
     private final TagsMapper tagsMapper;
 

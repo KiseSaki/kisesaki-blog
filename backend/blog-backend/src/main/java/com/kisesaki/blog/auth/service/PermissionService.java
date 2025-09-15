@@ -40,7 +40,7 @@ public class PermissionService {
     public PageResponse<PermissionListResponse> getPermissionsList(PermissionListParams params) {
         LambdaQueryWrapper<Permission> queryWrapper = new LambdaQueryWrapper<Permission>();
         if (params.getName() != null) {
-            queryWrapper.eq(Permission::getName, params.getName());
+            queryWrapper.like(Permission::getName, params.getName());
         }
         if (params.getResource() != null) {
             queryWrapper.eq(Permission::getResource, params.getResource());

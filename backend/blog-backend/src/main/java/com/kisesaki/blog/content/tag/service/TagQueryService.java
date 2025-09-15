@@ -12,10 +12,13 @@ import com.kisesaki.blog.content.tag.dto.TagQuery.TagCloudItem;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListResponse;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagPostsParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagSearchItem;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagSearchParams;
+import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse;
 import com.kisesaki.blog.content.tag.entity.Tags;
 import com.kisesaki.blog.content.tag.mapper.TagsMapper;
+import com.kisesaki.blog.content.post.service.PostQueryService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TagQueryService {
 
     private final TagsMapper tagsMapper;
+    private final PostQueryService postQueryService;
 
     /**
      * 获取标签列表
@@ -267,6 +271,17 @@ public class TagQueryService {
         }
         
         return Math.min(1.0, score);
+    }
+
+    /**
+     * 获取指定标签下的文章列表
+     * 
+     * @param tagId 标签ID
+     * @param params 查询参数
+     * @return 文章列表
+     */
+    public PageResponse<PublishedPostListResponse> getTagPosts(Long tagId, TagPostsParams params) {
+        return postQueryService.selectPostsByTag(tagId, params);
     }
 
     /**

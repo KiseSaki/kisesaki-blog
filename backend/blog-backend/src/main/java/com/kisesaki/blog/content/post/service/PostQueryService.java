@@ -15,6 +15,7 @@ import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse;
 import com.kisesaki.blog.content.post.mapper.PostsMapper;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagPostsParams;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -137,6 +138,36 @@ public class PostQueryService {
                 false // 禁用自动count查询
         );
         Page<MyPostsListResponse> result = postsMapper.selectMyPostsPage(page, params, userId);
+
+        // 手动设置总数
+        result.setTotal(totalCount);
+
+        return PageResponse.of(result);
+    }
+
+    /**
+     * 按标签获取已发布文章列表
+     *
+     * @param tagId  标签ID
+     * @param params 查询参数
+     * @return 文章列表
+     */
+    public PageResponse<PublishedPostListResponse> selectPostsByTag(Long tagId, TagPostsParams params) {
+        // 手动获取总数
+        long totalCount = postsMapper.countPostsByTag(tagId, params);
+
+        // 如果总数为0，直接返回空结果
+        if (totalCount == 0) {
+            return PageResponse.of(List.of(), 0L, params.getPageable());
+        }
+
+        // 查询分页数据（禁用自动count查询）
+        Page<PublishedPostListResponse> page = new Page<>(
+                params.getPageable().getCurrentPage(),
+                params.getPageable().getPageSize(),
+                false); // 禁用自动count查询
+
+        Page<PublishedPostListResponse> result = postsMapper.selectPostsByTagPage(page, tagId, params);
 
         // 手动设置总数
         result.setTotal(totalCount);

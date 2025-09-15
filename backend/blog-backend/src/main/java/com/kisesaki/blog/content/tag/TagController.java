@@ -16,8 +16,10 @@ import com.kisesaki.blog.content.tag.dto.TagQuery.TagCloudItem;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagListResponse;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagPostsParams;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagSearchItem;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagSearchParams;
+import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse;
 import com.kisesaki.blog.content.tag.service.TagQueryService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -83,5 +85,15 @@ public class TagController {
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<List<TagSearchItem>> searchTags(TagSearchParams params) {
         return ResultUtils.success(tagService.searchTags(params));
+    }
+
+    /**
+     * 获取指定标签下的文章列表
+     */
+    @GetMapping("/{tagId}/posts")
+    public ApiResponse<PageResponse<PublishedPostListResponse>> getTagPosts(
+            @PathVariable Long tagId, 
+            TagPostsParams params) {
+        return ResultUtils.success(tagService.getTagPosts(tagId, params));
     }
 }

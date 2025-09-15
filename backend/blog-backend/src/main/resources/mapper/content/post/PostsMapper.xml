@@ -1188,4 +1188,89 @@
         FROM posts p
         WHERE p.status != 'deleted'  -- 排除已删除的文章
     </select>
+
+    <!-- 分页查询指定标签下的已发布文章 -->
+    <select id="selectPostsByTagPage" resultMap="PublishedPostListMap">
+        SELECT DISTINCT
+            p.id AS post_id,
+            p.title AS post_title,
+            p.slug AS post_slug,
+            p.excerpt AS post_excerpt,
+            p.cover_image_url AS post_cover_image_url,
+            p.view_count AS post_view_count,
+            p.like_count AS post_like_count,
+            p.comment_count AS post_comment_count,
+            p.share_count AS post_share_count,
+            p.reading_time AS post_reading_time,
+            p.is_featured AS post_is_featured,
+            p.is_top AS post_is_top,
+            p.published_at AS post_published_at,
+
+            -- 作者信息
+            u.id AS author_id,
+            u.username AS author_username,
+            u.display_name AS author_display_name,
+            u.avatar_url AS author_avatar_url,
+            u.bio AS author_bio,
+
+            -- 分类信息
+            c.id AS category_id,
+            c.name AS category_name,
+            c.slug AS category_slug,
+            c.description AS category_description,
+
+            -- 标签信息（返回所有标签，不仅是查询的标签）
+            t.id AS tag_id,
+            t.name AS tag_name,
+            t.slug AS tag_slug,
+            t.color AS tag_color
+
+        FROM posts p
+        INNER JOIN "user" u ON p.author_id = u.id
+        LEFT JOIN categories c ON p.category_id = c.id
+        INNER JOIN post_tags pt ON p.id = pt.post_id
+        LEFT JOIN post_tags pt_all ON p.id = pt_all.post_id
+        LEFT JOIN tags t ON pt_all.tag_id = t.id
+
+        WHERE p.status = #{params.status}
+          AND p.visibility = #{params.visibility}
+          AND pt.tag_id = #{tagId}
+          <if test="params.featuredOnly != null and params.featuredOnly">
+              AND p.is_featured = true
+          </if>
+
+        ORDER BY 
+        <choose>
+            <when test="params.pageable.sort != null and params.pageable.sort != ''">
+                <if test="params.pageable.sort.contains('publishedAt')">
+                    p.published_at <if test="params.pageable.sortDirection == 'desc'">DESC</if><if test="params.pageable.sortDirection != 'desc'">ASC</if>
+                </if>
+                <if test="params.pageable.sort.contains('viewCount')">
+                    p.view_count <if test="params.pageable.sortDirection == 'desc'">DESC</if><if test="params.pageable.sortDirection != 'desc'">ASC</if>
+                </if>
+                <if test="params.pageable.sort.contains('likeCount')">
+                    p.like_count <if test="params.pageable.sortDirection == 'desc'">DESC</if><if test="params.pageable.sortDirection != 'desc'">ASC</if>
+                </if>
+                <if test="params.pageable.sort.contains('title')">
+                    p.title <if test="params.pageable.sortDirection == 'desc'">DESC</if><if test="params.pageable.sortDirection != 'desc'">ASC</if>
+                </if>
+            </when>
+            <otherwise>
+                p.published_at DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 计算指定标签下的已发布文章数量 -->
+    <select id="countPostsByTag" resultType="long">
+        SELECT COUNT(DISTINCT p.id)
+        FROM posts p
+        INNER JOIN post_tags pt ON p.id = pt.post_id
+        WHERE p.status = #{params.status}
+          AND p.visibility = #{params.visibility}
+          AND pt.tag_id = #{tagId}
+          <if test="params.featuredOnly != null and params.featuredOnly">
+              AND p.is_featured = true
+          </if>
+    </select>
 </mapper>

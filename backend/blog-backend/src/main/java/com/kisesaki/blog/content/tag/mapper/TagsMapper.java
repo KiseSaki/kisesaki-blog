@@ -1,8 +1,12 @@
 package com.kisesaki.blog.content.tag.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.data.repository.query.Param;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListParams;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.entity.Tags;
 
@@ -24,4 +28,11 @@ public interface TagsMapper extends BaseMapper<Tags> {
      * @return 标签详情
      */
     TagDetailResponse getTagDetailBySlug(String slug);
+
+    /**
+     * 获取管理员标签列表
+     */
+    Page<AdminTagListResponse> getAdminTagList(
+            @Param("page") Page<AdminTagListResponse> page,
+            @Param("params") AdminTagListParams params);
 }

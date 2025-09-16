@@ -60,4 +60,100 @@
         WHERE
             t.slug = #{slug}
     </select>
+
+    <!-- 获取管理员标签列表 -->
+    <select id="getAdminTagList" resultType="com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListResponse">
+        SELECT
+            t.id,
+            t.name,
+            t.slug,
+            t.description,
+            t.color,
+            t.post_count,
+            t.created_at,
+            t.updated_at,
+            t.created_by,
+            uc.username AS created_by_username,
+            t.is_approved,
+            t.approval_status,
+            t.approved_by,
+            ua.username AS approved_by_username,
+            t.approved_at,
+            t.approval_note,
+            t.last_used_at,
+            t.popularity_score
+        FROM tags t
+        LEFT JOIN "user" uc ON t.created_by = uc.id
+        LEFT JOIN "user" ua ON t.approved_by = ua.id
+        <where>
+            <if test="params.name != null and params.name != ''">
+                AND t.name LIKE concat('%', #{params.name}, '%')
+            </if>
+            <if test="params.approvalStatus != null">
+                AND t.approval_status = #{params.approvalStatus}
+            </if>
+            <if test="params.createdBy != null">
+                AND t.created_by = #{params.createdBy}
+            </if>
+            <if test="params.unusedOnly != null and params.unusedOnly">
+                AND t.post_count = 0
+            </if>
+            <if test="params.unusedOnly == null or !params.unusedOnly">
+                <if test="params.minPostCount != null">
+                    AND t.post_count >= #{params.minPostCount}
+                </if>
+                <if test="params.maxPostCount != null">
+                    AND t.post_count &lt;= #{params.maxPostCount}
+                </if>
+            </if>
+            <!-- 时间范围筛选 -->
+            <if test="params.pageable.startTime != null">
+                AND t.created_at >= #{params.pageable.startTime}
+            </if>
+            <if test="params.pageable.endTime != null">
+                AND t.created_at &lt;= #{params.pageable.endTime}
+            </if>
+            <if test="params.pageable.date != null">
+                AND DATE(t.created_at) = #{params.pageable.date}
+            </if>
+        </where>
+        <!-- 动态排序 -->
+        ORDER BY
+        <choose>
+            <when test="params.pageable.getSortField() != null and params.pageable.getSortField() != ''">
+                <choose>
+                    <when test="params.pageable.getSortField() == 'id'">t.id</when>
+                    <when test="params.pageable.getSortField() == 'name'">t.name</when>
+                    <when test="params.pageable.getSortField() == 'postCount'">t.post_count</when>
+                    <when test="params.pageable.getSortField() == 'post_count'">t.post_count</when>
+                    <when test="params.pageable.getSortField() == 'createdAt'">t.created_at</when>
+                    <when test="params.pageable.getSortField() == 'created_at'">t.created_at</when>
+                    <when test="params.pageable.getSortField() == 'updatedAt'">t.updated_at</when>
+                    <when test="params.pageable.getSortField() == 'updated_at'">t.updated_at</when>
+                    <when test="params.pageable.getSortField() == 'createdBy'">t.created_by</when>
+                    <when test="params.pageable.getSortField() == 'created_by'">t.created_by</when>
+                    <when test="params.pageable.getSortField() == 'isApproved'">t.is_approved</when>
+                    <when test="params.pageable.getSortField() == 'is_approved'">t.is_approved</when>
+                    <when test="params.pageable.getSortField() == 'approvalStatus'">t.approval_status</when>
+                    <when test="params.pageable.getSortField() == 'approval_status'">t.approval_status</when>
+                    <when test="params.pageable.getSortField() == 'approvedBy'">t.approved_by</when>
+                    <when test="params.pageable.getSortField() == 'approved_by'">t.approved_by</when>
+                    <when test="params.pageable.getSortField() == 'approvedAt'">t.approved_at</when>
+                    <when test="params.pageable.getSortField() == 'approved_at'">t.approved_at</when>
+                    <when test="params.pageable.getSortField() == 'lastUsedAt'">t.last_used_at</when>
+                    <when test="params.pageable.getSortField() == 'last_used_at'">t.last_used_at</when>
+                    <when test="params.pageable.getSortField() == 'popularityScore'">t.popularity_score</when>
+                    <when test="params.pageable.getSortField() == 'popularity_score'">t.popularity_score</when>
+                    <otherwise>t.created_at</otherwise>
+                </choose>
+                <choose>
+                    <when test="params.pageable.isDescending()">DESC</when>
+                    <otherwise>ASC</otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                t.created_at DESC
+            </otherwise>
+        </choose>
+    </select>
 </mapper>

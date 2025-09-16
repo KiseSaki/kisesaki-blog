@@ -173,4 +173,74 @@
         WHERE t.approval_status = 'PENDING'
         ORDER BY t.created_at DESC
     </select>
+
+    <!-- 获取未使用的标签列表 -->
+    <select id="getUnusedTags" resultType="com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagUnusedResponse">
+        SELECT
+            t.id,
+            t.name,
+            t.slug,
+            t.description,
+            t.color,
+            t.created_at,
+            t.created_by,
+            u.username AS created_by_username,
+            COALESCE(EXTRACT(DAY FROM (now() - COALESCE(t.last_used_at, t.created_at))), 0) AS unused_days,
+            t.is_approved
+        FROM tags t
+        LEFT JOIN "user" u ON t.created_by = u.id
+        WHERE t.post_count = 0
+        <if test="unusedDays != null and unusedDays > 0">
+            AND COALESCE(EXTRACT(DAY FROM (now() - COALESCE(t.last_used_at, t.created_at))), 0) >= #{unusedDays}
+        </if>
+        ORDER BY t.created_at ASC
+    </select>
+
+    <!-- 删除未使用的标签 -->
+    <delete id="deleteUnusedTags">
+        DELETE FROM tags
+        WHERE post_count = 0
+        <if test="unusedDays != null and unusedDays > 0">
+            AND COALESCE(EXTRACT(DAY FROM (now() - COALESCE(last_used_at, created_at))), 0) >= #{unusedDays}
+        </if>
+    </delete>
+
+    <!-- 将源标签的所有文章转移到目标标签 -->
+    <insert id="transferPostsFromSourceToTarget">
+        INSERT INTO post_tags (post_id, tag_id, created_at)
+        SELECT DISTINCT pt.post_id, #{targetTagId}, pt.created_at
+        FROM post_tags pt
+        WHERE pt.tag_id = #{sourceTagId}
+        AND NOT EXISTS (
+            SELECT 1 FROM post_tags pt2
+            WHERE pt2.post_id = pt.post_id
+            AND pt2.tag_id = #{targetTagId}
+        )
+        ON CONFLICT (post_id, tag_id) DO NOTHING
+    </insert>
+
+    <!-- 删除指定标签的所有文章关联 -->
+    <delete id="deletePostTagsByTagId">
+        DELETE FROM post_tags
+        WHERE tag_id = #{tagId}
+    </delete>
+
+    <!-- 更新标签的文章计数 -->
+    <update id="updateTagPostCount">
+        UPDATE tags
+        SET post_count = (
+            SELECT COUNT(*)
+            FROM post_tags pt
+            WHERE pt.tag_id = #{tagId}
+        ),
+        last_used_at = (
+            SELECT MAX(p.published_at)
+            FROM post_tags pt
+            JOIN posts p ON pt.post_id = p.id
+            WHERE pt.tag_id = #{tagId}
+            AND p.status = 'published'
+        ),
+        updated_at = now()
+        WHERE id = #{tagId}
+    </update>
 </mapper>

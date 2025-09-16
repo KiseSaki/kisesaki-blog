@@ -3,12 +3,20 @@ package com.kisesaki.blog.content.tag.service;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import com.kisesaki.blog.common.exception.BusinessException;
-import com.kisesaki.blog.content.tag.dto.AdminCommand.*;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.common.dto.PageResponse;
+import com.kisesaki.blog.common.exception.BusinessException;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagApprovalRequest;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagCleanupResponse;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagCreateRequest;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListParams;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListResponse;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagMergeRequest;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagPendingResponse;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagUnusedResponse;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagUpdateRequest;
 import com.kisesaki.blog.content.tag.entity.Tags;
 import com.kisesaki.blog.content.tag.mapper.TagsMapper;
 import com.kisesaki.blog.content.tag.util.TagUtils;
@@ -204,5 +212,89 @@ public class AdminTagService {
      */
     public List<AdminTagPendingResponse> adminGetPendingTags() {
         return tagsMapper.getPendingTags();
+    }
+
+    /**
+     * 获取未使用的标签列表
+     *
+     * @param unusedDays 未使用的天数阈值，如果为null则获取所有未使用标签
+     * @return 未使用标签列表
+     */
+    public List<AdminTagUnusedResponse> adminGetUnusedTags(Integer unusedDays) {
+        return tagsMapper.getUnusedTags(unusedDays);
+    }
+
+    /**
+     * 清理未使用的标签
+     *
+     * @param unusedDays 未使用的天数阈值，默认30天
+     * @param userId     操作用户ID
+     * @return 清理结果
+     */
+    public AdminTagCleanupResponse adminCleanupUnusedTags(Integer unusedDays, Long userId) {
+        if (unusedDays == null) {
+            unusedDays = 30; // 默认30天
+        }
+
+        // 先获取将要被清理的标签数量
+        List<AdminTagUnusedResponse> unusedTags = tagsMapper.getUnusedTags(unusedDays);
+        int totalUnusedCount = unusedTags.size();
+
+        if (totalUnusedCount == 0) {
+            return new AdminTagCleanupResponse(0, 0, "没有找到需要清理的未使用标签");
+        }
+
+        // 执行清理
+        int cleanedCount = tagsMapper.deleteUnusedTags(unusedDays);
+
+        String message = String.format("已清理%d个超过%d天未使用的标签", cleanedCount, unusedDays);
+
+        log.info("管理员用户 {} 清理了 {} 个未使用标签，条件：超过{}天未使用", userId, cleanedCount, unusedDays);
+
+        return new AdminTagCleanupResponse(cleanedCount, totalUnusedCount, message);
+    }
+
+    /**
+     * 合并标签
+     *
+     * @param request 合并请求参数
+     * @param userId  操作用户ID
+     */
+    public void adminMergeTags(AdminTagMergeRequest request, Long userId) {
+        Long sourceTagId = request.getSourceTagId();
+        Long targetTagId = request.getTargetTagId();
+
+        // 验证标签存在性
+        Tags sourceTag = tagsMapper.selectById(sourceTagId);
+        if (sourceTag == null) {
+            throw BusinessException.notFound("源标签不存在");
+        }
+
+        Tags targetTag = tagsMapper.selectById(targetTagId);
+        if (targetTag == null) {
+            throw BusinessException.notFound("目标标签不存在");
+        }
+
+        if (sourceTagId.equals(targetTagId)) {
+            throw BusinessException.paramError("源标签和目标标签不能是同一个");
+        }
+
+        log.info("开始合并标签：源标签[{}:{}] -> 目标标签[{}:{}]", sourceTagId, sourceTag.getName(), targetTagId,
+                targetTag.getName());
+
+        // 1. 将源标签的所有文章关联转移到目标标签
+        int transferredPosts = tagsMapper.transferPostsFromSourceToTarget(sourceTagId, targetTagId);
+
+        // 2. 删除源标签的所有文章关联
+        tagsMapper.deletePostTagsByTagId(sourceTagId);
+
+        // 3. 更新目标标签的文章计数和最后使用时间
+        tagsMapper.updateTagPostCount(targetTagId);
+
+        // 4. 删除源标签
+        tagsMapper.deleteById(sourceTagId);
+
+        log.info("管理员用户 {} 成功合并标签：{} -> {}，转移了{}篇文章",
+                userId, sourceTag.getName(), targetTag.getName(), transferredPosts);
     }
 }

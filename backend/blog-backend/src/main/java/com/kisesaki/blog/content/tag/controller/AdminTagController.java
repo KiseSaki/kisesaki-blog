@@ -1,8 +1,9 @@
 package com.kisesaki.blog.content.tag.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.kisesaki.blog.common.util.AuthUtils;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagCreateRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
@@ -28,5 +29,15 @@ public class AdminTagController {
     @GetMapping("")
     public ApiResponse<PageResponse<AdminTagListResponse>> getAdminTagList(@Valid AdminTagListParams params) {
         return ApiResponse.success(adminTagService.getAdminTagList(params));
+    }
+
+
+    /**
+     * 创建新标签
+     */
+    @PostMapping("")
+    public ApiResponse<Long> createAdminTag(@Valid @RequestBody AdminTagCreateRequest request, Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        return ApiResponse.success(adminTagService.createAdminTag(request, userId));
     }
 }

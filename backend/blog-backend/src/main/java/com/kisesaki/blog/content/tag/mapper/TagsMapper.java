@@ -1,5 +1,6 @@
 package com.kisesaki.blog.content.tag.mapper;
 
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagPendingResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 
@@ -9,6 +10,8 @@ import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListParams;
 import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListResponse;
 import com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse;
 import com.kisesaki.blog.content.tag.entity.Tags;
+
+import java.util.List;
 
 @Mapper
 public interface TagsMapper extends BaseMapper<Tags> {
@@ -35,4 +38,9 @@ public interface TagsMapper extends BaseMapper<Tags> {
     Page<AdminTagListResponse> getAdminTagList(
             @Param("page") Page<AdminTagListResponse> page,
             @Param("params") AdminTagListParams params);
+
+    /**
+     * 获取所有待审核标签
+     */
+    List<AdminTagPendingResponse> getPendingTags();
 }

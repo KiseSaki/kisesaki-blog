@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/admin/tags")
 @RequiredArgsConstructor
@@ -61,6 +63,9 @@ public class AdminTagController {
         return ApiResponse.success("删除成功");
     }
 
+    /**
+     * 审核标签
+     */
     @PutMapping("/{id}/approve")
     public ApiResponse<Void> adminTagApprove(@PathVariable("id") Long id,
                                              @Valid @RequestBody AdminTagApprovalRequest request,
@@ -69,4 +74,13 @@ public class AdminTagController {
         adminTagService.adminTagApprove(id, request, userId);
         return ApiResponse.success("审核成功");
     }
+
+    /**
+     * 获取所有待审核标签
+     */
+    @GetMapping("/pending")
+    public ApiResponse<List<AdminTagPendingResponse>> adminGetPendingTags() {
+        return ApiResponse.success(adminTagService.adminGetPendingTags());
+    }
+
 }

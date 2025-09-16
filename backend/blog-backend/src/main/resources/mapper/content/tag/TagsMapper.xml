@@ -156,4 +156,21 @@
             </otherwise>
         </choose>
     </select>
+
+    <!-- 获取所有待审核标签 -->
+    <select id="getPendingTags" resultType="com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagPendingResponse">
+        SELECT
+            t.id,
+            t.name,
+            t.slug,
+            t.description,
+            t.color,
+            t.created_at,
+            t.created_by,
+            u.username AS created_by_username
+        FROM tags t
+        LEFT JOIN "user" u ON t.created_by = u.id
+        WHERE t.approval_status = 'PENDING'
+        ORDER BY t.created_at DESC
+    </select>
 </mapper>

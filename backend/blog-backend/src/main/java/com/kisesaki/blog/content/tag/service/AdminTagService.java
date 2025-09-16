@@ -1,8 +1,8 @@
 package com.kisesaki.blog.content.tag.service;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
-import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.content.tag.dto.AdminCommand.*;
 import org.springframework.stereotype.Service;
@@ -195,5 +195,14 @@ public class AdminTagService {
         tagsMapper.updateById(tag);
 
         log.info("管理员用户 {} 审核了标签: {}，状态: {}", userId, tag.getName(), request.getStatus());
+    }
+
+    /**
+     * 获取待审核标签数量
+     *
+     * @return 待审核标签
+     */
+    public List<AdminTagPendingResponse> adminGetPendingTags() {
+        return tagsMapper.getPendingTags();
     }
 }

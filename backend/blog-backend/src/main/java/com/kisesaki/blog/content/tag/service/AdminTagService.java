@@ -9,6 +9,7 @@ import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagCreateRequest;
 import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListParams;
 import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListResponse;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagUpdateRequest;
 import com.kisesaki.blog.content.tag.entity.Tags;
 import com.kisesaki.blog.content.tag.mapper.TagsMapper;
 import com.kisesaki.blog.content.tag.util.TagUtils;
@@ -94,5 +95,56 @@ public class AdminTagService {
         log.info("管理员用户 {} 创建了标签: {}", userId, tag.getName());
 
         return tag.getId();
+    }
+
+    /**
+     * 更新标签
+     *
+     * @param id      标签ID
+     * @param request 更新请求参数
+     * @param userId  操作用户ID
+     */
+    public void updateAdminTag(Long id, AdminTagUpdateRequest request, Long userId) {
+        Tags tag = tagsMapper.selectById(id);
+        if (tag == null) {
+            throw new IllegalArgumentException("标签不存在");
+        }
+
+        // 使用工具类验证和准备标签信息
+        TagUtils.TagValidationResult validationResult = tagUtils.validateAndPrepareTagInfo(
+                request.getName(),
+                request.getSlug(),
+                request.getColor());
+
+        tag.setName(validationResult.getName());
+        tag.setSlug(validationResult.getSlug());
+        tag.setDescription(request.getDescription());
+        tag.setColor(validationResult.getColor());
+        tag.setUpdatedAt(OffsetDateTime.now());
+
+        if (request.getIsApproved() != null) {
+            if (request.getIsApproved() && !tag.getIsApproved()) {
+                // 从未审核到审核通过
+                tag.setIsApproved(true);
+                tag.setApprovalStatus("approved");
+                tag.setApprovedBy(userId);
+                tag.setApprovedAt(OffsetDateTime.now());
+                tag.setApprovalNote(request.getApprovalNote());
+            } else if (!request.getIsApproved() && tag.getIsApproved()) {
+                // 从审核通过到未审核
+                tag.setIsApproved(false);
+                tag.setApprovalStatus("pending");
+                tag.setApprovedBy(null);
+                tag.setApprovedAt(null);
+                tag.setApprovalNote(null);
+            } else if (request.getIsApproved()) {
+                // 已审核状态下更新备注
+                tag.setApprovalNote(request.getApprovalNote());
+            }
+        }
+
+        tagsMapper.updateById(tag);
+
+        log.info("管理员用户 {} 更新了标签: {}", userId, tag.getName());
     }
 }

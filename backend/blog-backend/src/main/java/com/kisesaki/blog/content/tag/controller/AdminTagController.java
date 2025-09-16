@@ -1,15 +1,12 @@
 package com.kisesaki.blog.content.tag.controller;
 
+import com.kisesaki.blog.content.tag.dto.AdminCommand.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.util.AuthUtils;
-import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagCreateRequest;
-import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListParams;
-import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListResponse;
-import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagUpdateRequest;
 import com.kisesaki.blog.content.tag.service.AdminTagService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,7 +34,7 @@ public class AdminTagController {
      */
     @PostMapping("")
     public ApiResponse<Long> adminTagCreate(@Valid @RequestBody AdminTagCreateRequest request,
-            Authentication authentication) {
+                                            Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         return ApiResponse.success(adminTagService.adminTagCreate(request, userId));
     }
@@ -47,8 +44,8 @@ public class AdminTagController {
      */
     @PutMapping("/{id}")
     public ApiResponse<Void> adminTagUpdate(@PathVariable("id") Long id,
-            @Valid @RequestBody AdminTagUpdateRequest request,
-            Authentication authentication) {
+                                            @Valid @RequestBody AdminTagUpdateRequest request,
+                                            Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         adminTagService.adminTagUpdate(id, request, userId);
         return ApiResponse.success("更新成功");
@@ -62,5 +59,14 @@ public class AdminTagController {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         adminTagService.adminTagDelete(id, userId);
         return ApiResponse.success("删除成功");
+    }
+
+    @PutMapping("/{id}/approve")
+    public ApiResponse<Void> adminTagApprove(@PathVariable("id") Long id,
+                                             @Valid @RequestBody AdminTagApprovalRequest request,
+                                             Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        adminTagService.adminTagApprove(id, request, userId);
+        return ApiResponse.success("审核成功");
     }
 }

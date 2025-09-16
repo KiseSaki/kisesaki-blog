@@ -2,14 +2,13 @@ package com.kisesaki.blog.content.tag.service;
 
 import java.time.OffsetDateTime;
 
+import com.kisesaki.blog.common.enums.ErrorCode;
+import com.kisesaki.blog.common.exception.BusinessException;
+import com.kisesaki.blog.content.tag.dto.AdminCommand.*;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.common.dto.PageResponse;
-import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagCreateRequest;
-import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListParams;
-import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListResponse;
-import com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagUpdateRequest;
 import com.kisesaki.blog.content.tag.entity.Tags;
 import com.kisesaki.blog.content.tag.mapper.TagsMapper;
 import com.kisesaki.blog.content.tag.util.TagUtils;
@@ -163,5 +162,38 @@ public class AdminTagService {
         tagsMapper.deleteById(id);
 
         log.info("管理员用户 {} 删除了标签: {}", userId, tag.getName());
+    }
+
+    /**
+     * 审核标签
+     *
+     * @param id      标签ID
+     * @param request 审核请求参数
+     * @param userId  操作用户ID
+     */
+    public void adminTagApprove(Long id, AdminTagApprovalRequest request, Long userId) {
+        Tags tag = tagsMapper.selectById(id);
+        if (tag == null) {
+            throw BusinessException.notFound("被删除标签没找到");
+        }
+        if ("approved".equals(request.getStatus())) {
+            tag.setIsApproved(true);
+            tag.setApprovalStatus("approved");
+            tag.setApprovedBy(userId);
+            tag.setApprovedAt(OffsetDateTime.now());
+            tag.setApprovalNote(request.getNote());
+        } else if ("rejected".equals(request.getStatus())) {
+            tag.setIsApproved(false);
+            tag.setApprovalStatus("rejected");
+            tag.setApprovedBy(userId);
+            tag.setApprovedAt(OffsetDateTime.now());
+            tag.setApprovalNote(request.getNote());
+        } else {
+            throw BusinessException.paramError("无效的审核状态");
+        }
+
+        tagsMapper.updateById(tag);
+
+        log.info("管理员用户 {} 审核了标签: {}，状态: {}", userId, tag.getName(), request.getStatus());
     }
 }

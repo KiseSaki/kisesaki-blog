@@ -1,13 +1,7 @@
 package com.kisesaki.blog.content.tag.controller;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
@@ -57,6 +51,16 @@ public class AdminTagController {
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         adminTagService.adminTagUpdate(id, request, userId);
-        return ApiResponse.success();
+        return ApiResponse.success("更新成功");
+    }
+
+    /**
+     * 删除标签
+     */
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> adminTagDelete(@PathVariable("id") Long id, Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        adminTagService.adminTagDelete(id, userId);
+        return ApiResponse.success("删除成功");
     }
 }

@@ -148,4 +148,20 @@ public class AdminTagService {
         log.info("管理员用户 {} 更新了标签: {}", userId, tag.getName());
     }
 
+    /**
+     * 删除标签
+     *
+     * @param id     标签ID
+     * @param userId 操作用户ID
+     */
+    public void adminTagDelete(Long id, Long userId) {
+        Tags tag = tagsMapper.selectById(id);
+        if (tag == null) {
+            throw new IllegalArgumentException("标签不存在");
+        }
+
+        tagsMapper.deleteById(id);
+
+        log.info("管理员用户 {} 删除了标签: {}", userId, tag.getName());
+    }
 }

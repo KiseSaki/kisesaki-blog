@@ -36,6 +36,9 @@ public class Categories {
     /* 文章数量 */
     private Integer postCount;
 
+    /* 是否可见 */
+    private Boolean isVisible;
+
     /* 创建时间 */
     private OffsetDateTime createdAt;
 

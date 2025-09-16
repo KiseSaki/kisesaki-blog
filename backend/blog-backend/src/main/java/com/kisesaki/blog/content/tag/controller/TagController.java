@@ -1,4 +1,4 @@
-package com.kisesaki.blog.content.tag;
+package com.kisesaki.blog.content.tag.controller;
 
 import java.util.List;
 

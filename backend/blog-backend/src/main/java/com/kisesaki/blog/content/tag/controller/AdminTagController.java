@@ -34,29 +34,29 @@ public class AdminTagController {
      * 获取管理员标签列表
      */
     @GetMapping("")
-    public ApiResponse<PageResponse<AdminTagListResponse>> getAdminTagList(@Valid AdminTagListParams params) {
-        return ApiResponse.success(adminTagService.getAdminTagList(params));
+    public ApiResponse<PageResponse<AdminTagListResponse>> adminGetTagList(@Valid AdminTagListParams params) {
+        return ApiResponse.success(adminTagService.adminGetTagList(params));
     }
 
     /**
      * 创建新标签
      */
     @PostMapping("")
-    public ApiResponse<Long> createAdminTag(@Valid @RequestBody AdminTagCreateRequest request,
+    public ApiResponse<Long> adminTagCreate(@Valid @RequestBody AdminTagCreateRequest request,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-        return ApiResponse.success(adminTagService.createAdminTag(request, userId));
+        return ApiResponse.success(adminTagService.adminTagCreate(request, userId));
     }
 
     /**
      * 更新标签
      */
     @PutMapping("/{id}")
-    public ApiResponse<Void> updateAdminTag(@PathVariable("id") Long id,
+    public ApiResponse<Void> adminTagUpdate(@PathVariable("id") Long id,
             @Valid @RequestBody AdminTagUpdateRequest request,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-        adminTagService.updateAdminTag(id, request, userId);
+        adminTagService.adminTagUpdate(id, request, userId);
         return ApiResponse.success();
     }
 }

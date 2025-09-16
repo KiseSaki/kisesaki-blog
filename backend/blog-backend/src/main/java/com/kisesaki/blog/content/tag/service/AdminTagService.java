@@ -31,7 +31,7 @@ public class AdminTagService {
      * @param params 分页参数
      * @return 分页响应结果
      */
-    public PageResponse<AdminTagListResponse> getAdminTagList(AdminTagListParams params) {
+    public PageResponse<AdminTagListResponse> adminGetTagList(AdminTagListParams params) {
         // 构建分页对象
         Page<AdminTagListResponse> page = new Page<>(
                 params.getPageable().getCurrentPage(),
@@ -59,7 +59,7 @@ public class AdminTagService {
      * @param request 创建请求参数
      * @return 新创建标签的ID
      */
-    public Long createAdminTag(AdminTagCreateRequest request, Long userId) {
+    public Long adminTagCreate(AdminTagCreateRequest request, Long userId) {
         // 使用工具类验证和准备标签信息
         TagUtils.TagValidationResult validationResult = tagUtils.validateAndPrepareTagInfo(
                 request.getName(),
@@ -104,7 +104,7 @@ public class AdminTagService {
      * @param request 更新请求参数
      * @param userId  操作用户ID
      */
-    public void updateAdminTag(Long id, AdminTagUpdateRequest request, Long userId) {
+    public void adminTagUpdate(Long id, AdminTagUpdateRequest request, Long userId) {
         Tags tag = tagsMapper.selectById(id);
         if (tag == null) {
             throw new IllegalArgumentException("标签不存在");
@@ -147,4 +147,5 @@ public class AdminTagService {
 
         log.info("管理员用户 {} 更新了标签: {}", userId, tag.getName());
     }
+
 }

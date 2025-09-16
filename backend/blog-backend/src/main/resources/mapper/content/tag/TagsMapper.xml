@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kisesaki.blog.content.tag.mapper.TagsMapper">
+    <resultMap id="TagDetailResponse" type="com.kisesaki.blog.content.tag.dto.TagQuery.TagDetailResponse">
+        <id property="id" column="id"/>
+        <result property="name" column="tag_name"/>
+        <result property="slug" column="tag_slug"/>
+        <result property="description" column="tag_description"/>
+        <result property="color" column="tag_color"/>
+        <result property="postCount" column="tag_post_count"/>
+        <result property="createdAt" column="tag_created_at"/>
+        <result property="updatedAt" column="tag_updated_at"/>
+        <result property="createdBy" column="tag_created_by"/>
+        <result property="createdByUsername" column="user_username"/>
+        <result property="isApproved" column="tag_is_approved"/>
+    </resultMap>
+
+    <!-- 根据Id查询标签详情 -->
+    <select id="getTagDetailById" resultMap="TagDetailResponse" parameterType="long">
+        SELECT
+            t.id,
+            t.name AS tag_name,
+            t.slug AS tag_slug,
+            t.description AS tag_description,
+            t.color AS tag_color,
+            t.post_count AS tag_post_count,
+            t.created_at AS tag_created_at,
+            t.updated_at AS tag_updated_at,
+            t.created_by AS tag_created_by,
+            u.username AS user_username,
+            t.is_approved AS tag_is_approved
+        FROM
+            tags t
+        LEFT JOIN
+            "user" u ON t.created_by = u.id
+        WHERE
+            t.id = #{id}
+    </select>
+
+    <!-- 根据Slug查询标签详情 -->
+    <select id="getTagDetailBySlug" resultMap="TagDetailResponse" parameterType="string">
+        SELECT
+            t.id,
+            t.name AS tag_name,
+            t.slug AS tag_slug,
+            t.description AS tag_description,
+            t.color AS tag_color,
+            t.post_count AS tag_post_count,
+            t.created_at AS tag_created_at,
+            t.updated_at AS tag_updated_at,
+            t.created_by AS tag_created_by,
+            u.username AS user_username,
+            t.is_approved AS tag_is_approved
+        FROM
+            tags t
+        LEFT JOIN
+            "user" u ON t.created_by = u.id
+        WHERE
+            t.slug = #{slug}
+    </select>
+
+    <!-- 获取管理员标签列表 -->
+    <select id="getAdminTagList" resultType="com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagListResponse">
+        SELECT
+            t.id,
+            t.name,
+            t.slug,
+            t.description,
+            t.color,
+            t.post_count,
+            t.created_at,
+            t.updated_at,
+            t.created_by,
+            uc.username AS created_by_username,
+            t.is_approved,
+            t.approval_status,
+            t.approved_by,
+            ua.username AS approved_by_username,
+            t.approved_at,
+            t.approval_note,
+            t.last_used_at,
+            t.popularity_score
+        FROM tags t
+        LEFT JOIN "user" uc ON t.created_by = uc.id
+        LEFT JOIN "user" ua ON t.approved_by = ua.id
+        <where>
+            <if test="params.name != null and params.name != ''">
+                AND t.name LIKE concat('%', #{params.name}, '%')
+            </if>
+            <if test="params.approvalStatus != null">
+                AND t.approval_status = #{params.approvalStatus}
+            </if>
+            <if test="params.createdBy != null">
+                AND t.created_by = #{params.createdBy}
+            </if>
+            <if test="params.unusedOnly != null and params.unusedOnly">
+                AND t.post_count = 0
+            </if>
+            <if test="params.unusedOnly == null or !params.unusedOnly">
+                <if test="params.minPostCount != null">
+                    AND t.post_count >= #{params.minPostCount}
+                </if>
+                <if test="params.maxPostCount != null">
+                    AND t.post_count &lt;= #{params.maxPostCount}
+                </if>
+            </if>
+            <!-- 时间范围筛选 -->
+            <if test="params.pageable.startTime != null">
+                AND t.created_at >= #{params.pageable.startTime}
+            </if>
+            <if test="params.pageable.endTime != null">
+                AND t.created_at &lt;= #{params.pageable.endTime}
+            </if>
+            <if test="params.pageable.date != null">
+                AND DATE(t.created_at) = #{params.pageable.date}
+            </if>
+        </where>
+        <!-- 动态排序 -->
+        ORDER BY
+        <choose>
+            <when test="params.pageable.getSortField() != null and params.pageable.getSortField() != ''">
+                <choose>
+                    <when test="params.pageable.getSortField() == 'id'">t.id</when>
+                    <when test="params.pageable.getSortField() == 'name'">t.name</when>
+                    <when test="params.pageable.getSortField() == 'postCount'">t.post_count</when>
+                    <when test="params.pageable.getSortField() == 'post_count'">t.post_count</when>
+                    <when test="params.pageable.getSortField() == 'createdAt'">t.created_at</when>
+                    <when test="params.pageable.getSortField() == 'created_at'">t.created_at</when>
+                    <when test="params.pageable.getSortField() == 'updatedAt'">t.updated_at</when>
+                    <when test="params.pageable.getSortField() == 'updated_at'">t.updated_at</when>
+                    <when test="params.pageable.getSortField() == 'createdBy'">t.created_by</when>
+                    <when test="params.pageable.getSortField() == 'created_by'">t.created_by</when>
+                    <when test="params.pageable.getSortField() == 'isApproved'">t.is_approved</when>
+                    <when test="params.pageable.getSortField() == 'is_approved'">t.is_approved</when>
+                    <when test="params.pageable.getSortField() == 'approvalStatus'">t.approval_status</when>
+                    <when test="params.pageable.getSortField() == 'approval_status'">t.approval_status</when>
+                    <when test="params.pageable.getSortField() == 'approvedBy'">t.approved_by</when>
+                    <when test="params.pageable.getSortField() == 'approved_by'">t.approved_by</when>
+                    <when test="params.pageable.getSortField() == 'approvedAt'">t.approved_at</when>
+                    <when test="params.pageable.getSortField() == 'approved_at'">t.approved_at</when>
+                    <when test="params.pageable.getSortField() == 'lastUsedAt'">t.last_used_at</when>
+                    <when test="params.pageable.getSortField() == 'last_used_at'">t.last_used_at</when>
+                    <when test="params.pageable.getSortField() == 'popularityScore'">t.popularity_score</when>
+                    <when test="params.pageable.getSortField() == 'popularity_score'">t.popularity_score</when>
+                    <otherwise>t.created_at</otherwise>
+                </choose>
+                <choose>
+                    <when test="params.pageable.isDescending()">DESC</when>
+                    <otherwise>ASC</otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                t.created_at DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 获取所有待审核标签 -->
+    <select id="getPendingTags" resultType="com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagPendingResponse">
+        SELECT
+            t.id,
+            t.name,
+            t.slug,
+            t.description,
+            t.color,
+            t.created_at,
+            t.created_by,
+            u.username AS created_by_username
+        FROM tags t
+        LEFT JOIN "user" u ON t.created_by = u.id
+        WHERE t.approval_status = 'PENDING'
+        ORDER BY t.created_at DESC
+    </select>
+
+    <!-- 获取未使用的标签列表 -->
+    <select id="getUnusedTags" resultType="com.kisesaki.blog.content.tag.dto.AdminCommand.AdminTagUnusedResponse">
+        SELECT
+            t.id,
+            t.name,
+            t.slug,
+            t.description,
+            t.color,
+            t.created_at,
+            t.created_by,
+            u.username AS created_by_username,
+            COALESCE(EXTRACT(DAY FROM (now() - COALESCE(t.last_used_at, t.created_at))), 0) AS unused_days,
+            t.is_approved
+        FROM tags t
+        LEFT JOIN "user" u ON t.created_by = u.id
+        WHERE t.post_count = 0
+        <if test="unusedDays != null and unusedDays > 0">
+            AND COALESCE(EXTRACT(DAY FROM (now() - COALESCE(t.last_used_at, t.created_at))), 0) >= #{unusedDays}
+        </if>
+        ORDER BY t.created_at ASC
+    </select>
+
+    <!-- 删除未使用的标签 -->
+    <delete id="deleteUnusedTags">
+        DELETE FROM tags
+        WHERE post_count = 0
+        <if test="unusedDays != null and unusedDays > 0">
+            AND COALESCE(EXTRACT(DAY FROM (now() - COALESCE(last_used_at, created_at))), 0) >= #{unusedDays}
+        </if>
+    </delete>
+
+    <!-- 将源标签的所有文章转移到目标标签 -->
+    <insert id="transferPostsFromSourceToTarget">
+        INSERT INTO post_tags (post_id, tag_id, created_at)
+        SELECT DISTINCT pt.post_id, #{targetTagId}, pt.created_at
+        FROM post_tags pt
+        WHERE pt.tag_id = #{sourceTagId}
+        AND NOT EXISTS (
+            SELECT 1 FROM post_tags pt2
+            WHERE pt2.post_id = pt.post_id
+            AND pt2.tag_id = #{targetTagId}
+        )
+        ON CONFLICT (post_id, tag_id) DO NOTHING
+    </insert>
+
+    <!-- 删除指定标签的所有文章关联 -->
+    <delete id="deletePostTagsByTagId">
+        DELETE FROM post_tags
+        WHERE tag_id = #{tagId}
+    </delete>
+
+    <!-- 更新标签的文章计数 -->
+    <update id="updateTagPostCount">
+        UPDATE tags
+        SET post_count = (
+            SELECT COUNT(*)
+            FROM post_tags pt
+            WHERE pt.tag_id = #{tagId}
+        ),
+        last_used_at = (
+            SELECT MAX(p.published_at)
+            FROM post_tags pt
+            JOIN posts p ON pt.post_id = p.id
+            WHERE pt.tag_id = #{tagId}
+            AND p.status = 'published'
+        ),
+        updated_at = now()
+        WHERE id = #{tagId}
+    </update>
+</mapper>

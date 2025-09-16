@@ -13,6 +13,7 @@ import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse;
 import com.kisesaki.blog.content.post.entity.Posts;
+import com.kisesaki.blog.content.tag.dto.TagQuery.TagPostsParams;
 
 @Mapper
 public interface PostsMapper extends BaseMapper<Posts> {
@@ -154,4 +155,26 @@ public interface PostsMapper extends BaseMapper<Posts> {
          * @return 统计数据
          */
         AdminPostStatsDto.PostStatsResponse getPostStats();
+
+        /**
+         * 分页查询指定标签下的已发布文章
+         *
+         * @param page   分页对象
+         * @param tagId  标签ID
+         * @param params 查询参数
+         * @return 分页结果
+         */
+        Page<PublishedPostListResponse> selectPostsByTagPage(
+                        Page<PublishedPostListResponse> page,
+                        @Param("tagId") Long tagId,
+                        @Param("params") TagPostsParams params);
+
+        /**
+         * 计算指定标签下的已发布文章数量
+         *
+         * @param tagId  标签ID
+         * @param params 查询参数
+         * @return 文章总数
+         */
+        long countPostsByTag(@Param("tagId") Long tagId, @Param("params") TagPostsParams params);
 }

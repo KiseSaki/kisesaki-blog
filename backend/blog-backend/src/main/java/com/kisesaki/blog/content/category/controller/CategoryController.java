@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * 分类控制器
- * 
+ *
  * @author KiseSaki
  */
 @RestController
@@ -32,9 +32,6 @@ public class CategoryController {
 
     /**
      * 获取分类列表
-     * 
-     * @param params 查询参数
-     * @return 分类列表响应
      */
     @GetMapping("")
     public ApiResponse<PageResponse<CategoryTreeResponse>> getCategoryList(@Valid CategoryQueryParams params) {
@@ -43,12 +40,17 @@ public class CategoryController {
 
     /**
      * 根据ID获取分类详情
-     *
-     * @param id 分类ID
-     * @return 分类详情响应
      */
     @GetMapping("/{id}")
     public ApiResponse<CategoryDetailResponse> getCategoryDetailById(@PathVariable Long id) {
         return ResultUtils.success(categoryService.getCategoryDetailById(id));
+    }
+
+    /**
+     * 根据别名获取分类详情
+     */
+    @GetMapping("/slug/{slug}")
+    public ApiResponse<CategoryDetailResponse> getCategoryDetailBySlug(@PathVariable String slug) {
+        return ResultUtils.success(categoryService.getCategoryDetailBySlug(slug));
     }
 }

@@ -39,6 +39,14 @@ public interface CategoriesMapper extends BaseMapper<Categories> {
     CategoryDetailResponse getCategoryDetailById(Long categoryId);
 
     /**
+     * 根据分类别名获取分类详情
+     *
+     * @param slug 分类别名
+     * @return 分类详情响应数据
+     */
+    CategoryDetailResponse getCategoryDetailBySlug(String slug);
+
+    /**
      * 获取指定父分类的直接子分类
      *
      * @param parentId 父分类ID

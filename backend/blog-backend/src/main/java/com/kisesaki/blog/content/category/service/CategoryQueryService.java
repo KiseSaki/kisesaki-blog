@@ -79,6 +79,30 @@ public class CategoryQueryService {
     }
 
     /**
+     * 根据别名获取分类详情
+     *
+     * @param slug 分类别名
+     * @return 分类详情响应数据，若分类不存在或不可见则返回 null
+     */
+    public CategoryDetailResponse getCategoryDetailBySlug(String slug) {
+        log.debug("获取分类详情，分类别名: {}", slug);
+
+        // 1. 获取当前分类基本信息
+        CategoryDetailResponse categoryDetail = categoriesMapper.getCategoryDetailBySlug(slug);
+        if (categoryDetail == null) {
+            log.warn("分类不存在或不可见，分类别名: {}", slug);
+            throw BusinessException.notFound("分类不存在或不可见");
+        }
+
+        // 2. 递归查询并构建子分类树
+        List<CategoryDetailResponse> children = getChildrenRecursively(categoryDetail.getId());
+        categoryDetail.setChildren(children);
+
+        log.debug("分类详情查询完成，分类别名: {}, 子分类数量: {}", slug, children.size());
+        return categoryDetail;
+    }
+
+    /**
      * 递归获取子分类列表
      *
      * @param parentId 父分类ID

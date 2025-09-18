@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.auth.dto.permission.PermissionCreateRequest;
 import com.kisesaki.blog.auth.dto.permission.PermissionDetailResponse;
 import com.kisesaki.blog.auth.dto.permission.PermissionListParams;
@@ -20,6 +19,7 @@ import com.kisesaki.blog.auth.enums.PermissionResource;
 import com.kisesaki.blog.auth.mapper.PermissionMapper;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.exception.BusinessException;
+import com.kisesaki.blog.common.util.PageQueryUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +39,8 @@ public class PermissionService {
      */
     public PageResponse<PermissionListResponse> getPermissionsList(PermissionListParams params) {
         LambdaQueryWrapper<Permission> queryWrapper = new LambdaQueryWrapper<Permission>();
+
+        // 查询条件
         if (params.getName() != null) {
             queryWrapper.like(Permission::getName, params.getName());
         }
@@ -49,37 +51,25 @@ public class PermissionService {
             queryWrapper.eq(Permission::getAction, params.getAction());
         }
 
-        // 先获取数量
-        long totalCount = permissionMapper.selectCount(queryWrapper);
+        // 应用时间范围条件
+        PageQueryUtils.applyTimeRangeConditions(queryWrapper, params.getPageable(), Permission::getCreatedAt);
 
-        if (totalCount == 0) {
-            return PageResponse.of(List.of(), 0L, params.getPageable());
-        }
+        // 应用排序规则
+        PageQueryUtils.createSortBuilder(queryWrapper, params.getPageable())
+                .defaultSort(Permission::getCreatedAt, true) // 默认按创建时间倒序
+                .addSortField("id", Permission::getId)
+                .addSortField("name", Permission::getName)
+                .addSortField("resource", Permission::getResource)
+                .addSortField("action", Permission::getAction)
+                .addSortField("createdAt", Permission::getCreatedAt)
+                .apply();
 
-        // 构建分页对象
-        Page<Permission> page = new Page<>(params.getPageable().getCurrentPage(),
-                params.getPageable().getPageSize());
-        Page<Permission> result = permissionMapper.selectPage(page, queryWrapper);
-
-        List<PermissionListResponse> responseList = result.getRecords().stream().map(permission -> {
-            PermissionListResponse response = new PermissionListResponse();
-            response.setId(permission.getId());
-            response.setName(permission.getName());
-            response.setDescription(permission.getDescription());
-            response.setResource(permission.getResource());
-            response.setAction(permission.getAction());
-            if (permission.getCreatedAt() != null) {
-                response.setCreatedAt(permission.getCreatedAt());
-            }
-            return response;
-        }).toList();
-
-        // 构造 DTO 分页对象并返回
-        Page<PermissionListResponse> dtoPage = new Page<>(result.getCurrent(), result.getSize());
-        dtoPage.setTotal(totalCount);
-        dtoPage.setRecords(responseList);
-
-        return PageResponse.of(dtoPage);
+        // 执行分页查询
+        return PageQueryUtils.executePageQuery(
+                permissionMapper,
+                queryWrapper,
+                params.getPageable(),
+                this::convertToPermissionListResponse);
     }
 
     /**
@@ -199,5 +189,21 @@ public class PermissionService {
         return Arrays.stream(PermissionAction.values())
                 .map(action -> new PermissionOptionResponse(action.getCode(), action.getDescription()))
                 .toList();
+    }
+
+    /**
+     * 转换实体为权限列表响应对象
+     */
+    private PermissionListResponse convertToPermissionListResponse(Permission permission) {
+        PermissionListResponse response = new PermissionListResponse();
+        response.setId(permission.getId());
+        response.setName(permission.getName());
+        response.setDescription(permission.getDescription());
+        response.setResource(permission.getResource());
+        response.setAction(permission.getAction());
+        if (permission.getCreatedAt() != null) {
+            response.setCreatedAt(permission.getCreatedAt());
+        }
+        return response;
     }
 }

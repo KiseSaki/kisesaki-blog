@@ -1,4 +1,4 @@
-package com.kisesaki.blog.content.comment;
+package com.kisesaki.blog.content.comment.service;
 
 /**
  * 评论服务

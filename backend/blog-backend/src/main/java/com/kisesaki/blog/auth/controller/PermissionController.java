@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "权限", description = "权限相关接口")
+@PreAuthorize("hasRole('ADMIN')")
 public class PermissionController {
 
     private final PermissionService permissionService;
@@ -41,7 +42,6 @@ public class PermissionController {
      * 获取权限列表
      */
     @GetMapping("")
-    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<PageResponse<PermissionListResponse>> getPermissionsList(
             @Valid @RequestParam PermissionListParams params) {
         PageResponse<PermissionListResponse> pageResponse = permissionService.getPermissionsList(params);
@@ -52,7 +52,6 @@ public class PermissionController {
      * 根据ID获取权限详情
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<PermissionDetailResponse> getPermissionById(@PathVariable Long id) {
         // 这里调用service层的方法获取权限详情
         PermissionDetailResponse detailResponse = permissionService.getPermissionById(id);
@@ -63,7 +62,6 @@ public class PermissionController {
      * 创建权限
      */
     @PostMapping("")
-    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> createPermission(@Valid @RequestBody PermissionCreateRequest request) {
         permissionService.createPermission(request);
         return ApiResponse.success("权限创建成功");
@@ -73,7 +71,6 @@ public class PermissionController {
      * 更新权限
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> updatePermission(@PathVariable Long id,
             @Valid @RequestBody PermissionUpdateRequest request) {
         permissionService.updatePermission(id, request);
@@ -84,7 +81,6 @@ public class PermissionController {
      * 删除权限
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deletePermission(@PathVariable Long id) {
         permissionService.deletePermission(id);
         return ApiResponse.success("权限删除成功");

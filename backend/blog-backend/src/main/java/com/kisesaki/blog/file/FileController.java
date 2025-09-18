@@ -22,7 +22,7 @@ class FileController {
     private final FileUploadService fileUploadService;
 
     @PostMapping("/upload")
-    @PreAuthorize("hasAuthority('MEDIA_UPLOAD')")
+    @PreAuthorize("hasAuthority('FILE_UPLOAD')")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, Authentication authentication) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("上传的文件不能为空");

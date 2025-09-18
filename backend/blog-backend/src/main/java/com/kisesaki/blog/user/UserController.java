@@ -49,6 +49,7 @@ public class UserController {
     private final UserFollowService userFollowService;
 
     @PostMapping("/getUserInfoByToken")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "根据token获取当前用户信息", description = "获取当前登录用户的详细信息")
     public ResponseEntity<ApiResponse<UserInfoDto>> getUserInfoByToken(Authentication authentication) {
         String username = AuthUtils.getUsernameFromAuthentication(authentication);
@@ -81,6 +82,7 @@ public class UserController {
     }
 
     @PutMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "更新用户资料", description = "更新当前用户的个人资料")
     public ResponseEntity<ApiResponse<UserInfoDto>> updateProfile(
             Authentication authentication,
@@ -91,6 +93,7 @@ public class UserController {
     }
 
     @PostMapping("/avatar")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "更新用户头像", description = "更新当前用户的头像")
     public ResponseEntity<ApiResponse<UserInfoDto>> updateAvatar(
             Authentication authentication,
@@ -101,7 +104,7 @@ public class UserController {
     }
 
     @PostMapping("/upload-avatar")
-    @PreAuthorize("hasAuthority('MEDIA_UPLOAD')")
+    @PreAuthorize("hasAuthority('FILE_UPLOAD')")
     @Operation(summary = "上传用户头像", description = "上传并更新当前用户的头像文件")
     public ResponseEntity<ApiResponse<UserInfoDto>> uploadAvatar(
             Authentication authentication,
@@ -129,6 +132,7 @@ public class UserController {
     }
 
     @GetMapping("/settings")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "获取用户设置", description = "获取当前用户的所有设置")
     public ResponseEntity<ApiResponse<Map<String, String>>> getUserSettings(Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
@@ -137,6 +141,7 @@ public class UserController {
     }
 
     @PutMapping("/settings")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "更新用户设置", description = "批量更新用户设置")
     public ResponseEntity<ApiResponse<String>> updateUserSettings(
             Authentication authentication,

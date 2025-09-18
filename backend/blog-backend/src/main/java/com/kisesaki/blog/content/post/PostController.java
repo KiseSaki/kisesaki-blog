@@ -142,7 +142,7 @@ public class PostController {
      * 更新文章
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('POST_UPDATE')")
+    @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<UpdatePostResponse> updatePost(@PathVariable Long id,
             @Valid @RequestBody UpdatePostRequest request,
             Authentication authentication) {
@@ -156,7 +156,7 @@ public class PostController {
      * 删除文章
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('POST_DELETE')")
+    @PreAuthorize("hasAuthority('POST_DELETE_OWN') or hasAuthority('POST_DELETE_ALL')")
     public ApiResponse<Void> deletePost(@PathVariable Long id, Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 删除文章 {}", userId, id);
@@ -208,6 +208,7 @@ public class PostController {
      * @return 文章列表
      */
     @GetMapping("/my")
+    @PreAuthorize("isAuthenticated()")
     public ApiResponse<PageResponse<MyPostsListResponse>> getMyPosts(
             @Valid GetMyPostsListParams params,
             Authentication authentication) {
@@ -233,6 +234,7 @@ public class PostController {
      * @return 文章元数据
      */
     @GetMapping("/{id}/meta")
+    @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<MetaDataDto.PostMetaResponse> getPostMeta(@PathVariable Long id,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
@@ -249,6 +251,7 @@ public class PostController {
      * @return 更新后的元数据
      */
     @PutMapping("/{id}/meta")
+    @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<MetaDataDto.PostMetaResponse> updatePostMeta(@PathVariable Long id,
             @Valid @RequestBody MetaDataDto.UpdatePostMetaRequest request,
             Authentication authentication) {
@@ -267,6 +270,7 @@ public class PostController {
      * @return 删除结果
      */
     @DeleteMapping("/{id}/meta/{key}")
+    @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<Void> deletePostMeta(@PathVariable Long id, @PathVariable String key,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
@@ -288,6 +292,7 @@ public class PostController {
      * @return 文章版本列表
      */
     @GetMapping("/{postId}/revisions")
+    @PreAuthorize("hasAuthority('POST_REVISION_VIEW')")
     public ApiResponse<PageResponse<RevisionInfo>> getPostRevisions(@PathVariable Long postId,
             @Valid PostRevisionListParams params,
             Authentication authentication) {
@@ -310,6 +315,7 @@ public class PostController {
      * @return 文章版本内容
      */
     @GetMapping("/{postId}/revisions/{revisionId}")
+    @PreAuthorize("hasAuthority('POST_REVISION_VIEW')")
     public ApiResponse<PostRevisionContentResponse> getPostRevisionContent(@PathVariable Long postId,
             @PathVariable Long revisionId,
             Authentication authentication) {
@@ -331,6 +337,7 @@ public class PostController {
      * @return 操作结果
      */
     @PostMapping("/{postId}/revisions/{revisionId}/restore")
+    @PreAuthorize("hasAuthority('POST_REVISION_RESTORE')")
     public ApiResponse<Void> restorePostRevision(@PathVariable Long postId, @PathVariable Long revisionId,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
@@ -343,6 +350,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}/revisions/{revisionId}")
+    @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<Void> deletePostRevision(@PathVariable Long postId, @PathVariable Long revisionId,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);

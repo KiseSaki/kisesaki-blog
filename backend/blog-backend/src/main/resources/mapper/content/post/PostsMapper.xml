@@ -684,7 +684,7 @@
         AND u.status = 'active'
 
         -- 动态查询条件
-                                <!-- 关键字搜索 -->
+                                        <!-- 关键字搜索 -->
         <if test="params.q != null and params.q != ''">
             AND (
                 p.title ILIKE CONCAT('%', #{params.q}, '%')
@@ -775,7 +775,7 @@
         AND u.status = 'active'
 
         -- 动态查询条件（与主查询保持一致）
-                                <!-- 关键字搜索 -->
+                                        <!-- 关键字搜索 -->
         <if test="params.q != null and params.q != ''">
             AND (
                 p.title ILIKE CONCAT('%', #{params.q}, '%')
@@ -938,7 +938,7 @@
         WHERE 1=1
 
         -- 动态查询条件
-                        <!-- 关键字搜索 -->
+                                <!-- 关键字搜索 -->
         <if test="params.q != null and params.q != ''">
             AND (
                 p.title ILIKE CONCAT('%', #{params.q}, '%')
@@ -1073,7 +1073,7 @@
         WHERE 1=1
 
         -- 动态查询条件（与主查询保持一致）
-                        <!-- 关键字搜索 -->
+                                <!-- 关键字搜索 -->
         <if test="params.q != null and params.q != ''">
             AND (
                 p.title ILIKE CONCAT('%', #{params.q}, '%')
@@ -1235,24 +1235,28 @@
         WHERE p.status = #{params.status}
           AND p.visibility = #{params.visibility}
           AND pt.tag_id = #{tagId}
-          <if test="params.featuredOnly != null and params.featuredOnly">
+        <if test="params.featuredOnly != null and params.featuredOnly">
               AND p.is_featured = true
-          </if>
+        </if>
 
         ORDER BY 
         <choose>
             <when test="params.pageable.sort != null and params.pageable.sort != ''">
                 <if test="params.pageable.sort.contains('publishedAt')">
-                    p.published_at <if test="params.pageable.sortDirection == 'desc'">DESC</if><if test="params.pageable.sortDirection != 'desc'">ASC</if>
+                    p.published_at <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+                    <if test="params.pageable.sortDirection != 'desc'">ASC</if>
                 </if>
                 <if test="params.pageable.sort.contains('viewCount')">
-                    p.view_count <if test="params.pageable.sortDirection == 'desc'">DESC</if><if test="params.pageable.sortDirection != 'desc'">ASC</if>
+                    p.view_count <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+                    <if test="params.pageable.sortDirection != 'desc'">ASC</if>
                 </if>
                 <if test="params.pageable.sort.contains('likeCount')">
-                    p.like_count <if test="params.pageable.sortDirection == 'desc'">DESC</if><if test="params.pageable.sortDirection != 'desc'">ASC</if>
+                    p.like_count <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+                    <if test="params.pageable.sortDirection != 'desc'">ASC</if>
                 </if>
                 <if test="params.pageable.sort.contains('title')">
-                    p.title <if test="params.pageable.sortDirection == 'desc'">DESC</if><if test="params.pageable.sortDirection != 'desc'">ASC</if>
+                    p.title <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+                    <if test="params.pageable.sortDirection != 'desc'">ASC</if>
                 </if>
             </when>
             <otherwise>
@@ -1269,8 +1273,132 @@
         WHERE p.status = #{params.status}
           AND p.visibility = #{params.visibility}
           AND pt.tag_id = #{tagId}
-          <if test="params.featuredOnly != null and params.featuredOnly">
+        <if test="params.featuredOnly != null and params.featuredOnly">
               AND p.is_featured = true
-          </if>
+        </if>
+    </select>
+
+    <!-- 分页查询指定分类下的已发布文章 -->
+    <select id="selectPostsByCategoryPage" resultMap="PublishedPostListMap">
+        SELECT DISTINCT
+            p.id AS post_id,
+            p.title AS post_title,
+            p.slug AS post_slug,
+            p.excerpt AS post_excerpt,
+            p.cover_image_url AS post_cover_image_url,
+            p.view_count AS post_view_count,
+            p.like_count AS post_like_count,
+            p.comment_count AS post_comment_count,
+            p.share_count AS post_share_count,
+            p.reading_time AS post_reading_time,
+            p.is_featured AS post_is_featured,
+            p.is_top AS post_is_top,
+            p.published_at AS post_published_at,
+
+            -- 作者信息
+            u.id AS author_id,
+            u.username AS author_username,
+            up.display_name AS author_display_name,
+            up.avatar_url AS author_avatar_url,
+            up.bio AS author_bio,
+
+            -- 分类信息
+            c.id AS category_id,
+            c.name AS category_name,
+            c.slug AS category_slug,
+            c.description AS category_description,
+
+            -- 标签信息
+            t.id AS tag_id,
+            t.name AS tag_name,
+            t.slug AS tag_slug,
+            t.color AS tag_color
+
+        FROM posts p
+        INNER JOIN "user" u ON p.author_id = u.id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN post_tags pt ON p.id = pt.post_id
+        LEFT JOIN tags t ON pt.tag_id = t.id
+
+        WHERE p.status = #{params.status}
+          AND p.visibility = 'public'
+          AND u.status = 'active'
+        <choose>
+            <when test="params.includeChildren != null and params.includeChildren">
+                <!-- 包含子分类：使用递归查询获取当前分类及其所有子分类的文章 -->
+                  AND p.category_id IN (
+                      WITH RECURSIVE category_tree AS (
+                          -- 基础查询：当前分类
+                          SELECT id FROM categories WHERE id = #{categoryId}
+                          UNION ALL
+                          -- 递归查询：子分类
+                          SELECT c.id 
+                          FROM categories c
+                          INNER JOIN category_tree ct ON c.parent_id = ct.id
+                      )
+                      SELECT id FROM category_tree
+                  )
+            </when>
+            <otherwise>
+                <!-- 仅当前分类：只查询当前分类的文章 -->
+                  AND p.category_id = #{categoryId}
+            </otherwise>
+        </choose>
+
+        ORDER BY 
+        <choose>
+            <when test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('publishedAt')">
+                p.published_at <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+                <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+            </when>
+            <when test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('viewCount')">
+                p.view_count <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+                <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+            </when>
+            <when test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('likeCount')">
+                p.like_count <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+                <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+            </when>
+            <when test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('title')">
+                p.title <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+                <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+            </when>
+            <otherwise>
+                p.published_at DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 计算指定分类下的已发布文章数量 -->
+    <select id="countPostsByCategory" resultType="long">
+        SELECT COUNT(DISTINCT p.id)
+        FROM posts p
+        LEFT JOIN "user" u ON p.author_id = u.id
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.status = #{params.status}
+          AND p.visibility = 'public'
+          AND u.status = 'active'
+        <choose>
+            <when test="params.includeChildren != null and params.includeChildren">
+                <!-- 包含子分类：使用递归查询获取当前分类及其所有子分类的文章 -->
+                  AND p.category_id IN (
+                      WITH RECURSIVE category_tree AS (
+                          -- 基础查询：当前分类
+                          SELECT id FROM categories WHERE id = #{categoryId}
+                          UNION ALL
+                          -- 递归查询：子分类
+                          SELECT c.id 
+                          FROM categories c
+                          INNER JOIN category_tree ct ON c.parent_id = ct.id
+                      )
+                      SELECT id FROM category_tree
+                  )
+            </when>
+            <otherwise>
+                <!-- 仅当前分类：只查询当前分类的文章 -->
+                  AND p.category_id = #{categoryId}
+            </otherwise>
+        </choose>
     </select>
 </mapper>

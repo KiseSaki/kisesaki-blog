@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kisesaki.blog.content.category.dto.query.CategoryPostsParams;
 import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostQueryDto;
 import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostStatsDto;
 import com.kisesaki.blog.content.post.dto.PostQuery.GetMyPostsListParams;
@@ -177,4 +178,27 @@ public interface PostsMapper extends BaseMapper<Posts> {
          * @return 文章总数
          */
         long countPostsByTag(@Param("tagId") Long tagId, @Param("params") TagPostsParams params);
+
+        /**
+         * 分页查询指定分类下的已发布文章
+         *
+         * @param page       分页对象
+         * @param categoryId 分类ID
+         * @param params     查询参数
+         * @return 分页结果
+         */
+        Page<PublishedPostListResponse> selectPostsByCategoryPage(
+                        Page<PublishedPostListResponse> page,
+                        @Param("categoryId") Long categoryId,
+                        @Param("params") CategoryPostsParams params);
+
+        /**
+         * 计算指定分类下的已发布文章数量
+         *
+         * @param categoryId 分类ID
+         * @param params     查询参数
+         * @return 文章总数
+         */
+        long countPostsByCategory(@Param("categoryId") Long categoryId,
+                        @Param("params") CategoryPostsParams params);
 }

@@ -1,6 +1,8 @@
 package com.kisesaki.blog.content.category.controller;
 
+import com.kisesaki.blog.content.category.dto.query.CategoryDetailResponse;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,5 +39,16 @@ public class CategoryController {
     @GetMapping("")
     public ApiResponse<PageResponse<CategoryTreeResponse>> getCategoryList(@Valid CategoryQueryParams params) {
         return ResultUtils.success(categoryService.getCategoryList(params));
+    }
+
+    /**
+     * 根据ID获取分类详情
+     *
+     * @param id 分类ID
+     * @return 分类详情响应
+     */
+    @GetMapping("/{id}")
+    public ApiResponse<CategoryDetailResponse> getCategoryDetailById(@PathVariable Long id) {
+        return ResultUtils.success(categoryService.getCategoryDetailById(id));
     }
 }

@@ -35,24 +35,24 @@
 
     <!-- 查询分类列表 -->
     <select id="selectCategoryList" parameterType="com.kisesaki.blog.content.category.dto.query.CategoryQueryParams" resultMap="CategoryTreeResponseMap">
-        SELECT 
-            c.id,
-            c.name,
-            c.slug,
-            c.description,
-            c.parent_id,
-            p.name AS parent_name,
-            c.sort_order,
-            c.post_count
+        SELECT
+        c.id,
+        c.name,
+        c.slug,
+        c.description,
+        c.parent_id,
+        p.name AS parent_name,
+        c.sort_order,
+        c.post_count
         FROM categories c
         LEFT JOIN categories p ON c.parent_id = p.id
         <include refid="categoryQueryConditions"/>
-        ORDER BY 
-            c.parent_id IS NULL DESC,  -- 顶级分类优先
-            c.sort_order ASC,          -- 排序顺序
-            c.id ASC                   -- ID 升序作为最后排序条件
+        ORDER BY
+        c.parent_id IS NULL DESC, -- 顶级分类优先
+        c.sort_order , -- 排序顺序
+        c.id -- ID 升序作为最后排序条件
         <if test="params.pageable != null and params.pageable.size != null and params.pageable.page != null">
-            LIMIT #{params.pageable.size} 
+            LIMIT #{params.pageable.size}
             OFFSET #{params.pageable.offset}
         </if>
     </select>
@@ -63,5 +63,42 @@
         FROM categories c
         LEFT JOIN categories p ON c.parent_id = p.id
         <include refid="categoryQueryConditions"/>
+    </select>
+
+    <!-- 根据ID获取分类详情 -->
+    <select id="getCategoryDetailById" resultType="com.kisesaki.blog.content.category.dto.query.CategoryDetailResponse">
+        SELECT c.id,
+               c.name,
+               c.slug,
+               c.description,
+               c.parent_id,
+               p.name AS parent_name,
+               c.sort_order,
+               c.post_count,
+               c.created_at,
+               c.updated_at
+        FROM categories c
+                 LEFT JOIN categories p ON c.parent_id = p.id
+        WHERE c.id = #{categoryId}
+          AND c.is_visible = true
+    </select>
+
+    <!-- 获取直接子分类 -->
+    <select id="getDirectChildren" resultType="com.kisesaki.blog.content.category.dto.query.CategoryDetailResponse">
+        SELECT c.id,
+               c.name,
+               c.slug,
+               c.description,
+               c.parent_id,
+               p.name AS parent_name,
+               c.sort_order,
+               c.post_count,
+               c.created_at,
+               c.updated_at
+        FROM categories c
+                 LEFT JOIN categories p ON c.parent_id = p.id
+        WHERE c.parent_id = #{parentId}
+          AND c.is_visible = true
+        ORDER BY c.sort_order, c.id
     </select>
 </mapper>

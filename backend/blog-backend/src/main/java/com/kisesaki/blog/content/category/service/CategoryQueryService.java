@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.kisesaki.blog.common.dto.PageResponse;
+import com.kisesaki.blog.common.exception.BusinessException;
+import com.kisesaki.blog.content.category.dto.query.CategoryDetailResponse;
 import com.kisesaki.blog.content.category.dto.query.CategoryQueryParams;
 import com.kisesaki.blog.content.category.dto.query.CategoryTreeResponse;
 import com.kisesaki.blog.content.category.mapper.CategoriesMapper;
@@ -53,6 +55,46 @@ public class CategoryQueryService {
     }
 
     /**
+     * 根据ID获取分类详情
+     * 
+     * @param categoryId 分类ID
+     * @return 分类详情响应数据，若分类不存在或不可见则返回 null
+     */
+    public CategoryDetailResponse getCategoryDetailById(Long categoryId) {
+        log.debug("获取分类详情，分类ID: {}", categoryId);
+
+        // 1. 获取当前分类基本信息
+        CategoryDetailResponse categoryDetail = categoriesMapper.getCategoryDetailById(categoryId);
+        if (categoryDetail == null) {
+            log.warn("分类不存在或不可见，分类ID: {}", categoryId);
+            throw BusinessException.notFound("分类不存在或不可见");
+        }
+
+        // 2. 递归查询并构建子分类树
+        List<CategoryDetailResponse> children = getChildrenRecursively(categoryId);
+        categoryDetail.setChildren(children);
+
+        log.debug("分类详情查询完成，分类ID: {}, 子分类数量: {}", categoryId, children.size());
+        return categoryDetail;
+    }
+
+    /**
+     * 递归获取子分类列表
+     *
+     * @param parentId 父分类ID
+     * @return 子分类列表
+     */
+    private List<CategoryDetailResponse> getChildrenRecursively(Long parentId) {
+        // 查询直接子分类
+        List<CategoryDetailResponse> children = categoriesMapper.getDirectChildren(parentId);
+
+        // 按排序顺序排序
+        sortCategoryDetails(children);
+
+        return children;
+    }
+
+    /**
      * 构建分类树形结构
      *
      * @param categories 分类列表
@@ -76,19 +118,7 @@ public class CategoryQueryService {
             List<CategoryTreeResponse> children = parentIdGroupMap.get(category.getId());
             if (children != null) {
                 // 按排序顺序排序子分类
-                children.sort((c1, c2) -> {
-                    if (c1.getSortOrder() == null && c2.getSortOrder() == null) {
-                        return c1.getId().compareTo(c2.getId());
-                    }
-                    if (c1.getSortOrder() == null) {
-                        return 1;
-                    }
-                    if (c2.getSortOrder() == null) {
-                        return -1;
-                    }
-                    int sortComparison = c1.getSortOrder().compareTo(c2.getSortOrder());
-                    return sortComparison != 0 ? sortComparison : c1.getId().compareTo(c2.getId());
-                });
+                sortCategories(children);
                 category.setChildren(children);
             } else {
                 category.setChildren(new ArrayList<>());
@@ -101,20 +131,54 @@ public class CategoryQueryService {
         }
 
         // 按排序顺序排序根分类
-        rootCategories.sort((c1, c2) -> {
-            if (c1.getSortOrder() == null && c2.getSortOrder() == null) {
-                return c1.getId().compareTo(c2.getId());
-            }
-            if (c1.getSortOrder() == null) {
-                return 1;
-            }
-            if (c2.getSortOrder() == null) {
-                return -1;
-            }
-            int sortComparison = c1.getSortOrder().compareTo(c2.getSortOrder());
-            return sortComparison != 0 ? sortComparison : c1.getId().compareTo(c2.getId());
-        });
+        sortCategories(rootCategories);
 
         return rootCategories;
+    }
+
+    /**
+     * 按排序顺序对 CategoryTreeResponse 列表进行排序
+     *
+     * @param children 分类列表
+     */
+    private void sortCategories(List<CategoryTreeResponse> children) {
+        sortGeneric(children, CategoryTreeResponse::getSortOrder, CategoryTreeResponse::getId);
+    }
+
+    /**
+     * 按排序顺序对 CategoryDetailResponse 列表进行排序
+     *
+     * @param children 分类详情列表
+     */
+    private void sortCategoryDetails(List<CategoryDetailResponse> children) {
+        sortGeneric(children, CategoryDetailResponse::getSortOrder, CategoryDetailResponse::getId);
+    }
+
+    /**
+     * 通用排序实现（避免泛型擦除冲突）
+     *
+     * @param list            列表
+     * @param sortOrderGetter 获取排序字段的函数（可能为 null）
+     * @param idGetter        获取 id 的函数（用于回退比较）
+     * @param <T>             列表元素类型
+     */
+    private <T> void sortGeneric(List<T> list, java.util.function.Function<T, Integer> sortOrderGetter,
+            java.util.function.Function<T, Long> idGetter) {
+        list.sort((o1, o2) -> {
+            Integer s1 = sortOrderGetter.apply(o1);
+            Integer s2 = sortOrderGetter.apply(o2);
+
+            if (s1 == null && s2 == null) {
+                return idGetter.apply(o1).compareTo(idGetter.apply(o2));
+            }
+            if (s1 == null) {
+                return 1;
+            }
+            if (s2 == null) {
+                return -1;
+            }
+            int sortComparison = s1.compareTo(s2);
+            return sortComparison != 0 ? sortComparison : idGetter.apply(o1).compareTo(idGetter.apply(o2));
+        });
     }
 }

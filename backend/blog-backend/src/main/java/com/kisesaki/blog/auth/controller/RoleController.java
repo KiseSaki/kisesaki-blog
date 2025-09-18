@@ -33,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/admin/roles")
 @RequiredArgsConstructor
 @Tag(name = "角色管理", description = "角色的创建、删除、分配等操作")
+@PreAuthorize("hasRole('ADMIN')")
 public class RoleController {
 
     private final RoleService roleService;
@@ -41,7 +42,6 @@ public class RoleController {
      * 获取角色列表
      */
     @GetMapping("")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "获取角色列表", description = "支持分页和按名称模糊搜索")
     public ApiResponse<PageResponse<RoleListResponse>> getRoleList(
             @Valid RoleListParams params) {
@@ -52,7 +52,6 @@ public class RoleController {
      * 获取角色详情（包含权限列表）
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "获取角色详情", description = "获取角色详细信息，包含权限列表")
     public ApiResponse<RoleDetailResponse> getRoleDetail(@PathVariable Long id) {
         return ApiResponse.success(roleService.getRoleDetail(id));
@@ -62,7 +61,6 @@ public class RoleController {
      * 创建新角色
      */
     @PostMapping("")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "创建角色", description = "创建新角色并分配权限")
     public ApiResponse<RoleDetailResponse> createRole(@Valid @RequestBody RoleCreateRequest request) {
         return ApiResponse.success(roleService.createRole(request));
@@ -72,7 +70,6 @@ public class RoleController {
      * 更新角色信息
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "更新角色", description = "更新角色基本信息和权限")
     public ApiResponse<RoleDetailResponse> updateRole(@PathVariable Long id,
             @Valid @RequestBody RoleUpdateRequest request) {
@@ -83,7 +80,6 @@ public class RoleController {
      * 删除角色
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "删除角色", description = "删除指定角色")
     public ApiResponse<Void> deleteRole(@PathVariable Long id) {
         roleService.deleteRole(id);
@@ -94,7 +90,6 @@ public class RoleController {
      * 获取角色权限列表
      */
     @GetMapping("/{id}/permissions")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "获取角色权限", description = "获取指定角色的权限列表")
     public ApiResponse<List<RoleDetailResponse.PermissionDto>> getRolePermissions(@PathVariable Long id) {
         return ApiResponse.success(roleService.getRolePermissions(id));
@@ -104,7 +99,6 @@ public class RoleController {
      * 更新角色权限
      */
     @PutMapping("/{id}/permissions")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "更新角色权限", description = "更新指定角色的权限配置")
     public ApiResponse<Void> updateRolePermissions(@PathVariable Long id,
             @Valid @RequestBody RolePermissionUpdateRequest request) {
@@ -116,7 +110,6 @@ public class RoleController {
      * 获取拥有该角色的用户列表
      */
     @GetMapping("/{id}/users")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "获取角色用户", description = "获取拥有指定角色的用户列表")
     public ApiResponse<PageResponse<RoleUserListResponse>> getRoleUsers(@PathVariable Long id,
             @Valid RoleUserListParams params) {

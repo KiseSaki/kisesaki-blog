@@ -39,6 +39,17 @@ import lombok.extern.slf4j.Slf4j;
  * - 无状态会话管理
  * - 自定义认证过滤器
  * - 统一异常处理
+ * <p>
+ * 角色层级定义：
+ * - ADMIN：管理员，拥有所有权限，可以管理系统配置、用户、审计等
+ * - EDITOR：编辑者，可以管理内容相关功能（文章、分类、标签、评论、媒体）
+ * - AUTHOR：作者，可以创建和管理自己的文章、标签
+ * - USER：普通用户，可以评论、点赞、收藏等基础交互功能
+ * <p>
+ * 权限控制策略：
+ * - URL级别：基于角色的粗粒度控制
+ * - 方法级别：通过@PreAuthorize进行细粒度权限控制（如own vs all）
+ * - 业务级别：在Service层进行具体的业务逻辑权限验证
  */
 @Configuration
 @EnableWebSecurity
@@ -172,37 +183,48 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.POST, "/posts/*/view")
                                                 .permitAll()
 
-                                                // 用户创作接口：需要登录
+                                                // 用户创作接口：需要创建文章权限
+                                                .requestMatchers(HttpMethod.POST, "/posts")
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
+
+                                                // 我的文章相关：需要登录
                                                 .requestMatchers(
                                                                 "/posts/my/**",
-                                                                "/posts/*/preview",
+                                                                "/posts/*/preview")
+                                                .authenticated()
+
+                                                // 文章编辑：需要编辑权限（具体权限在Service层判断own vs all）
+                                                .requestMatchers(HttpMethod.PUT, "/posts/*")
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
+
+                                                // 文章发布：需要发布权限
+                                                .requestMatchers(HttpMethod.PUT, "/posts/*/publish")
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
+
+                                                .requestMatchers(HttpMethod.PUT, "/posts/*/unpublish")
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
+
+                                                // 文章删除：需要删除权限
+                                                .requestMatchers(HttpMethod.DELETE, "/posts/*")
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
+
+                                                // 文章复制：需要创建权限
+                                                .requestMatchers(HttpMethod.POST, "/posts/*/duplicate")
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
+
+                                                // 文章元数据管理：需要编辑权限
+                                                .requestMatchers(
                                                                 "/posts/*/meta",
                                                                 "/posts/*/meta/*")
-                                                .authenticated()
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
 
-                                                .requestMatchers(HttpMethod.POST, "/posts")
-                                                .authenticated()
+                                                // 文章版本管理：需要版本查看权限
+                                                .requestMatchers(HttpMethod.GET, "/posts/*/revisions/**")
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
 
-                                                .requestMatchers(HttpMethod.PUT,
-                                                                "/posts/*",
-                                                                "/posts/*/publish",
-                                                                "/posts/*/unpublish",
-                                                                "/posts/*/meta")
-                                                .authenticated()
-
-                                                .requestMatchers(HttpMethod.DELETE,
-                                                                "/posts/*",
-                                                                "/posts/*/meta/*")
-                                                .authenticated()
-
-                                                .requestMatchers(HttpMethod.POST, "/posts/*/duplicate")
-                                                .authenticated()
-
-                                                // 文章版本管理：需要登录
-                                                .requestMatchers("/posts/*/revisions/**")
-                                                .authenticated()
-
-                                                // 文章交互：点赞需要登录
+                                                // 文章版本恢复：需要版本恢复权限
+                                                .requestMatchers(HttpMethod.POST, "/posts/*/revisions/*/restore")
+                                                .hasAnyRole("ADMIN", "EDITOR") // 文章交互：点赞需要登录
                                                 .requestMatchers(
                                                                 "/posts/*/like")
                                                 .authenticated()
@@ -229,14 +251,12 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.GET, "/tags/search")
                                                 .authenticated()
 
-                                                // 用户创建标签：需要登录
+                                                // 用户创建标签：需要标签创建权限
                                                 .requestMatchers(HttpMethod.POST, "/tags")
-                                                .authenticated()
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
 
                                                 .requestMatchers("/tags/my")
-                                                .authenticated()
-
-                                                // ==================== 用户系统接口 ====================
+                                                .authenticated() // ==================== 用户系统接口 ====================
                                                 // 用户公开信息
                                                 .requestMatchers(HttpMethod.GET,
                                                                 "/users/*",
@@ -282,22 +302,26 @@ public class SecurityConfig {
                                                                 "/comments/*/report")
                                                 .authenticated()
 
+                                                // 评论创建：需要评论创建权限
+                                                .requestMatchers(HttpMethod.POST, "/posts/*/comments")
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR", "USER")
+
+                                                // 评论点赞：需要登录
                                                 .requestMatchers(HttpMethod.POST,
-                                                                "/posts/*/comments",
                                                                 "/comments/*/like",
                                                                 "/comments/*/dislike")
                                                 .authenticated()
 
+                                                // 评论编辑：需要登录（具体权限在Service层判断）
                                                 .requestMatchers(HttpMethod.PUT, "/comments/*")
                                                 .authenticated()
 
+                                                // 评论删除：需要登录（具体权限在Service层判断）
                                                 .requestMatchers(HttpMethod.DELETE,
                                                                 "/comments/*",
                                                                 "/comments/*/like",
                                                                 "/comments/*/dislike")
-                                                .authenticated()
-
-                                                // ==================== 点赞收藏关注接口 ====================
+                                                .authenticated() // ==================== 点赞收藏关注接口 ====================
                                                 // 公开查看点赞收藏
                                                 .requestMatchers(HttpMethod.GET,
                                                                 "/posts/*/likes",
@@ -315,11 +339,17 @@ public class SecurityConfig {
                                                 .authenticated()
 
                                                 // ==================== 媒体资源接口 ====================
-                                                // 文件上传：需要登录
-                                                .requestMatchers("/media/**")
-                                                .authenticated()
+                                                // 文件上传：需要上传权限
+                                                .requestMatchers(HttpMethod.POST, "/media/**")
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
 
-                                                // ==================== 搜索和统计接口 ====================
+                                                // 文件管理：需要文件管理权限
+                                                .requestMatchers(HttpMethod.DELETE, "/media/**")
+                                                .hasAnyRole("ADMIN", "EDITOR", "AUTHOR")
+
+                                                // 查看文件：需要登录
+                                                .requestMatchers(HttpMethod.GET, "/media/**")
+                                                .authenticated() // ==================== 搜索和统计接口 ====================
                                                 // 搜索：公开
                                                 .requestMatchers("/search/**")
                                                 .permitAll()
@@ -368,11 +398,42 @@ public class SecurityConfig {
                                                 .authenticated()
 
                                                 // ==================== 管理员接口 ====================
-                                                // 所有管理员接口：需要管理员权限
-                                                .requestMatchers("/admin/**")
+                                                // 文章管理接口：需要文章管理权限
+                                                .requestMatchers("/admin/posts/**")
+                                                .hasAnyRole("ADMIN", "EDITOR")
+
+                                                // 分类管理接口：需要分类管理权限
+                                                .requestMatchers("/admin/categories/**")
+                                                .hasAnyRole("ADMIN", "EDITOR")
+
+                                                // 标签管理接口：需要标签管理权限
+                                                .requestMatchers("/admin/tags/**")
+                                                .hasAnyRole("ADMIN", "EDITOR")
+
+                                                // 用户管理接口：需要管理员权限
+                                                .requestMatchers("/admin/users/**")
                                                 .hasRole("ADMIN")
 
-                                                // ==================== 其他接口 ====================
+                                                // 评论管理接口：需要评论管理权限
+                                                .requestMatchers("/admin/comments/**")
+                                                .hasAnyRole("ADMIN", "EDITOR")
+
+                                                // 媒体管理接口：需要文件管理权限
+                                                .requestMatchers("/admin/media/**")
+                                                .hasAnyRole("ADMIN", "EDITOR")
+
+                                                // 系统管理接口：需要管理员权限
+                                                .requestMatchers(
+                                                                "/admin/system/**",
+                                                                "/admin/settings/**",
+                                                                "/admin/analytics/**",
+                                                                "/admin/reports/**",
+                                                                "/admin/audit/**")
+                                                .hasRole("ADMIN")
+
+                                                // 其他管理员接口：需要管理员权限
+                                                .requestMatchers("/admin/**")
+                                                .hasRole("ADMIN") // ==================== 其他接口 ====================
                                                 // 其他所有请求都需要认证
                                                 .anyRequest().authenticated())
 

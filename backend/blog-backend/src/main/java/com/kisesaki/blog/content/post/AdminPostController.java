@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "管理员文章管理", description = "管理员文章管理相关接口")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAuthority('POST_MANAGE')")
 public class AdminPostController {
 
     private final AdminPostService postAdminService;

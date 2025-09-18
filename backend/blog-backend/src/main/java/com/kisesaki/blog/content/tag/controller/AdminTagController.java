@@ -2,6 +2,7 @@ package com.kisesaki.blog.content.tag.controller;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +44,7 @@ public class AdminTagController {
      * 获取管理员标签列表
      */
     @GetMapping("")
+    @PreAuthorize("hasAuthority('TAG_MANAGE')")
     public ApiResponse<PageResponse<AdminTagListResponse>> adminGetTagList(@Valid AdminTagListParams params) {
         return ApiResponse.success(adminTagService.adminGetTagList(params));
     }
@@ -51,6 +53,7 @@ public class AdminTagController {
      * 创建新标签
      */
     @PostMapping("")
+    @PreAuthorize("hasAuthority('TAG_CREATE')")
     public ApiResponse<Long> adminTagCreate(@Valid @RequestBody AdminTagCreateRequest request,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
@@ -61,6 +64,7 @@ public class AdminTagController {
      * 更新标签
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('TAG_EDIT')")
     public ApiResponse<Void> adminTagUpdate(@PathVariable("id") Long id,
             @Valid @RequestBody AdminTagUpdateRequest request,
             Authentication authentication) {
@@ -73,6 +77,7 @@ public class AdminTagController {
      * 删除标签
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('TAG_DELETE')")
     public ApiResponse<Void> adminTagDelete(@PathVariable("id") Long id, Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         adminTagService.adminTagDelete(id, userId);
@@ -83,6 +88,7 @@ public class AdminTagController {
      * 审核标签
      */
     @PutMapping("/{id}/approve")
+    @PreAuthorize("hasAuthority('TAG_MANAGE')")
     public ApiResponse<Void> adminTagApprove(@PathVariable("id") Long id,
             @Valid @RequestBody AdminTagApprovalRequest request,
             Authentication authentication) {
@@ -95,6 +101,7 @@ public class AdminTagController {
      * 获取所有待审核标签
      */
     @GetMapping("/pending")
+    @PreAuthorize("hasAuthority('TAG_MANAGE')")
     public ApiResponse<List<AdminTagPendingResponse>> adminGetPendingTags() {
         return ApiResponse.success(adminTagService.adminGetPendingTags());
     }
@@ -103,6 +110,7 @@ public class AdminTagController {
      * 获取未使用的标签列表
      */
     @GetMapping("/unused")
+    @PreAuthorize("hasAuthority('TAG_MANAGE')")
     public ApiResponse<List<AdminTagUnusedResponse>> adminGetUnusedTags(
             @RequestParam(value = "unusedDays", required = false) Integer unusedDays) {
         return ApiResponse.success(adminTagService.adminGetUnusedTags(unusedDays));
@@ -112,6 +120,7 @@ public class AdminTagController {
      * 清理未使用的标签
      */
     @DeleteMapping("/cleanup")
+    @PreAuthorize("hasAuthority('TAG_DELETE')")
     public ApiResponse<AdminTagCleanupResponse> adminCleanupUnusedTags(
             @RequestParam(value = "unusedDays", required = false, defaultValue = "30") Integer unusedDays,
             Authentication authentication) {
@@ -123,6 +132,7 @@ public class AdminTagController {
      * 合并标签
      */
     @PostMapping("/merge")
+    @PreAuthorize("hasAuthority('TAG_MANAGE')")
     public ApiResponse<Void> adminMergeTags(@Valid @RequestBody AdminTagMergeRequest request,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);

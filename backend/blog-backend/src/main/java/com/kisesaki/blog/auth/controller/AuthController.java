@@ -3,6 +3,7 @@ package com.kisesaki.blog.auth.controller;
 import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kisesaki.blog.auth.dto.auth.request.*;
+import com.kisesaki.blog.auth.dto.auth.request.ChangePasswordRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.ForgotPasswordRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.LoginRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.LogoutRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.RefreshTokenRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.RegisterRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.ResetPasswordRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.VerifyEmailRequestDto;
 import com.kisesaki.blog.auth.dto.auth.response.LoginResponseDto;
 import com.kisesaki.blog.auth.service.AuthService;
 import com.kisesaki.blog.common.dto.ApiResponse;
@@ -54,7 +62,8 @@ public class AuthController {
 
     @PostMapping("/verify-email")
     @Operation(summary = "验证邮箱", description = "使用邮箱验证令牌验证用户的邮箱")
-    public ResponseEntity<ApiResponse<String>> verifyEmail(@Valid @RequestBody VerifyEmailRequestDto verifyEmailRequest) {
+    public ResponseEntity<ApiResponse<String>> verifyEmail(
+            @Valid @RequestBody VerifyEmailRequestDto verifyEmailRequest) {
         ApiResponse<String> response = authService.verifyEmail(verifyEmailRequest);
         return ResponseEntity.ok(response);
     }
@@ -69,6 +78,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "用户登出", description = "用户登出当前设备")
     public ResponseEntity<ApiResponse<String>> logout(
             @Valid @RequestBody LogoutRequestDto logoutRequest,
@@ -81,6 +91,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout-all")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "登出所有设备", description = "用户登出所有已登录的设备")
     public ResponseEntity<ApiResponse<String>> logoutAllDevices(Authentication authentication) {
         String username = authentication.getName();
@@ -89,6 +100,7 @@ public class AuthController {
     }
 
     @DeleteMapping("/devices/{deviceId}")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "踢出指定设备", description = "管理员或用户踢出指定设备")
     public ResponseEntity<ApiResponse<String>> kickDevice(
             @PathVariable String deviceId,
@@ -100,6 +112,7 @@ public class AuthController {
     }
 
     @GetMapping("/devices")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "获取用户设备列表", description = "获取当前用户所有已登录的设备")
     public ResponseEntity<ApiResponse<Set<String>>> getUserDevices(Authentication authentication) {
         String username = authentication.getName();
@@ -108,6 +121,7 @@ public class AuthController {
     }
 
     @PostMapping("change-password")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "修改密码", description = "用户修改自己的登录密码")
     public ResponseEntity<ApiResponse<String>> changePassword(
             @Valid @RequestBody ChangePasswordRequestDto changePasswordRequest,
@@ -135,6 +149,7 @@ public class AuthController {
     }
 
     @PostMapping("/clean-expired")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "清理过期令牌", description = "清理用户的过期令牌")
     public ResponseEntity<ApiResponse<String>> cleanExpiredTokens(
             Authentication authentication,

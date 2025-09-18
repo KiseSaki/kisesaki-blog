@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.exception.BusinessException;
+import com.kisesaki.blog.common.util.PageQueryUtils;
 import com.kisesaki.blog.common.util.SlugUtils;
 import com.kisesaki.blog.content.category.dto.admin.AdminCategoryCreateRequest;
 import com.kisesaki.blog.content.category.dto.admin.AdminCategoryListResponse;
@@ -45,31 +45,34 @@ public class AdminCategoryService {
     public PageResponse<AdminCategoryListResponse> getAdminCategoryList(AdminCategoryQueryParams params) {
         log.debug("获取管理员分类列表，参数: {}", params);
 
-        // 创建分页对象
-        Page<Categories> page = new Page<>(
-                params.getPageable().getCurrentPage(),
-                params.getPageable().getPageSize()
-        );
-
         // 构建查询条件
         LambdaQueryWrapper<Categories> queryWrapper = new LambdaQueryWrapper<Categories>()
                 .like(params.getKeyword() != null, Categories::getName, params.getKeyword())
                 .eq(params.getParentId() != null, Categories::getParentId, params.getParentId())
                 .isNull(params.getOnlyRoot() != null && params.getOnlyRoot(), Categories::getParentId)
-                .eq(!"all".equals(params.getVisibility()) && "visible".equals(params.getVisibility()), Categories::getIsVisible, true)
-                .eq(!"all".equals(params.getVisibility()) && "hidden".equals(params.getVisibility()), Categories::getIsVisible, false)
-                .orderByAsc(Categories::getSortOrder)
-                .orderByDesc(Categories::getCreatedAt);
+                .eq(!"all".equals(params.getVisibility()) && "visible".equals(params.getVisibility()),
+                        Categories::getIsVisible, true)
+                .eq(!"all".equals(params.getVisibility()) && "hidden".equals(params.getVisibility()),
+                        Categories::getIsVisible, false);
+
+        // 应用时间范围条件
+        PageQueryUtils.applyTimeRangeConditions(queryWrapper, params.getPageable(), Categories::getCreatedAt);
+
+        // 应用排序规则
+        PageQueryUtils.createSortBuilder(queryWrapper, params.getPageable())
+                .defaultSort(Categories::getSortOrder, false) // 默认按排序字段升序
+                .addSortField("id", Categories::getId)
+                .addSortField("name", Categories::getName)
+                .addSortField("sortOrder", Categories::getSortOrder)
+                .addSortField("createdAt", Categories::getCreatedAt)
+                .apply();
 
         // 执行分页查询
-        Page<Categories> categoryPage = categoriesMapper.selectPage(page, queryWrapper);
-
-        // 转换为响应DTO
-        List<AdminCategoryListResponse> responseList = categoryPage.getRecords().stream()
-                .map(this::convertToAdminListResponse)
-                .toList();
-
-        return PageResponse.of(responseList, categoryPage.getTotal(), params.getPageable());
+        return PageQueryUtils.executePageQuery(
+                categoriesMapper,
+                queryWrapper,
+                params.getPageable(),
+                this::convertToAdminListResponse);
     }
 
     /**
@@ -84,8 +87,7 @@ public class AdminCategoryService {
         List<Categories> allCategories = categoriesMapper.selectList(
                 new LambdaQueryWrapper<Categories>()
                         .orderByAsc(Categories::getSortOrder)
-                        .orderByDesc(Categories::getCreatedAt)
-        );
+                        .orderByDesc(Categories::getCreatedAt));
 
         // 转换为树形结构
         return buildCategoryTree(allCategories);
@@ -118,8 +120,7 @@ public class AdminCategoryService {
         // 3. 检查 slug 是否重复
         Categories existingCategory = categoriesMapper.selectOne(
                 new LambdaQueryWrapper<Categories>()
-                        .eq(Categories::getSlug, slug)
-        );
+                        .eq(Categories::getSlug, slug));
         if (existingCategory != null) {
             throw BusinessException.paramError("分类别名已存在");
         }
@@ -183,8 +184,7 @@ public class AdminCategoryService {
             Categories existingCategory = categoriesMapper.selectOne(
                     new LambdaQueryWrapper<Categories>()
                             .eq(Categories::getSlug, request.getSlug())
-                            .ne(Categories::getId, id)
-            );
+                            .ne(Categories::getId, id));
             if (existingCategory != null) {
                 throw BusinessException.paramError("分类别名已存在");
             }
@@ -223,8 +223,7 @@ public class AdminCategoryService {
         // 2. 检查是否有子分类
         long childCount = categoriesMapper.selectCount(
                 new LambdaQueryWrapper<Categories>()
-                        .eq(Categories::getParentId, id)
-        );
+                        .eq(Categories::getParentId, id));
         if (childCount > 0) {
             throw BusinessException.paramError("该分类下还有子分类，请先删除子分类");
         }
@@ -382,8 +381,8 @@ public class AdminCategoryService {
     /**
      * 递归构建子分类
      *
-     * @param parent    父分类
-     * @param allNodes  所有节点
+     * @param parent   父分类
+     * @param allNodes 所有节点
      */
     private void buildChildren(AdminCategoryTreeResponse parent, List<AdminCategoryTreeResponse> allNodes) {
         List<AdminCategoryTreeResponse> children = allNodes.stream()

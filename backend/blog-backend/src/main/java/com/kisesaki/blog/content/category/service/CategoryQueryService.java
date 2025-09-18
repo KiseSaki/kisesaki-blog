@@ -5,13 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.kisesaki.blog.content.category.dto.query.*;
 import org.springframework.stereotype.Service;
 
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.exception.BusinessException;
-import com.kisesaki.blog.content.category.dto.query.CategoryDetailResponse;
-import com.kisesaki.blog.content.category.dto.query.CategoryQueryParams;
-import com.kisesaki.blog.content.category.dto.query.CategoryTreeResponse;
 import com.kisesaki.blog.content.category.mapper.CategoriesMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -100,6 +98,19 @@ public class CategoryQueryService {
 
         log.debug("分类详情查询完成，分类别名: {}, 子分类数量: {}", slug, children.size());
         return categoryDetail;
+    }
+
+    /**
+     * 获取热门分类列表
+     *
+     * @param params 热门分类参数
+     * @return 热门分类响应数据列表
+     */
+    public List<PopularCategoryResponse> getPopularCategories(PopularCategoryParams params) {
+        log.debug("获取热门分类列表，参数: {}", params);
+        List<PopularCategoryResponse> popularCategories = categoriesMapper.getPopularCategories(params);
+        log.debug("热门分类列表查询完成，返回 {} 条记录", popularCategories.size());
+        return popularCategories;
     }
 
     /**

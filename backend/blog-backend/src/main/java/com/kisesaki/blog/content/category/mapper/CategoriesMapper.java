@@ -2,13 +2,11 @@ package com.kisesaki.blog.content.category.mapper;
 
 import java.util.List;
 
+import com.kisesaki.blog.content.category.dto.query.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.kisesaki.blog.content.category.dto.query.CategoryDetailResponse;
-import com.kisesaki.blog.content.category.dto.query.CategoryQueryParams;
-import com.kisesaki.blog.content.category.dto.query.CategoryTreeResponse;
 import com.kisesaki.blog.content.category.entity.Categories;
 
 @Mapper
@@ -53,4 +51,12 @@ public interface CategoriesMapper extends BaseMapper<Categories> {
      * @return 直接子分类列表
      */
     List<CategoryDetailResponse> getDirectChildren(Long parentId);
+
+    /**
+     * 获取热门分类列表
+     *
+     * @param params 热门分类查询参数
+     * @return 热门分类列表
+     */
+    List<PopularCategoryResponse> getPopularCategories(@Param("params")PopularCategoryParams params);
 }

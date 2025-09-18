@@ -104,6 +104,27 @@
           AND c.is_visible = true
     </select>
 
+    <!-- 获取热门分类列表 -->
+    <select id="getPopularCategories" resultType="com.kisesaki.blog.content.category.dto.query.PopularCategoryResponse">
+        SELECT c.id,
+        c.name,
+        c.slug,
+        c.description,
+        c.post_count,
+        c.parent_id,
+        p.name AS parent_name,
+        c.sort_order
+        FROM categories c
+        LEFT JOIN categories p ON c.parent_id = p.id
+        WHERE c.is_visible = true
+        <if test="params.parentId != null">
+            AND c.parent_id = #{params.parentId}
+        </if>
+        AND c.post_count >= #{params.minPostCount}
+        ORDER BY c.post_count DESC, c.sort_order, c.id
+        LIMIT #{params.limit}
+    </select>
+
     <!-- 获取直接子分类 -->
     <select id="getDirectChildren" resultType="com.kisesaki.blog.content.category.dto.query.CategoryDetailResponse">
         SELECT c.id,

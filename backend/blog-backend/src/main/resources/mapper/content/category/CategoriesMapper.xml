@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kisesaki.blog.content.category.mapper.CategoriesMapper">
+
+    <!-- 分类查询结果映射 -->
+    <resultMap id="CategoryTreeResponseMap" type="com.kisesaki.blog.content.category.dto.query.CategoryTreeResponse">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="slug" column="slug"/>
+        <result property="description" column="description"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="parentName" column="parent_name"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="postCount" column="post_count"/>
+    </resultMap>
+
+    <!-- 通用的查询条件 -->
+    <sql id="categoryQueryConditions">
+        <where>
+            c.is_visible = true
+            <if test="params.keyword != null and params.keyword != ''">
+                AND (c.name LIKE CONCAT('%', #{params.keyword}, '%') 
+                     OR c.description LIKE CONCAT('%', #{params.keyword}, '%'))
+            </if>
+            <if test="params.parentId != null">
+                AND c.parent_id = #{params.parentId}
+            </if>
+            <if test="params.onlyRoot != null and params.onlyRoot == true">
+                AND c.parent_id IS NULL
+            </if>
+        </where>
+    </sql>
+
+    <!-- 查询分类列表 -->
+    <select id="selectCategoryList" parameterType="com.kisesaki.blog.content.category.dto.query.CategoryQueryParams" resultMap="CategoryTreeResponseMap">
+        SELECT 
+            c.id,
+            c.name,
+            c.slug,
+            c.description,
+            c.parent_id,
+            p.name AS parent_name,
+            c.sort_order,
+            c.post_count
+        FROM categories c
+        LEFT JOIN categories p ON c.parent_id = p.id
+        <include refid="categoryQueryConditions"/>
+        ORDER BY 
+            c.parent_id IS NULL DESC,  -- 顶级分类优先
+            c.sort_order ASC,          -- 排序顺序
+            c.id ASC                   -- ID 升序作为最后排序条件
+        <if test="params.pageable != null and params.pageable.size != null and params.pageable.page != null">
+            LIMIT #{params.pageable.size} 
+            OFFSET #{params.pageable.offset}
+        </if>
+    </select>
+
+    <!-- 统计分类数量 -->
+    <select id="countCategoryList" parameterType="com.kisesaki.blog.content.category.dto.query.CategoryQueryParams" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT c.id)
+        FROM categories c
+        LEFT JOIN categories p ON c.parent_id = p.id
+        <include refid="categoryQueryConditions"/>
+    </select>
+</mapper>

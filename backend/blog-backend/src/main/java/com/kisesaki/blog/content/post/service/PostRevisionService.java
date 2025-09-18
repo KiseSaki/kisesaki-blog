@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.markdown.MarkdownService;
+import com.kisesaki.blog.common.util.PageQueryUtils;
 import com.kisesaki.blog.content.post.dto.RevisionInfo;
 import com.kisesaki.blog.content.post.dto.PostRevision.PostRevisionContentResponse;
 import com.kisesaki.blog.content.post.dto.PostRevision.PostRevisionListParams;
@@ -43,45 +43,27 @@ public class PostRevisionService {
             return PageResponse.of(List.of(), 0L, params.getPageable());
         }
 
-        // 先统计总数，避免 MyBatis-Plus 在复杂查询下的 DISTINCT 问题（与其它服务实现保持一致）
-        LambdaQueryWrapper<PostRevisions> countWrapper = new LambdaQueryWrapper<PostRevisions>()
+        LambdaQueryWrapper<PostRevisions> queryWrapper = new LambdaQueryWrapper<PostRevisions>()
                 .eq(PostRevisions::getPostId, postId)
                 .eq(PostRevisions::getCreatedBy, userId);
 
-        long totalCount = postRevisionsMapper.selectCount(countWrapper);
+        // 应用时间范围条件
+        PageQueryUtils.applyTimeRangeConditions(queryWrapper, params.getPageable(), PostRevisions::getCreatedAt);
 
-        if (totalCount == 0) {
-            return PageResponse.of(List.of(), 0L, params.getPageable());
-        }
+        // 应用排序规则
+        PageQueryUtils.createSortBuilder(queryWrapper, params.getPageable())
+                .defaultSort(PostRevisions::getVersion, true) // 默认按版本号倒序
+                .addSortField("id", PostRevisions::getId)
+                .addSortField("version", PostRevisions::getVersion)
+                .addSortField("createdAt", PostRevisions::getCreatedAt)
+                .apply();
 
-        // 构建分页对象（使用 MyBatis-Plus 的 Page）
-        Page<PostRevisions> page = new Page<>(params.getPageable().getCurrentPage(),
-                params.getPageable().getPageSize());
-
-        LambdaQueryWrapper<PostRevisions> queryWrapper = new LambdaQueryWrapper<PostRevisions>()
-                .eq(PostRevisions::getPostId, postId)
-                .eq(PostRevisions::getCreatedBy, userId)
-                .orderByDesc(PostRevisions::getVersion);
-
-        Page<PostRevisions> result = postRevisionsMapper.selectPage(page, queryWrapper);
-
-        // 将实体映射为 DTO
-        List<RevisionInfo> data = result.getRecords().stream().map(r -> {
-            RevisionInfo info = new RevisionInfo();
-            info.setId(r.getId());
-            info.setVersion(r.getVersion());
-            info.setTitle(r.getTitle());
-            info.setSummary(r.getSummary());
-            info.setCreatedAt(r.getCreatedAt());
-            return info;
-        }).toList();
-
-        // 构造 DTO 分页对象并返回
-        Page<RevisionInfo> dtoPage = new Page<>(result.getCurrent(), result.getSize());
-        dtoPage.setTotal(totalCount);
-        dtoPage.setRecords(data);
-
-        return PageResponse.of(dtoPage);
+        // 执行分页查询
+        return PageQueryUtils.executePageQuery(
+                postRevisionsMapper,
+                queryWrapper,
+                params.getPageable(),
+                this::convertToRevisionInfo);
     }
 
     /**
@@ -186,5 +168,18 @@ public class PostRevisionService {
             throw new IllegalArgumentException("指定的版本不存在");
         }
         postRevisionsMapper.deleteById(revision.getId());
+    }
+
+    /**
+     * 转换实体为版本信息响应对象
+     */
+    private RevisionInfo convertToRevisionInfo(PostRevisions revision) {
+        RevisionInfo info = new RevisionInfo();
+        info.setId(revision.getId());
+        info.setVersion(revision.getVersion());
+        info.setTitle(revision.getTitle());
+        info.setSummary(revision.getSummary());
+        info.setCreatedAt(revision.getCreatedAt());
+        return info;
     }
 }

@@ -27,6 +27,7 @@ import com.kisesaki.blog.auth.mapper.RolePermissionMapper;
 import com.kisesaki.blog.auth.mapper.UserRoleMapper;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.exception.BusinessException;
+import com.kisesaki.blog.common.util.PageQueryUtils;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.mapper.UserMapper;
 
@@ -52,39 +53,29 @@ public class RoleService {
      */
     public PageResponse<RoleListResponse> getRoleList(RoleListParams params) {
         LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
+
+        // 查询条件
         if (params.getName() != null) {
             queryWrapper.like(Role::getName, params.getName());
         }
-        // 先获取总数
-        long totalCount = roleMapper.selectCount(queryWrapper);
 
-        if (totalCount == 0) {
-            return PageResponse.of(List.of(), 0L, params.getPageable());
-        }
+        // 应用时间范围条件
+        PageQueryUtils.applyTimeRangeConditions(queryWrapper, params.getPageable(), Role::getCreatedAt);
 
-        // 构建分页对象
-        Page<Role> page = new Page<>(params.getPageable().getCurrentPage(), params.getPageable().getPageSize());
+        // 应用排序规则
+        PageQueryUtils.createSortBuilder(queryWrapper, params.getPageable())
+                .defaultSort(Role::getCreatedAt, true) // 默认按创建时间倒序
+                .addSortField("id", Role::getId)
+                .addSortField("name", Role::getName)
+                .addSortField("createdAt", Role::getCreatedAt)
+                .apply();
+
         // 执行分页查询
-        Page<Role> result = roleMapper.selectPage(page, queryWrapper);
-
-        // getRecords 获取当前页数据，List类型
-        // stream 转为stream，方便拷贝，且防止影响原实体
-        // toList 转回List
-        List<RoleListResponse> roleList = result.getRecords().stream().map(role -> {
-            RoleListResponse r = new RoleListResponse();
-            r.setId(role.getId());
-            r.setName(role.getName());
-            r.setDescription(role.getDescription());
-            r.setCreatedAt(role.getCreatedAt());
-            return r;
-        }).toList();
-
-        // 构造 DTO 分页对象并返回
-        Page<RoleListResponse> dtoPage = new Page<>(result.getCurrent(), result.getSize());
-        dtoPage.setTotal(totalCount);
-        dtoPage.setRecords(roleList);
-
-        return PageResponse.of(dtoPage);
+        return PageQueryUtils.executePageQuery(
+                roleMapper,
+                queryWrapper,
+                params.getPageable(),
+                this::convertToRoleListResponse);
     }
 
     /**
@@ -421,5 +412,17 @@ public class RoleService {
 
         // 批量插入
         rolePermissions.forEach(rolePermissionMapper::insert);
+    }
+
+    /**
+     * 转换实体为角色列表响应对象
+     */
+    private RoleListResponse convertToRoleListResponse(Role role) {
+        RoleListResponse response = new RoleListResponse();
+        response.setId(role.getId());
+        response.setName(role.getName());
+        response.setDescription(role.getDescription());
+        response.setCreatedAt(role.getCreatedAt());
+        return response;
     }
 }

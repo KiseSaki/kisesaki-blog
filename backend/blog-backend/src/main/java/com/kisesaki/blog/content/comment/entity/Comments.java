@@ -1,6 +1,6 @@
 package com.kisesaki.blog.content.comment.entity;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -125,26 +125,26 @@ public class Comments {
      * 最后编辑时间
      */
     @TableField("edited_at")
-    private LocalDateTime editedAt;
+    private OffsetDateTime editedAt;
 
     /**
      * 删除时间 (软删除)
      */
     @TableField("deleted_at")
-    @TableLogic
-    private LocalDateTime deletedAt;
+    @TableLogic(value = "NULL", delval = "NOW()")
+    private OffsetDateTime deletedAt;
 
     /**
      * 创建时间
      */
     @TableField(value = "created_at", fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 更新时间
      */
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     /**
      * 评论状态枚举

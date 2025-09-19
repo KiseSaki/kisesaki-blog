@@ -208,4 +208,99 @@
         ORDER BY c.created_at ASC
         OFFSET #{offset} LIMIT #{limit}
     </select>
+
+    <!-- 获取单条评论详情（包含上下文信息） -->
+    <select id="getCommentById" resultMap="CommentBasicMap">
+        SELECT 
+            c.id,
+            c.post_id,
+            c.user_id,
+            c.parent_id,
+            c.reply_to_id,
+            c.content,
+            c.html_content,
+            c.like_count,
+            c.dislike_count,
+            c.reply_count,
+            c.level,
+            c.path,
+            c.status,
+            c.is_pinned,
+            c.is_author_reply,
+            c.edited_at,
+            c.created_at,
+            c.updated_at,
+
+            -- 用户基本信息
+            u.id AS user_id,
+            u.username AS user_username,
+            up.display_name AS user_display_name,
+            up.avatar_url AS user_avatar_url,
+            up.bio AS user_bio,
+            u.status AS user_status,
+            u.created_at AS user_created_at,
+            -- 判断评论用户是否为当前文章的作者
+            CASE WHEN p.author_id = c.user_id THEN true ELSE false END AS user_is_blog_author
+
+        FROM comments c
+        LEFT JOIN "user" u ON c.user_id = u.id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        LEFT JOIN posts p ON c.post_id = p.id
+        WHERE c.id = #{commentId}
+          AND c.deleted_at IS NULL
+    </select>
+
+    <!-- 获取文章基本信息（用于评论详情的上下文） -->
+    <select id="getPostBasicInfo" resultType="map">
+        SELECT 
+            id,
+            title,
+            slug
+        FROM posts
+        WHERE id = #{postId}
+          AND deleted_at IS NULL
+    </select>
+
+    <!-- 获取评论回复列表（分页版本，用于懒加载） -->
+    <select id="getCommentRepliesPaged" resultMap="CommentBasicMap">
+        SELECT 
+            c.id,
+            c.post_id,
+            c.user_id,
+            c.parent_id,
+            c.reply_to_id,
+            c.content,
+            c.html_content,
+            c.like_count,
+            c.dislike_count,
+            c.reply_count,
+            c.level,
+            c.path,
+            c.status,
+            c.is_pinned,
+            c.is_author_reply,
+            c.edited_at,
+            c.created_at,
+            c.updated_at,
+
+            -- 用户基本信息
+            u.id AS user_id,
+            u.username AS user_username,
+            up.display_name AS user_display_name,
+            up.avatar_url AS user_avatar_url,
+            up.bio AS user_bio,
+            u.status AS user_status,
+            u.created_at AS user_created_at,
+            -- 判断评论用户是否为当前文章的作者
+            CASE WHEN p.author_id = c.user_id THEN true ELSE false END AS user_is_blog_author
+
+        FROM comments c
+        LEFT JOIN "user" u ON c.user_id = u.id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        LEFT JOIN posts p ON c.post_id = p.id
+        WHERE c.parent_id = #{parentId}
+          AND c.deleted_at IS NULL
+          AND c.status = 'approved'
+        ORDER BY c.created_at ASC
+    </select>
 </mapper>

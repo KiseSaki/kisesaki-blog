@@ -1,11 +1,14 @@
 package com.kisesaki.blog.content.comment.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.common.dto.PageResponse;
+import com.kisesaki.blog.common.exception.BusinessException;
+import com.kisesaki.blog.content.comment.dto.CommentDetailResponse;
 import com.kisesaki.blog.content.comment.dto.CommentListParams;
 import com.kisesaki.blog.content.comment.dto.CommentListResponse;
 import com.kisesaki.blog.content.comment.mapper.CommentMapper;
@@ -74,5 +77,69 @@ public class CommentService {
         log.info("获取评论 {} 的更多回复，offset: {}, limit: {}", parentId, offset, limit);
 
         return commentMapper.getMoreReplies(parentId, postId, offset, limit);
+    }
+
+    /**
+     * 获取单条评论详情
+     *
+     * @param commentId 评论ID
+     * @return 评论详情
+     */
+    public CommentDetailResponse getCommentDetail(Long commentId) {
+        log.info("获取评论详情：{}", commentId);
+
+        CommentListResponse comment = commentMapper.getCommentById(commentId);
+        if (comment == null) {
+            throw BusinessException.notFound("评论");
+        }
+
+        // 构建上下文信息
+        CommentDetailResponse.CommentContextDto.CommentContextDtoBuilder contextBuilder = CommentDetailResponse.CommentContextDto
+                .builder()
+                .postId(comment.getPostId());
+
+        // 获取文章基本信息
+        Map<String, Object> postInfo = commentMapper.getPostBasicInfo(comment.getPostId());
+        if (postInfo != null) {
+            contextBuilder
+                    .postTitle((String) postInfo.get("title"))
+                    .postSlug((String) postInfo.get("slug"));
+        }
+
+        // 如果是回复，获取父评论信息
+        if (comment.getParentId() != null) {
+            CommentListResponse parentComment = commentMapper.getCommentById(comment.getParentId());
+            contextBuilder.parentComment(parentComment);
+        }
+
+        // 如果是@回复，获取被回复的评论信息
+        if (comment.getReplyToId() != null && !comment.getReplyToId().equals(comment.getParentId())) {
+            CommentListResponse replyToComment = commentMapper.getCommentById(comment.getReplyToId());
+            contextBuilder.replyToComment(replyToComment);
+        }
+
+        CommentDetailResponse.CommentContextDto context = contextBuilder.build();
+
+        return CommentDetailResponse.builder()
+                .comment(comment)
+                .context(context)
+                .build();
+    }
+
+    /**
+     * 获取评论回复列表（分页）
+     *
+     * @param parentId 父评论ID
+     * @param page     页码
+     * @param size     每页大小
+     * @return 分页的回复列表
+     */
+    public PageResponse<CommentListResponse> getCommentReplies(Long parentId, int page, int size) {
+        log.info("获取评论 {} 的回复列表，page: {}, size: {}", parentId, page, size);
+
+        Page<CommentListResponse> pageObj = new Page<>(page, size);
+        Page<CommentListResponse> result = commentMapper.getCommentRepliesPaged(pageObj, parentId);
+
+        return PageResponse.of(result);
     }
 }

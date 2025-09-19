@@ -65,4 +65,31 @@ public interface CommentMapper extends BaseMapper<Comments> {
                         @Param("postId") Long postId,
                         @Param("offset") int offset,
                         @Param("limit") int limit);
+
+        /**
+         * 获取单条评论详情
+         *
+         * @param commentId 评论ID
+         * @return 评论详情
+         */
+        CommentListResponse getCommentById(@Param("commentId") Long commentId);
+
+        /**
+         * 获取文章基本信息
+         *
+         * @param postId 文章ID
+         * @return 包含文章标题和slug的Map
+         */
+        java.util.Map<String, Object> getPostBasicInfo(@Param("postId") Long postId);
+
+        /**
+         * 获取评论回复列表（分页版本，用于懒加载）
+         *
+         * @param page     分页参数
+         * @param parentId 父评论ID
+         * @return 分页的回复列表
+         */
+        Page<CommentListResponse> getCommentRepliesPaged(
+                        Page<CommentListResponse> page,
+                        @Param("parentId") Long parentId);
 }

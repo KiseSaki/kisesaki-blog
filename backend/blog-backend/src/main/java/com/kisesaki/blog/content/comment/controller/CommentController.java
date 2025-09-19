@@ -12,7 +12,7 @@ import com.kisesaki.blog.common.dto.ResultUtils;
 import com.kisesaki.blog.content.comment.dto.CommentDetailResponse;
 import com.kisesaki.blog.content.comment.dto.CommentListParams;
 import com.kisesaki.blog.content.comment.dto.CommentListResponse;
-import com.kisesaki.blog.content.comment.service.CommentService;
+import com.kisesaki.blog.content.comment.service.CommentQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommentController {
 
-    private final CommentService commentService;
+    private final CommentQueryService commentQueryService;
 
     /**
      * 获取文章评论列表
@@ -41,7 +41,7 @@ public class CommentController {
     public ApiResponse<PageResponse<CommentListResponse>> getPostComments(
             @PathVariable @Parameter(description = "文章ID", example = "123") Long postId,
             @Valid CommentListParams params) {
-        PageResponse<CommentListResponse> pageResponse = commentService.getCommentList(postId, params);
+        PageResponse<CommentListResponse> pageResponse = commentQueryService.getCommentList(postId, params);
         return ResultUtils.success(pageResponse);
     }
 
@@ -52,7 +52,7 @@ public class CommentController {
     @Operation(summary = "获取单条评论详情", description = "获取指定评论的详细信息，包含上下文信息")
     public ApiResponse<CommentDetailResponse> getCommentDetail(
             @PathVariable @Parameter(description = "评论ID", example = "456") Long id) {
-        CommentDetailResponse commentDetail = commentService.getCommentDetail(id);
+        CommentDetailResponse commentDetail = commentQueryService.getCommentDetail(id);
         return ResultUtils.success(commentDetail);
     }
 
@@ -65,7 +65,7 @@ public class CommentController {
             @PathVariable @Parameter(description = "父评论ID", example = "456") Long id,
             @RequestParam(defaultValue = "1") @Parameter(description = "页码", example = "1") int page,
             @RequestParam(defaultValue = "10") @Parameter(description = "每页大小", example = "10") int size) {
-        PageResponse<CommentListResponse> replies = commentService.getCommentReplies(id, page, size);
+        PageResponse<CommentListResponse> replies = commentQueryService.getCommentReplies(id, page, size);
         return ResultUtils.success(replies);
     }
 }

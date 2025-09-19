@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CommentService {
+public class CommentQueryService {
 
     private final CommentMapper commentMapper;
 

@@ -1,6 +1,5 @@
 package com.kisesaki.blog.content.comment.entity;
 
-import java.net.InetAddress;
 import java.time.LocalDateTime;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
@@ -9,6 +8,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.kisesaki.blog.content.comment.handler.CommentStatusTypeHandler;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -94,6 +94,7 @@ public class Comments {
     /**
      * 评论状态 (pending, approved, rejected, spam)
      */
+    @TableField(value = "status", typeHandler = CommentStatusTypeHandler.class)
     private CommentStatus status = CommentStatus.APPROVED;
 
     /**
@@ -112,7 +113,7 @@ public class Comments {
      * 评论者IP地址
      */
     @TableField("ip_address")
-    private InetAddress ipAddress;
+    private String ipAddress;
 
     /**
      * 用户代理字符串

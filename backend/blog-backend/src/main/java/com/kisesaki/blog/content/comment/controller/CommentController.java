@@ -1,10 +1,10 @@
 package com.kisesaki.blog.content.comment.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.kisesaki.blog.content.comment.dto.interaction.CreateCommentBody;
+import com.kisesaki.blog.content.comment.service.CommentInteractionService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
@@ -26,12 +26,13 @@ import lombok.RequiredArgsConstructor;
  * @author KiseSaki
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("")
 @Tag(name = "评论", description = "评论相关接口")
 @RequiredArgsConstructor
 public class CommentController {
 
     private final CommentQueryService commentQueryService;
+    private final CommentInteractionService commentInteractionService;
 
     /**
      * 获取文章评论列表
@@ -67,5 +68,11 @@ public class CommentController {
             @RequestParam(defaultValue = "10") @Parameter(description = "每页大小", example = "10") int size) {
         PageResponse<CommentListResponse> replies = commentQueryService.getCommentReplies(id, page, size);
         return ResultUtils.success(replies);
+    }
+
+    @PostMapping("/posts/{postId}/comments")
+    @Operation(summary = "创建评论", description = "在指定文章下创建一条评论")
+    public ApiResponse<Long> createComment(@PathVariable Long postId, @RequestBody CreateCommentBody body, Authentication authentication, HttpServletRequest request) {
+        return ResultUtils.success(commentInteractionService.createComment(postId, body, authentication, request));
     }
 }

@@ -1,7 +1,8 @@
 package com.kisesaki.blog.content.comment.service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
+import com.kisesaki.blog.content.comment.dto.interaction.UpdateCommentBody;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +38,7 @@ public class CommentInteractionService {
      */
     @Transactional(rollbackFor = Exception.class)
     public Long createComment(Long postId, CreateCommentBody body, Authentication authentication,
-            HttpServletRequest request) {
+                              HttpServletRequest request) {
         // 验证评论内容
         if (body.getContent() == null || body.getContent().trim().isEmpty()) {
             throw BusinessException.paramError("评论内容不能为空");
@@ -107,8 +108,8 @@ public class CommentInteractionService {
         log.debug("客户端IP: {}, User-Agent: {}", clientIp, request.getHeader("User-Agent"));
 
         // 设置创建时间（由MyBatis Plus自动填充，这里显式设置作为备用）
-        comment.setCreatedAt(LocalDateTime.now());
-        comment.setUpdatedAt(LocalDateTime.now());
+        comment.setCreatedAt(OffsetDateTime.now());
+        comment.setUpdatedAt(OffsetDateTime.now());
 
         // 保存评论
         int result = commentMapper.insert(comment);
@@ -117,6 +118,66 @@ public class CommentInteractionService {
         }
 
         log.info("用户 {} 在文章 {} 下创建了评论 {}", userId, postId, comment.getId());
+        return comment.getId();
+    }
+
+    /**
+     * 更新评论内容
+     *
+     * @param commentId      评论ID
+     * @param body           更新评论请求体
+     * @param authentication 认证信息
+     * @param request        HTTP请求对象
+     * @return 更新的评论ID
+     */
+    public Long updateComment(Long commentId, UpdateCommentBody body, Authentication authentication, HttpServletRequest request) {
+        String newContent = body.getContent();
+        // 验证评论内容
+        if (newContent == null || newContent.trim().isEmpty()) {
+            throw BusinessException.paramError("评论内容不能为空");
+        }
+        if (newContent.length() > 500) {
+            throw BusinessException.paramError("评论内容不能超过500字符");
+        }
+
+        // 获取当前用户ID
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户认证失败");
+        }
+
+        // 查询评论
+        Comments comment = commentMapper.selectById(commentId);
+        if (comment == null) {
+            throw BusinessException.notFound("评论不存在");
+        }
+
+        // 只允许修改十五分钟内的评论
+        if (comment.getCreatedAt().isBefore(OffsetDateTime.now().minusMinutes(15))) {
+            throw new BusinessException(ErrorCode.BUSINESS_ERROR, "评论创建超过15分钟，无法修改");
+        }
+
+        // 验证评论所有者
+        if (!comment.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED, "无权修改他人评论");
+        }
+
+        // 更新评论内容
+        comment.setContent(newContent);
+        comment.setUpdatedAt(OffsetDateTime.now());
+
+        // 设置IP地址和User-Agent
+        String clientIp = getClientIpAddress(request);
+        comment.setIpAddress(clientIp);
+        comment.setUserAgent(request.getHeader("User-Agent"));
+
+
+        int result = commentMapper.updateById(comment);
+        if (result != 1) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "评论更新失败");
+        }
+
+        log.info("用户 {} 更新了评论 {}", userId, commentId);
         return comment.getId();
     }
 

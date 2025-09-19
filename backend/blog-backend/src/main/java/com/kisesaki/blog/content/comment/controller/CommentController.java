@@ -1,6 +1,7 @@
 package com.kisesaki.blog.content.comment.controller;
 
 import com.kisesaki.blog.content.comment.dto.interaction.CreateCommentBody;
+import com.kisesaki.blog.content.comment.dto.interaction.UpdateCommentBody;
 import com.kisesaki.blog.content.comment.service.CommentInteractionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
@@ -70,9 +71,21 @@ public class CommentController {
         return ResultUtils.success(replies);
     }
 
+    /**
+     * 创建评论
+     */
     @PostMapping("/posts/{postId}/comments")
     @Operation(summary = "创建评论", description = "在指定文章下创建一条评论")
     public ApiResponse<Long> createComment(@PathVariable Long postId, @RequestBody CreateCommentBody body, Authentication authentication, HttpServletRequest request) {
         return ResultUtils.success(commentInteractionService.createComment(postId, body, authentication, request));
+    }
+
+    /**
+     * 更新评论（15分钟内的）
+     */
+    @PostMapping("/comments/{id}")
+    @Operation(summary = "更新评论", description = "更新指定ID的评论内容，仅限15分钟内的评论")
+    public ApiResponse<Long> updateComment(@PathVariable Long id, @RequestBody UpdateCommentBody body, Authentication authentication, HttpServletRequest request) {
+        return ResultUtils.success(commentInteractionService.updateComment(id, body, authentication, request));
     }
 }

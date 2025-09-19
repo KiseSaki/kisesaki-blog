@@ -88,4 +88,14 @@ public class CommentController {
     public ApiResponse<Long> updateComment(@PathVariable Long id, @RequestBody UpdateCommentBody body, Authentication authentication, HttpServletRequest request) {
         return ResultUtils.success(commentInteractionService.updateComment(id, body, authentication, request));
     }
+
+    /**
+     * 删除评论
+     */
+    @DeleteMapping("/comments/{id}")
+    @Operation(summary = "删除评论", description = "删除指定ID的评论，管理员或评论作者可执行此操作")
+    public ApiResponse<Void> deleteComment(@PathVariable Long id, Authentication authentication) {
+        commentInteractionService.deleteComment(id, authentication);
+        return ResultUtils.success();
+    }
 }

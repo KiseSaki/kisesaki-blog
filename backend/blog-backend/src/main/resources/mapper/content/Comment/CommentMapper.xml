@@ -149,7 +149,7 @@
         WHERE c.parent_id = #{parentId}
           AND c.post_id = #{postId}
           AND c.deleted_at IS NULL
-          AND c.status = 'approved'
+          AND c.status = 'APPROVED'
         ORDER BY c.created_at ASC
         LIMIT 3
     </select>
@@ -161,7 +161,7 @@
         WHERE parent_id = #{parentId}
           AND post_id = #{postId}
           AND deleted_at IS NULL
-          AND status = 'approved'
+          AND status = 'APPROVED'
     </select>
 
     <!-- 获取更多回复（用于"查看更多回复"功能） -->
@@ -204,7 +204,7 @@
         WHERE c.parent_id = #{parentId}
           AND c.post_id = #{postId}
           AND c.deleted_at IS NULL
-          AND c.status = 'approved'
+          AND c.status = 'APPROVED'
         ORDER BY c.created_at ASC
         OFFSET #{offset} LIMIT #{limit}
     </select>
@@ -300,7 +300,7 @@
         LEFT JOIN posts p ON c.post_id = p.id
         WHERE c.parent_id = #{parentId}
           AND c.deleted_at IS NULL
-          AND c.status = 'approved'
+          AND c.status = 'APPROVED'
         ORDER BY c.created_at ASC
     </select>
 </mapper>

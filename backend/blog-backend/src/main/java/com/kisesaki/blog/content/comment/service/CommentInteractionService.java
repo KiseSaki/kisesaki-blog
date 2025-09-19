@@ -182,6 +182,39 @@ public class CommentInteractionService {
     }
 
     /**
+     * 删除评论（逻辑删除）
+     *
+     * @param commentId      评论ID
+     * @param authentication 认证信息
+     */
+    public void deleteComment(Long commentId, Authentication authentication) {
+        // 获取当前用户ID
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户认证失败");
+        }
+
+        // 查询评论
+        Comments comment = commentMapper.selectById(commentId);
+        if (comment == null) {
+            throw BusinessException.notFound("评论不存在");
+        }
+
+        // 验证评论所有者
+        if (!comment.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED, "无权删除他人评论");
+        }
+
+        // 逻辑删除评论
+        int result = commentMapper.deleteById(commentId);
+        if (result != 1) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "评论删除失败");
+        }
+
+        log.info("用户 {} 删除了评论 {}", userId, commentId);
+    }
+
+    /**
      * 获取客户端真实IP地址
      *
      * @param request HTTP请求对象

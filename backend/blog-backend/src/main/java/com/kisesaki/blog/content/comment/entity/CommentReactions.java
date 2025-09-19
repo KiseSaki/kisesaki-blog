@@ -1,12 +1,13 @@
 package com.kisesaki.blog.content.comment.entity;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.kisesaki.blog.content.comment.handler.CommentReactionTypeHandler;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,16 +40,16 @@ public class CommentReactions {
     private Long commentId;
 
     /**
-     * 反应类型 (like, dislike)
+     * 反应类型 (LIKE, DISLIKE)
      */
-    @TableField("reaction_type")
+    @TableField(value = "reaction_type", typeHandler = CommentReactionTypeHandler.class)
     private ReactionType reactionType;
 
     /**
      * 创建时间
      */
     @TableField(value = "created_at", fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 反应类型枚举

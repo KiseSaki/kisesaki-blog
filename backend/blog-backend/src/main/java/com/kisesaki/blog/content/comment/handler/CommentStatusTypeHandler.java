@@ -4,6 +4,7 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
@@ -24,7 +25,7 @@ public class CommentStatusTypeHandler extends BaseTypeHandler<CommentStatus> {
     public void setNonNullParameter(PreparedStatement ps, int i, CommentStatus parameter, JdbcType jdbcType)
             throws SQLException {
         // 将 Java 枚举转换为 PostgreSQL 枚举类型
-        ps.setObject(i, parameter.name(), java.sql.Types.OTHER);
+        ps.setObject(i, parameter.name(), Types.OTHER);
     }
 
     @Override

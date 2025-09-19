@@ -98,4 +98,45 @@ public class CommentController {
         commentInteractionService.deleteComment(id, authentication);
         return ResultUtils.success();
     }
+
+    /**
+     * 点赞评论
+     */
+    @PostMapping("/comments/{id}/like")
+    @Operation(summary = "点赞评论", description = "对指定ID的评论进行点赞")
+    public ApiResponse<Void> likeComment(@PathVariable Long id, Authentication authentication) {
+        commentInteractionService.likeComment(id, authentication);
+        return ResultUtils.success();
+    }
+
+    /**
+     * 取消点赞评论
+     */
+    @DeleteMapping("/comments/{id}/like")
+    @Operation(summary = "取消点赞评论", description = "取消对指定ID的评论的点赞")
+    public ApiResponse<Void> unlikeComment(@PathVariable Long id, Authentication authentication) {
+        commentInteractionService.unlikeComment(id, authentication);
+        return ResultUtils.success();
+    }
+
+    /**
+     * 点踩评论
+     */
+    @PostMapping("/comments/{id}/dislike")
+    @Operation(summary = "点踩评论", description = "对指定ID的评论进行点踩")
+    public ApiResponse<Void> dislikeComment(@PathVariable Long id, Authentication authentication) {
+        commentInteractionService.dislikeComment(id, authentication);
+        return ResultUtils.success();
+    }
+
+    /**
+     * 取消点踩评论
+     */
+    @DeleteMapping("/comments/{id}/dislike")
+    @Operation(summary = "取消点踩评论", description = "取消对指定ID的评论的点踩")
+    public ApiResponse<Void> unDislikeComment(@PathVariable Long id, Authentication authentication) {
+        commentInteractionService.unDislikeComment(id, authentication);
+        return ResultUtils.success();
+    }
+
 }

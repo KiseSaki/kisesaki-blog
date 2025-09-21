@@ -6,6 +6,9 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kisesaki.blog.user.dto.admin.AdminUserListParams;
+import com.kisesaki.blog.user.dto.admin.AdminUserListResponse;
 import com.kisesaki.blog.user.entity.User;
 
 /**
@@ -24,4 +27,22 @@ public interface UserMapper extends BaseMapper<User> {
      * @return 用户信息
      */
     Optional<User> findByOAuth(@Param("oauthProvider") String oauthProvider, @Param("oauthId") String oauthId);
+
+    /**
+     * 管理员获取用户列表
+     *
+     * @param page   分页信息
+     * @param params 查询参数
+     * @return 用户列表
+     */
+    Page<AdminUserListResponse> adminGetUserList(Page<AdminUserListResponse> page,
+            @Param("params") AdminUserListParams params);
+
+    /**
+     * 管理员获取用户列表对应的总数
+     * 
+     * @param params 查询参数
+     * @return 用户总数
+     */
+    Long adminGetUserListCount(@Param("params") AdminUserListParams params);
 }

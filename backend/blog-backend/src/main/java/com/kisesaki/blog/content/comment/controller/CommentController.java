@@ -1,6 +1,7 @@
 package com.kisesaki.blog.content.comment.controller;
 
 import com.kisesaki.blog.content.comment.dto.interaction.CreateCommentBody;
+import com.kisesaki.blog.content.comment.dto.interaction.ReportCommentBody;
 import com.kisesaki.blog.content.comment.dto.interaction.UpdateCommentBody;
 import com.kisesaki.blog.content.comment.service.CommentInteractionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,9 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.common.util.AuthUtils;
 import com.kisesaki.blog.content.comment.dto.CommentDetailResponse;
 import com.kisesaki.blog.content.comment.dto.CommentListParams;
 import com.kisesaki.blog.content.comment.dto.CommentListResponse;
+import com.kisesaki.blog.content.comment.dto.MyCommentParams;
 import com.kisesaki.blog.content.comment.service.CommentQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -136,6 +139,35 @@ public class CommentController {
     @Operation(summary = "取消点踩评论", description = "取消对指定ID的评论的点踩")
     public ApiResponse<Void> unDislikeComment(@PathVariable Long id, Authentication authentication) {
         commentInteractionService.unDislikeComment(id, authentication);
+        return ResultUtils.success();
+    }
+
+    /**
+     * 获取我的评论列表
+     */
+    @GetMapping("/comments/my")
+    @Operation(summary = "获取我的评论列表", description = "获取当前用户的评论列表，支持按文章和状态筛选")
+    public ApiResponse<PageResponse<CommentListResponse>> getMyComments(
+            @Valid MyCommentParams params,
+            Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            throw new com.kisesaki.blog.common.exception.BusinessException(
+                com.kisesaki.blog.common.enums.ErrorCode.UNAUTHORIZED, "用户认证失败");
+        }
+        
+        PageResponse<CommentListResponse> pageResponse = commentQueryService.getMyComments(userId, params);
+        return ResultUtils.success(pageResponse);
+    }
+
+    /**
+     * 举报评论
+     */
+    @PostMapping("/comments/{id}/report")
+    @Operation(summary = "举报评论", description = "举报指定ID的评论")
+    public ApiResponse<Void> reportComment(@PathVariable Long id, @RequestBody @Valid ReportCommentBody body, 
+            Authentication authentication, HttpServletRequest request) {
+        commentInteractionService.reportComment(id, body, authentication, request);
         return ResultUtils.success();
     }
 

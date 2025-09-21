@@ -303,4 +303,215 @@
           AND c.status = 'APPROVED'
         ORDER BY c.created_at ASC
     </select>
+
+    <!-- 获取用户的评论列表（我的评论） -->
+    <select id="getMyComments" resultMap="CommentBasicMap">
+        SELECT 
+            c.id,
+            c.post_id,
+            c.user_id,
+            c.parent_id,
+            c.reply_to_id,
+            c.content,
+            c.html_content,
+            c.like_count,
+            c.dislike_count,
+            c.reply_count,
+            c.level,
+            c.path,
+            c.status,
+            c.is_pinned,
+            c.is_author_reply,
+            c.edited_at,
+            c.created_at,
+            c.updated_at,
+
+            -- 用户基本信息
+            u.id AS user_id,
+            u.username AS user_username,
+            up.display_name AS user_display_name,
+            up.avatar_url AS user_avatar_url,
+            up.bio AS user_bio,
+            u.status AS user_status,
+            u.created_at AS user_created_at,
+            -- 判断评论用户是否为当前文章的作者
+            CASE WHEN p.author_id = c.user_id THEN true ELSE false END AS user_is_blog_author
+
+        FROM comments c
+        LEFT JOIN "user" u ON c.user_id = u.id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        LEFT JOIN posts p ON c.post_id = p.id
+        WHERE c.user_id = #{userId}
+          AND c.deleted_at IS NULL
+
+        <if test="postId != null">
+            AND c.post_id = #{postId}
+        </if>
+        <if test="status != null and status != ''">
+            AND c.status = #{status}
+        </if>
+
+        ORDER BY c.created_at DESC
+    </select>
+
+    <!-- 管理员评论结果映射（包含更多管理信息） -->
+    <resultMap id="AdminCommentMap" type="com.kisesaki.blog.content.comment.dto.CommentListResponse" extends="CommentBasicMap">
+        <!-- 额外的管理员可见字段 -->
+        <result property="ipAddress" column="ip_address"/>
+        <result property="userAgent" column="user_agent"/>
+    </resultMap>
+
+    <!-- 获取所有评论列表（管理员） -->
+    <select id="getAdminCommentList" resultMap="AdminCommentMap">
+        SELECT 
+            c.id,
+            c.post_id,
+            c.user_id,
+            c.parent_id,
+            c.reply_to_id,
+            c.content,
+            c.html_content,
+            c.like_count,
+            c.dislike_count,
+            c.reply_count,
+            c.level,
+            c.path,
+            c.status,
+            c.is_pinned,
+            c.is_author_reply,
+            c.ip_address,
+            c.user_agent,
+            c.edited_at,
+            c.created_at,
+            c.updated_at,
+
+            -- 用户基本信息
+            u.id AS user_id,
+            u.username AS user_username,
+            up.display_name AS user_display_name,
+            up.avatar_url AS user_avatar_url,
+            up.bio AS user_bio,
+            u.status AS user_status,
+            u.created_at AS user_created_at,
+            -- 判断评论用户是否为当前文章的作者
+            CASE WHEN p.author_id = c.user_id THEN true ELSE false END AS user_is_blog_author
+
+        FROM comments c
+        LEFT JOIN "user" u ON c.user_id = u.id
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        LEFT JOIN posts p ON c.post_id = p.id
+        WHERE 1=1
+
+        <if test="params != null">
+            <if test="params.status != null and params.status != ''">
+                AND c.status = #{params.status}
+            </if>
+            <if test="params.postId != null">
+                AND c.post_id = #{params.postId}
+            </if>
+            <if test="params.userId != null">
+                AND c.user_id = #{params.userId}
+            </if>
+            <if test="params.reported != null and params.reported == true">
+                AND EXISTS (SELECT 1 FROM comment_reports cr WHERE cr.comment_id = c.id)
+            </if>
+            <if test="params.keyword != null and params.keyword != ''">
+                AND c.content ILIKE CONCAT('%', #{params.keyword}, '%')
+            </if>
+        </if>
+
+        <!-- 管理员可以看到已删除的评论 -->
+        ORDER BY c.created_at DESC
+    </select>
+
+    <!-- 被举报评论结果映射 -->
+    <resultMap id="CommentReportMap" type="com.kisesaki.blog.content.comment.dto.admin.AdminCommentReportResponse">
+        <result property="reportId" column="report_id"/>
+        <result property="commentId" column="comment_id"/>
+        <result property="commentContent" column="comment_content"/>
+        <result property="reason" column="reason"/>
+        <result property="description" column="description"/>
+        <result property="status" column="status"/>
+        <result property="handledBy" column="handled_by"/>
+        <result property="handledAt" column="handled_at"/>
+        <result property="handleNote" column="handle_note"/>
+        <result property="createdAt" column="created_at"/>
+
+        <!-- 评论作者信息 -->
+        <association property="commentAuthor" javaType="com.kisesaki.blog.content.comment.dto.CommentUserDto">
+            <id property="id" column="comment_author_id"/>
+            <result property="username" column="comment_author_username"/>
+            <result property="displayName" column="comment_author_display_name"/>
+            <result property="avatarUrl" column="comment_author_avatar_url"/>
+            <result property="bio" column="comment_author_bio"/>
+            <result property="status" column="comment_author_status"/>
+            <result property="createdAt" column="comment_author_created_at"/>
+            <result property="isBlogAuthor" column="comment_author_is_blog_author"/>
+        </association>
+
+        <!-- 举报人信息 -->
+        <association property="reporter" javaType="com.kisesaki.blog.content.comment.dto.CommentUserDto">
+            <id property="id" column="reporter_id"/>
+            <result property="username" column="reporter_username"/>
+            <result property="displayName" column="reporter_display_name"/>
+            <result property="avatarUrl" column="reporter_avatar_url"/>
+            <result property="bio" column="reporter_bio"/>
+            <result property="status" column="reporter_status"/>
+            <result property="createdAt" column="reporter_created_at"/>
+            <result property="isBlogAuthor" column="reporter_is_blog_author"/>
+        </association>
+    </resultMap>
+
+    <!-- 获取被举报的评论列表 -->
+    <select id="getReportedComments" resultMap="CommentReportMap">
+        SELECT 
+            cr.id AS report_id,
+            cr.comment_id,
+            c.content AS comment_content,
+            cr.reason,
+            cr.description,
+            cr.status,
+            cr.handled_by,
+            cr.handled_at,
+            cr.handle_note,
+            cr.created_at,
+
+            -- 评论作者信息
+            cu.id AS comment_author_id,
+            cu.username AS comment_author_username,
+            cup.display_name AS comment_author_display_name,
+            cup.avatar_url AS comment_author_avatar_url,
+            cup.bio AS comment_author_bio,
+            cu.status AS comment_author_status,
+            cu.created_at AS comment_author_created_at,
+            CASE WHEN p.author_id = cu.id THEN true ELSE false END AS comment_author_is_blog_author,
+
+            -- 举报人信息
+            ru.id AS reporter_id,
+            ru.username AS reporter_username,
+            rup.display_name AS reporter_display_name,
+            rup.avatar_url AS reporter_avatar_url,
+            rup.bio AS reporter_bio,
+            ru.status AS reporter_status,
+            ru.created_at AS reporter_created_at,
+            CASE WHEN p.author_id = ru.id THEN true ELSE false END AS reporter_is_blog_author
+
+        FROM comment_reports cr
+        LEFT JOIN comments c ON cr.comment_id = c.id
+        LEFT JOIN "user" cu ON c.user_id = cu.id
+        LEFT JOIN user_profiles cup ON cu.id = cup.user_id
+        LEFT JOIN "user" ru ON cr.reporter_id = ru.id
+        LEFT JOIN user_profiles rup ON ru.id = rup.user_id
+        LEFT JOIN posts p ON c.post_id = p.id
+        WHERE c.deleted_at IS NULL
+        ORDER BY cr.created_at DESC
+    </select>
+
+    <!-- 获取被举报评论的总数 -->
+    <select id="getReportedCommentsCount" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT cr.comment_id)
+        FROM comment_reports cr
+        LEFT JOIN comments c ON cr.comment_id = c.id
+        WHERE c.deleted_at IS NULL
+    </select>
 </mapper>

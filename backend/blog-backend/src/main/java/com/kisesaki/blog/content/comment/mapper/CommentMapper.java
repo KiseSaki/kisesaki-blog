@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.content.comment.dto.CommentListParams;
 import com.kisesaki.blog.content.comment.dto.CommentListResponse;
+import com.kisesaki.blog.content.comment.dto.admin.AdminCommentListParams;
+import com.kisesaki.blog.content.comment.dto.admin.AdminCommentReportResponse;
 import com.kisesaki.blog.content.comment.entity.Comments;
 
 @Mapper
@@ -92,4 +94,45 @@ public interface CommentMapper extends BaseMapper<Comments> {
         Page<CommentListResponse> getCommentRepliesPaged(
                         Page<CommentListResponse> page,
                         @Param("parentId") Long parentId);
+
+        /**
+         * 获取用户的评论列表（我的评论）
+         *
+         * @param page   分页参数
+         * @param userId 用户ID
+         * @param postId 文章ID（可选）
+         * @param status 评论状态（可选）
+         * @return 分页的用户评论列表
+         */
+        Page<CommentListResponse> getMyComments(
+                        Page<CommentListResponse> page,
+                        @Param("userId") Long userId,
+                        @Param("postId") Long postId,
+                        @Param("status") String status);
+
+        /**
+         * 获取所有评论列表（管理员）
+         *
+         * @param page   分页参数
+         * @param params 查询参数
+         * @return 分页的评论列表
+         */
+        Page<CommentListResponse> getAdminCommentList(
+                        Page<CommentListResponse> page,
+                        @Param("params") AdminCommentListParams params);
+
+        /**
+         * 获取被举报的评论列表
+         *
+         * @param page 分页参数
+         * @return 分页的被举报评论列表
+         */
+        Page<AdminCommentReportResponse> getReportedComments(Page<AdminCommentReportResponse> page);
+
+        /**
+         * 获取被举报评论的总数
+         *
+         * @return 被举报评论总数
+         */
+        Long getReportedCommentsCount();
 }

@@ -11,6 +11,7 @@ import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.content.comment.dto.CommentDetailResponse;
 import com.kisesaki.blog.content.comment.dto.CommentListParams;
 import com.kisesaki.blog.content.comment.dto.CommentListResponse;
+import com.kisesaki.blog.content.comment.dto.MyCommentParams;
 import com.kisesaki.blog.content.comment.mapper.CommentMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -139,6 +140,25 @@ public class CommentQueryService {
 
         Page<CommentListResponse> pageObj = new Page<>(page, size);
         Page<CommentListResponse> result = commentMapper.getCommentRepliesPaged(pageObj, parentId);
+
+        return PageResponse.of(result);
+    }
+
+    /**
+     * 获取用户的评论列表（我的评论）
+     *
+     * @param userId 用户ID
+     * @param params 查询参数
+     * @return 分页的用户评论列表
+     */
+    public PageResponse<CommentListResponse> getMyComments(Long userId, MyCommentParams params) {
+        log.info("获取用户 {} 的评论列表", userId);
+
+        Page<CommentListResponse> page = new Page<>(
+                params.getPageable().getCurrentPage(),
+                params.getPageable().getPageSize());
+
+        Page<CommentListResponse> result = commentMapper.getMyComments(page, userId, params.getPostId(), params.getStatus());
 
         return PageResponse.of(result);
     }

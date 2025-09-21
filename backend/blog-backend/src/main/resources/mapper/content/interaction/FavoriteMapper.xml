@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kisesaki.blog.content.interaction.mapper.FavoriteMapper">
+
+    <!-- 批量查找用户对多篇文章的收藏记录 -->
+    <select id="findUserFavoritesByPostIds" resultType="com.kisesaki.blog.content.interaction.entity.Favorites">
+        SELECT * FROM favorites 
+        WHERE user_id = #{userId} 
+        AND post_id IN 
+        <foreach collection="postIds" item="postId" open="(" separator="," close=")">
+            #{postId}
+        </foreach>
+    </select>
+
+    <!-- 批量删除用户的收藏记录 -->
+    <delete id="deleteFavoritesByPostIds">
+        DELETE FROM favorites 
+        WHERE user_id = #{userId} 
+        AND post_id IN 
+        <foreach collection="postIds" item="postId" open="(" separator="," close=")">
+            #{postId}
+        </foreach>
+    </delete>
+
+</mapper>

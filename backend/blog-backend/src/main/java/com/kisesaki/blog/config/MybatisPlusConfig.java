@@ -3,9 +3,13 @@ package com.kisesaki.blog.config;
 import java.time.OffsetDateTime;
 
 import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
@@ -13,6 +17,12 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.kisesaki.blog.content.comment.entity.Comments.CommentStatus;
+import com.kisesaki.blog.content.comment.handler.CommentStatusTypeHandler;
+import com.kisesaki.blog.content.interaction.entity.Likes.ReactionType;
+import com.kisesaki.blog.content.interaction.entity.Likes.TargetType;
+import com.kisesaki.blog.content.interaction.handler.LikeReactionTypeHandler;
+import com.kisesaki.blog.content.interaction.handler.TargetTypeHandler;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
  * 2. OptimisticLockerInnerInterceptor：支持乐观锁注解（@Version）实现并发控制。
  * 3. BlockAttackInnerInterceptor：防止恶意的全表更新删除操作。
  * 4. MetaObjectHandler：自动填充字段（创建时间、更新时间等）。
+ * 5. 注册自定义类型处理器：处理 PostgreSQL 枚举类型与 Java 枚举类型的转换。
  *
  * 备注：如需增加更多插件（如性能分析等），可在此统一注册。
  */
@@ -33,6 +44,34 @@ import lombok.extern.slf4j.Slf4j;
 @MapperScan("com.kisesaki.blog.**.mapper")
 @Slf4j
 public class MybatisPlusConfig {
+
+    /**
+     * 注册自定义类型处理器
+     * 通过 ApplicationListener 监听 ContextRefreshedEvent，在容器初始化完成后注册类型处理器
+     */
+    @Bean
+    public ApplicationListener<ContextRefreshedEvent> typeHandlerRegistrar() {
+        return event -> {
+            try {
+                SqlSessionFactory sqlSessionFactory = event.getApplicationContext().getBean(SqlSessionFactory.class);
+                TypeHandlerRegistry typeHandlerRegistry = sqlSessionFactory.getConfiguration().getTypeHandlerRegistry();
+
+                // 注册评论状态类型处理器
+                typeHandlerRegistry.register(CommentStatus.class, CommentStatusTypeHandler.class);
+
+                // 注册文章/评论反应类型处理器
+                typeHandlerRegistry.register(ReactionType.class, LikeReactionTypeHandler.class);
+
+                // 注册Like target类型处理器
+                typeHandlerRegistry.register(TargetType.class, TargetTypeHandler.class);
+
+                log.info("Custom type handlers registered: CommentStatusTypeHandler, LikeReactionTypeHandler");
+            } catch (Exception e) {
+                log.error("Failed to register custom type handlers", e);
+            }
+        };
+    }
+
     /**
      * 注册 MybatisPlusInterceptor Bean
      *

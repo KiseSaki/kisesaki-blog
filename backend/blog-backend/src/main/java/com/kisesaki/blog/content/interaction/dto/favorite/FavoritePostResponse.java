@@ -1,6 +1,5 @@
 package com.kisesaki.blog.content.interaction.dto.favorite;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 import lombok.Data;
@@ -46,7 +45,7 @@ public class FavoritePostResponse {
     /**
      * 收藏时间
      */
-    private LocalDateTime favoriteTime;
+    private OffsetDateTime favoriteTime;
 
     /**
      * 阅读时间（分钟）
@@ -64,7 +63,7 @@ public class FavoritePostResponse {
     private Integer likeCount;
 
     public FavoritePostResponse(Long postId, String title, String excerpt, String coverImageUrl,
-            String authorName, OffsetDateTime publishedAt, LocalDateTime favoriteTime,
+            String authorName, OffsetDateTime publishedAt, OffsetDateTime favoriteTime,
             Integer readingTime, Integer viewCount, Integer likeCount) {
         this.postId = postId;
         this.title = title;

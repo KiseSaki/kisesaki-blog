@@ -1,6 +1,6 @@
 package com.kisesaki.blog.content.interaction.service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,7 +73,7 @@ public class FavoriteService {
         Favorites favorite = new Favorites();
         favorite.setUserId(userId);
         favorite.setPostId(postId);
-        favorite.setCreatedAt(LocalDateTime.now());
+        favorite.setCreatedAt(OffsetDateTime.now());
 
         favoriteMapper.insert(favorite);
         log.info("用户 {} 收藏了文章 {}", userId, postId);

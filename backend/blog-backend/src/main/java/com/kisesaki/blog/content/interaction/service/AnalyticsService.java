@@ -2,8 +2,8 @@ package com.kisesaki.blog.content.interaction.service;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
@@ -90,7 +90,7 @@ public class AnalyticsService {
             // 客户端信息
             extractClientInfo(httpRequest, pageView);
 
-            pageView.setViewedAt(LocalDateTime.now());
+            pageView.setViewedAt(OffsetDateTime.now());
 
             pageViewsMapper.insert(pageView);
             log.info("记录页面浏览: postId={}, pageType={}, sessionId={}",
@@ -130,7 +130,7 @@ public class AnalyticsService {
             // 客户端信息
             extractClientInfo(httpRequest, event);
 
-            event.setCreatedAt(LocalDateTime.now());
+            event.setCreatedAt(OffsetDateTime.now());
 
             customEventsMapper.insert(event);
             log.info("记录自定义事件: eventType={}, sessionId={}",
@@ -161,8 +161,8 @@ public class AnalyticsService {
         long uniqueViews = pageViewsMapper.countUniqueViewsByPost(postId);
 
         // 今日浏览次数 - 使用 Lambda Wrapper
-        LocalDateTime todayStart = LocalDateTime.now().with(LocalTime.MIN);
-        LocalDateTime todayEnd = LocalDateTime.now().with(LocalTime.MAX);
+        OffsetDateTime todayStart = OffsetDateTime.now().with(LocalTime.MIN);
+        OffsetDateTime todayEnd = OffsetDateTime.now().with(LocalTime.MAX);
         long todayViews = pageViewsMapper.selectCount(
                 new LambdaQueryWrapper<PageViews>()
                         .eq(PageViews::getPostId, postId)
@@ -351,7 +351,7 @@ public class AnalyticsService {
      * @param endTime   结束时间
      * @return 浏览记录列表
      */
-    public List<PageViews> getViewsByTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
+    public List<PageViews> getViewsByTimeRange(OffsetDateTime startTime, OffsetDateTime endTime) {
         return pageViewsMapper.selectList(
                 new LambdaQueryWrapper<PageViews>()
                         .between(PageViews::getViewedAt, startTime, endTime)
@@ -381,7 +381,7 @@ public class AnalyticsService {
      * @param expireTime 过期时间
      * @return 删除的记录数
      */
-    public int deleteExpiredViews(LocalDateTime expireTime) {
+    public int deleteExpiredViews(OffsetDateTime expireTime) {
         return pageViewsMapper.delete(
                 new LambdaQueryWrapper<PageViews>()
                         .lt(PageViews::getViewedAt, expireTime));
@@ -412,7 +412,7 @@ public class AnalyticsService {
      * @param endTime   结束时间
      * @return 事件记录列表
      */
-    public List<CustomEvents> getEventsByTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
+    public List<CustomEvents> getEventsByTimeRange(OffsetDateTime startTime, OffsetDateTime endTime) {
         return customEventsMapper.selectList(
                 new LambdaQueryWrapper<CustomEvents>()
                         .between(CustomEvents::getCreatedAt, startTime, endTime)
@@ -428,7 +428,7 @@ public class AnalyticsService {
      * @param endTime   结束时间（可为null）
      * @return 事件数量
      */
-    public long countEventsByType(String eventType, LocalDateTime startTime, LocalDateTime endTime) {
+    public long countEventsByType(String eventType, OffsetDateTime startTime, OffsetDateTime endTime) {
         LambdaQueryWrapper<CustomEvents> queryWrapper = new LambdaQueryWrapper<CustomEvents>()
                 .eq(CustomEvents::getEventType, eventType);
 
@@ -462,7 +462,7 @@ public class AnalyticsService {
      * @param expireTime 过期时间
      * @return 删除的记录数
      */
-    public int deleteExpiredEvents(LocalDateTime expireTime) {
+    public int deleteExpiredEvents(OffsetDateTime expireTime) {
         return customEventsMapper.delete(
                 new LambdaQueryWrapper<CustomEvents>()
                         .lt(CustomEvents::getCreatedAt, expireTime));

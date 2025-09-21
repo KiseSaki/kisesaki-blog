@@ -1,6 +1,6 @@
 package com.kisesaki.blog.content.interaction.dto.favorite;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,10 +35,10 @@ public class FavoriteUserResponse {
     /**
      * 收藏时间
      */
-    private LocalDateTime favoriteTime;
+    private OffsetDateTime favoriteTime;
 
     public FavoriteUserResponse(Long userId, String username, String nickname, String avatarUrl,
-            LocalDateTime favoriteTime) {
+            OffsetDateTime favoriteTime) {
         this.userId = userId;
         this.username = username;
         this.nickname = nickname;

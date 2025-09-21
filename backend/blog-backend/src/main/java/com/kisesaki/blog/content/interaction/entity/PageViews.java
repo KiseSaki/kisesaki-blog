@@ -1,7 +1,7 @@
 package com.kisesaki.blog.content.interaction.entity;
 
 import java.net.InetAddress;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -129,7 +129,7 @@ public class PageViews {
      * 浏览时间
      */
     @TableField(value = "viewed_at", fill = FieldFill.INSERT)
-    private LocalDateTime viewedAt;
+    private OffsetDateTime viewedAt;
 
     /**
      * 页面类型枚举

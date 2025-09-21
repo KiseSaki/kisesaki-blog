@@ -1,7 +1,7 @@
 package com.kisesaki.blog.content.interaction.entity;
 
 import java.net.InetAddress;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -89,7 +89,7 @@ public class CustomEvents {
      * 事件发生时间
      */
     @TableField(value = "created_at", fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 设备类型枚举

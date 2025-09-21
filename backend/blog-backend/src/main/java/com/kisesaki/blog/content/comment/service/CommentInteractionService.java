@@ -11,11 +11,14 @@ import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.util.AuthUtils;
 import com.kisesaki.blog.content.comment.dto.interaction.CreateCommentBody;
+import com.kisesaki.blog.content.comment.dto.interaction.ReportCommentBody;
 import com.kisesaki.blog.content.comment.dto.interaction.UpdateCommentBody;
 import com.kisesaki.blog.content.comment.entity.CommentReactions;
+import com.kisesaki.blog.content.comment.entity.CommentReports;
 import com.kisesaki.blog.content.comment.entity.Comments;
 import com.kisesaki.blog.content.comment.mapper.CommentMapper;
 import com.kisesaki.blog.content.comment.mapper.CommentReactionMapper;
+import com.kisesaki.blog.content.comment.mapper.CommentReportMapper;
 import com.kisesaki.blog.content.post.mapper.PostsMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +32,7 @@ public class CommentInteractionService {
 
     private final CommentMapper commentMapper;
     private final CommentReactionMapper commentReactionMapper;
+    private final CommentReportMapper commentReportMapper;
     private final PostsMapper postsMapper;
 
     /**
@@ -338,6 +342,50 @@ public class CommentInteractionService {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "取消点踩评论失败");
         }
         log.info("用户 {} 取消点踩了评论 {}", userId, commentId);
+    }
+
+    /**
+     * 举报评论
+     *
+     * @param commentId      评论ID
+     * @param body           举报请求体
+     * @param authentication 认证信息
+     * @param request        HTTP请求对象
+     */
+    public void reportComment(Long commentId, ReportCommentBody body, Authentication authentication,
+            HttpServletRequest request) {
+        // 获取当前用户ID
+        Long userId = requireUserId(authentication);
+
+        // 判断评论是否存在
+        requireCommentExists(commentId);
+
+        // 检查是否已经举报过该评论
+        LambdaQueryWrapper<CommentReports> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CommentReports::getCommentId, commentId)
+                .eq(CommentReports::getReporterId, userId);
+        CommentReports existingReport = commentReportMapper.selectOne(queryWrapper);
+        if (existingReport != null) {
+            throw new BusinessException(ErrorCode.BUSINESS_ERROR, "您已举报过该评论");
+        }
+
+        // 创建举报记录
+        CommentReports report = new CommentReports();
+        report.setCommentId(commentId);
+        report.setReporterId(userId);
+        report.setReason(body.getReason());
+        report.setDescription(body.getDescription());
+        report.setStatus(CommentReports.ReportStatus.PENDING);
+        report.setIpAddress(getClientIpAddress(request));
+        report.setCreatedAt(OffsetDateTime.now());
+        report.setUpdatedAt(OffsetDateTime.now());
+
+        int result = commentReportMapper.insert(report);
+        if (result != 1) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "举报提交失败");
+        }
+
+        log.info("用户 {} 举报了评论 {}，原因：{}", userId, commentId, body.getReason());
     }
 
     /**

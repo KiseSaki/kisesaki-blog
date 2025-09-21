@@ -1,4 +1,4 @@
-package com.kisesaki.blog.user;
+package com.kisesaki.blog.user.service;
 
 import java.util.HashMap;
 import java.util.List;

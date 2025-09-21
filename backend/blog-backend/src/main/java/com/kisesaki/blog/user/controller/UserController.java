@@ -1,4 +1,4 @@
-package com.kisesaki.blog.user;
+package com.kisesaki.blog.user.controller;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +25,9 @@ import com.kisesaki.blog.user.dto.UserInfoDto;
 import com.kisesaki.blog.user.dto.UserProfileDto;
 import com.kisesaki.blog.user.dto.UserSettingsDto;
 import com.kisesaki.blog.user.dto.UserStatsDto;
+import com.kisesaki.blog.user.service.UserFollowService;
+import com.kisesaki.blog.user.service.UserService;
+import com.kisesaki.blog.user.service.UserSettingsService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

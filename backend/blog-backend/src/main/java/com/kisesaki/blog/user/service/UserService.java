@@ -1,4 +1,4 @@
-package com.kisesaki.blog.user;
+package com.kisesaki.blog.user.service;
 
 import java.util.List;
 import java.util.Optional;

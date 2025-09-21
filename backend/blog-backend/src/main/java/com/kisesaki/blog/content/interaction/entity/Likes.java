@@ -1,19 +1,21 @@
 package com.kisesaki.blog.content.interaction.entity;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.kisesaki.blog.content.interaction.handler.LikeReactionTypeHandler;
+import com.kisesaki.blog.content.interaction.handler.TargetTypeHandler;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 通用点赞实体类
- * 支持对文章、评论等的点赞
+ * 统一点赞反应实体类
+ * 用于处理文章和评论的点赞/踩等反应
  */
 @Data
 @NoArgsConstructor
@@ -21,7 +23,7 @@ import lombok.NoArgsConstructor;
 public class Likes {
 
     /**
-     * 点赞唯一ID (自增)
+     * 反应唯一ID (自增)
      */
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -33,22 +35,28 @@ public class Likes {
     private Long userId;
 
     /**
-     * 目标对象ID
+     * 目标类型 (POST, COMMENT)
+     */
+    @TableField(value = "target_type", typeHandler = TargetTypeHandler.class)
+    private TargetType targetType;
+
+    /**
+     * 目标ID (根据target_type指向posts.id或comments.id)
      */
     @TableField("target_id")
     private Long targetId;
 
     /**
-     * 目标对象类型 (post, comment)
+     * 反应类型 (LIKE, DISLIKE)
      */
-    @TableField("target_type")
-    private TargetType targetType;
+    @TableField(value = "reaction_type", typeHandler = LikeReactionTypeHandler.class)
+    private ReactionType reactionType;
 
     /**
      * 创建时间
      */
     @TableField(value = "created_at", fill = FieldFill.INSERT)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     /**
      * 目标类型枚举
@@ -56,5 +64,13 @@ public class Likes {
     public enum TargetType {
         POST,
         COMMENT
+    }
+
+    /**
+     * 反应类型枚举
+     */
+    public enum ReactionType {
+        LIKE,
+        DISLIKE
     }
 }

@@ -14,11 +14,9 @@ import com.kisesaki.blog.common.util.AuthUtils;
 import com.kisesaki.blog.content.comment.dto.interaction.CreateCommentBody;
 import com.kisesaki.blog.content.comment.dto.interaction.ReportCommentBody;
 import com.kisesaki.blog.content.comment.dto.interaction.UpdateCommentBody;
-import com.kisesaki.blog.content.comment.entity.CommentReactions;
 import com.kisesaki.blog.content.comment.entity.CommentReports;
 import com.kisesaki.blog.content.comment.entity.Comments;
 import com.kisesaki.blog.content.comment.mapper.CommentMapper;
-import com.kisesaki.blog.content.comment.mapper.CommentReactionMapper;
 import com.kisesaki.blog.content.comment.mapper.CommentReportMapper;
 import com.kisesaki.blog.content.post.entity.Posts;
 import com.kisesaki.blog.content.post.mapper.PostsMapper;
@@ -33,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 public class CommentInteractionService {
 
     private final CommentMapper commentMapper;
-    private final CommentReactionMapper commentReactionMapper;
     private final CommentReportMapper commentReportMapper;
     private final PostsMapper postsMapper;
 
@@ -232,140 +229,6 @@ public class CommentInteractionService {
         }
 
         log.info("用户 {} 删除了评论 {}", userId, commentId);
-    }
-
-    /**
-     * 点赞评论
-     *
-     * @param commentId      评论ID
-     * @param authentication 认证信息
-     */
-    public void likeComment(Long commentId, Authentication authentication) {
-        // 获取当前用户ID
-        Long userId = requireUserId(authentication);
-
-        // 判断评论是否存在
-        requireCommentExists(commentId);
-
-        // 查看用户是否点赞过评论
-        LambdaQueryWrapper<CommentReactions> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CommentReactions::getUserId, userId)
-                .eq(CommentReactions::getCommentId, commentId)
-                .eq(CommentReactions::getReactionType, CommentReactions.ReactionType.LIKE); // 使用枚举比较
-        CommentReactions existingReaction = commentReactionMapper.selectOne(queryWrapper);
-        if (existingReaction != null) {
-            throw new BusinessException(ErrorCode.BUSINESS_ERROR, "已点赞该评论");
-        }
-
-        // 创建点赞记录
-        CommentReactions reaction = new CommentReactions();
-        reaction.setUserId(userId);
-        reaction.setCommentId(commentId);
-        reaction.setReactionType(CommentReactions.ReactionType.LIKE);
-        reaction.setCreatedAt(OffsetDateTime.now());
-        int result = commentReactionMapper.insert(reaction);
-        if (result != 1) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "点赞评论失败");
-        }
-        log.info("用户 {} 点赞了评论 {}", userId, commentId);
-    }
-
-    /**
-     * 取消点赞评论
-     *
-     * @param commentId      评论ID
-     * @param authentication 认证信息
-     */
-    public void unlikeComment(Long commentId, Authentication authentication) {
-        // 获取当前用户ID
-        Long userId = requireUserId(authentication);
-
-        // 判断评论是否存在
-        requireCommentExists(commentId);
-
-        // 查看用户是否点赞过评论
-        LambdaQueryWrapper<CommentReactions> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CommentReactions::getUserId, userId)
-                .eq(CommentReactions::getCommentId, commentId)
-                .eq(CommentReactions::getReactionType, CommentReactions.ReactionType.LIKE); // 使用枚举比较
-        CommentReactions existingReaction = commentReactionMapper.selectOne(queryWrapper);
-        if (existingReaction == null) {
-            throw new BusinessException(ErrorCode.BUSINESS_ERROR, "未点赞该评论");
-        }
-
-        // 删除点赞记录
-        int result = commentReactionMapper.deleteById(existingReaction.getId());
-        if (result != 1) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "取消点赞评论失败");
-        }
-        log.info("用户 {} 取消点赞了评论 {}", userId, commentId);
-    }
-
-    /**
-     * 点踩评论
-     *
-     * @param commentId      评论ID
-     * @param authentication 认证信息
-     */
-    public void dislikeComment(Long commentId, Authentication authentication) {
-        // 获取当前用户ID
-        Long userId = requireUserId(authentication);
-
-        // 判断评论是否存在
-        requireCommentExists(commentId);
-
-        // 查看用户是否点踩过评论
-        LambdaQueryWrapper<CommentReactions> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CommentReactions::getUserId, userId)
-                .eq(CommentReactions::getCommentId, commentId)
-                .eq(CommentReactions::getReactionType, CommentReactions.ReactionType.DISLIKE); // 使用枚举比较
-        CommentReactions existingReaction = commentReactionMapper.selectOne(queryWrapper);
-        if (existingReaction != null) {
-            throw new BusinessException(ErrorCode.BUSINESS_ERROR, "已点踩该评论");
-        }
-
-        // 创建点踩记录
-        CommentReactions reaction = new CommentReactions();
-        reaction.setUserId(userId);
-        reaction.setCommentId(commentId);
-        reaction.setReactionType(CommentReactions.ReactionType.DISLIKE);
-        reaction.setCreatedAt(OffsetDateTime.now());
-        int result = commentReactionMapper.insert(reaction);
-        if (result != 1) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "点踩评论失败");
-        }
-        log.info("用户 {} 点踩了评论 {}", userId, commentId);
-    }
-
-    /**
-     * 取消点踩评论
-     *
-     * @param commentId      评论ID
-     * @param authentication 认证信息
-     */
-    public void unDislikeComment(Long commentId, Authentication authentication) {
-        // 获取当前用户ID
-        Long userId = requireUserId(authentication);
-
-        // 判断评论是否存在
-        requireCommentExists(commentId);
-
-        // 查看用户是否点踩过评论
-        LambdaQueryWrapper<CommentReactions> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CommentReactions::getUserId, userId)
-                .eq(CommentReactions::getCommentId, commentId)
-                .eq(CommentReactions::getReactionType, CommentReactions.ReactionType.DISLIKE); // 使用枚举比较
-        CommentReactions existingReaction = commentReactionMapper.selectOne(queryWrapper);
-        if (existingReaction == null) {
-            throw new BusinessException(ErrorCode.BUSINESS_ERROR, "未点踩该评论");
-        }
-
-        // 删除点踩记录
-        int result = commentReactionMapper.deleteById(existingReaction.getId());
-        if (result != 1) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "取消点踩评论失败");
-        }
-        log.info("用户 {} 取消点踩了评论 {}", userId, commentId);
     }
 
     /**

@@ -17,10 +17,12 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
-import com.kisesaki.blog.content.comment.entity.CommentReactions.ReactionType;
 import com.kisesaki.blog.content.comment.entity.Comments.CommentStatus;
-import com.kisesaki.blog.content.comment.handler.CommentReactionTypeHandler;
 import com.kisesaki.blog.content.comment.handler.CommentStatusTypeHandler;
+import com.kisesaki.blog.content.interaction.entity.Likes.ReactionType;
+import com.kisesaki.blog.content.interaction.entity.Likes.TargetType;
+import com.kisesaki.blog.content.interaction.handler.LikeReactionTypeHandler;
+import com.kisesaki.blog.content.interaction.handler.TargetTypeHandler;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,10 +59,13 @@ public class MybatisPlusConfig {
                 // 注册评论状态类型处理器
                 typeHandlerRegistry.register(CommentStatus.class, CommentStatusTypeHandler.class);
 
-                // 注册评论反应类型处理器
-                typeHandlerRegistry.register(ReactionType.class, CommentReactionTypeHandler.class);
+                // 注册文章/评论反应类型处理器
+                typeHandlerRegistry.register(ReactionType.class, LikeReactionTypeHandler.class);
 
-                log.info("Custom type handlers registered: CommentStatusTypeHandler, CommentReactionTypeHandler");
+                // 注册Like target类型处理器
+                typeHandlerRegistry.register(TargetType.class, TargetTypeHandler.class);
+
+                log.info("Custom type handlers registered: CommentStatusTypeHandler, LikeReactionTypeHandler");
             } catch (Exception e) {
                 log.error("Failed to register custom type handlers", e);
             }

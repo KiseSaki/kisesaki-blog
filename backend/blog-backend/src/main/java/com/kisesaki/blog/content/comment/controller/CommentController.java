@@ -1,12 +1,14 @@
 package com.kisesaki.blog.content.comment.controller;
 
-import com.kisesaki.blog.content.comment.dto.interaction.CreateCommentBody;
-import com.kisesaki.blog.content.comment.dto.interaction.ReportCommentBody;
-import com.kisesaki.blog.content.comment.dto.interaction.UpdateCommentBody;
-import com.kisesaki.blog.content.comment.service.CommentInteractionService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
@@ -16,11 +18,16 @@ import com.kisesaki.blog.content.comment.dto.CommentDetailResponse;
 import com.kisesaki.blog.content.comment.dto.CommentListParams;
 import com.kisesaki.blog.content.comment.dto.CommentListResponse;
 import com.kisesaki.blog.content.comment.dto.MyCommentParams;
+import com.kisesaki.blog.content.comment.dto.interaction.CreateCommentBody;
+import com.kisesaki.blog.content.comment.dto.interaction.ReportCommentBody;
+import com.kisesaki.blog.content.comment.dto.interaction.UpdateCommentBody;
+import com.kisesaki.blog.content.comment.service.CommentInteractionService;
 import com.kisesaki.blog.content.comment.service.CommentQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -79,7 +86,8 @@ public class CommentController {
      */
     @PostMapping("/posts/{postId}/comments")
     @Operation(summary = "创建评论", description = "在指定文章下创建一条评论")
-    public ApiResponse<Long> createComment(@PathVariable Long postId, @RequestBody CreateCommentBody body, Authentication authentication, HttpServletRequest request) {
+    public ApiResponse<Long> createComment(@PathVariable Long postId, @RequestBody CreateCommentBody body,
+            Authentication authentication, HttpServletRequest request) {
         return ResultUtils.success(commentInteractionService.createComment(postId, body, authentication, request));
     }
 
@@ -88,7 +96,8 @@ public class CommentController {
      */
     @PostMapping("/comments/{id}")
     @Operation(summary = "更新评论", description = "更新指定ID的评论内容，仅限15分钟内的评论")
-    public ApiResponse<Long> updateComment(@PathVariable Long id, @RequestBody UpdateCommentBody body, Authentication authentication, HttpServletRequest request) {
+    public ApiResponse<Long> updateComment(@PathVariable Long id, @RequestBody UpdateCommentBody body,
+            Authentication authentication, HttpServletRequest request) {
         return ResultUtils.success(commentInteractionService.updateComment(id, body, authentication, request));
     }
 
@@ -103,46 +112,6 @@ public class CommentController {
     }
 
     /**
-     * 点赞评论
-     */
-    @PostMapping("/comments/{id}/like")
-    @Operation(summary = "点赞评论", description = "对指定ID的评论进行点赞")
-    public ApiResponse<Void> likeComment(@PathVariable Long id, Authentication authentication) {
-        commentInteractionService.likeComment(id, authentication);
-        return ResultUtils.success();
-    }
-
-    /**
-     * 取消点赞评论
-     */
-    @DeleteMapping("/comments/{id}/like")
-    @Operation(summary = "取消点赞评论", description = "取消对指定ID的评论的点赞")
-    public ApiResponse<Void> unlikeComment(@PathVariable Long id, Authentication authentication) {
-        commentInteractionService.unlikeComment(id, authentication);
-        return ResultUtils.success();
-    }
-
-    /**
-     * 点踩评论
-     */
-    @PostMapping("/comments/{id}/dislike")
-    @Operation(summary = "点踩评论", description = "对指定ID的评论进行点踩")
-    public ApiResponse<Void> dislikeComment(@PathVariable Long id, Authentication authentication) {
-        commentInteractionService.dislikeComment(id, authentication);
-        return ResultUtils.success();
-    }
-
-    /**
-     * 取消点踩评论
-     */
-    @DeleteMapping("/comments/{id}/dislike")
-    @Operation(summary = "取消点踩评论", description = "取消对指定ID的评论的点踩")
-    public ApiResponse<Void> unDislikeComment(@PathVariable Long id, Authentication authentication) {
-        commentInteractionService.unDislikeComment(id, authentication);
-        return ResultUtils.success();
-    }
-
-    /**
      * 获取我的评论列表
      */
     @GetMapping("/comments/my")
@@ -153,9 +122,9 @@ public class CommentController {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         if (userId == null) {
             throw new com.kisesaki.blog.common.exception.BusinessException(
-                com.kisesaki.blog.common.enums.ErrorCode.UNAUTHORIZED, "用户认证失败");
+                    com.kisesaki.blog.common.enums.ErrorCode.UNAUTHORIZED, "用户认证失败");
         }
-        
+
         PageResponse<CommentListResponse> pageResponse = commentQueryService.getMyComments(userId, params);
         return ResultUtils.success(pageResponse);
     }
@@ -165,7 +134,7 @@ public class CommentController {
      */
     @PostMapping("/comments/{id}/report")
     @Operation(summary = "举报评论", description = "举报指定ID的评论")
-    public ApiResponse<Void> reportComment(@PathVariable Long id, @RequestBody @Valid ReportCommentBody body, 
+    public ApiResponse<Void> reportComment(@PathVariable Long id, @RequestBody @Valid ReportCommentBody body,
             Authentication authentication, HttpServletRequest request) {
         commentInteractionService.reportComment(id, body, authentication, request);
         return ResultUtils.success();

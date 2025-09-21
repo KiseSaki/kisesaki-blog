@@ -1,4 +1,4 @@
-package com.kisesaki.blog.content.comment.handler;
+package com.kisesaki.blog.content.interaction.handler;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -11,7 +11,7 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
 import org.apache.ibatis.type.MappedTypes;
 
-import com.kisesaki.blog.content.comment.entity.CommentReactions.ReactionType;
+import com.kisesaki.blog.content.interaction.entity.Likes.ReactionType;
 
 /**
  * PostgreSQL reaction_type 枚举类型处理器
@@ -19,7 +19,7 @@ import com.kisesaki.blog.content.comment.entity.CommentReactions.ReactionType;
  */
 @MappedTypes(ReactionType.class)
 @MappedJdbcTypes(JdbcType.OTHER)
-public class CommentReactionTypeHandler extends BaseTypeHandler<ReactionType> {
+public class LikeReactionTypeHandler extends BaseTypeHandler<ReactionType> {
 
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, ReactionType parameter, JdbcType jdbcType)

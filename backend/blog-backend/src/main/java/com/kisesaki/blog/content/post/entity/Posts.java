@@ -69,6 +69,9 @@ public class Posts {
     /* 分享数量，默认 0 */
     private Integer shareCount;
 
+    /* 收藏数量，默认 0 */
+    private Integer favoriteCount;
+
     /* 预估阅读时间（分钟） */
     private Integer readingTime;
 

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kisesaki.blog.content.interaction.mapper.PageViewsMapper">
+
+    <!-- 统计文章的独立访客数（根据IP地址去重） -->
+    <select id="countUniqueViewsByPost" resultType="long">
+        SELECT COUNT(DISTINCT ip_address)
+        FROM page_views
+        WHERE post_id = #{postId}
+          AND ip_address IS NOT NULL
+    </select>
+
+    <!-- 检查同一会话是否已经访问过该页面（用于去重） -->
+    <select id="countSessionPageView" resultType="int">
+        SELECT COUNT(*)
+        FROM page_views
+        WHERE session_id = #{sessionId}
+          AND page_url = #{pageUrl}
+          AND viewed_at > DATE_SUB(NOW(), INTERVAL #{timeLimit} MINUTE)
+        LIMIT 1
+    </select>
+
+    <!-- 批量插入浏览记录 -->
+    <insert id="batchInsertViews">
+        INSERT INTO page_views (
+            post_id, user_id, page_type, page_url, page_title, referrer,
+            utm_source, utm_medium, utm_campaign, ip_address, user_agent,
+            device_type, browser, os, session_id, duration, is_bounce, viewed_at
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.postId}, #{item.userId}, #{item.pageType}, #{item.pageUrl},
+                #{item.pageTitle}, #{item.referrer}, #{item.utmSource}, #{item.utmMedium},
+                #{item.utmCampaign}, #{item.ipAddress}, #{item.userAgent}, #{item.deviceType},
+                #{item.browser}, #{item.os}, #{item.sessionId}, #{item.duration},
+                #{item.isBounce}, #{item.viewedAt}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 统计指定时间范围内的热门文章（按浏览量排序） -->
+    <select id="selectHotPostsByTimeRange" resultType="Object[]">
+        SELECT post_id, COUNT(*) as view_count
+        FROM page_views
+        WHERE post_id IS NOT NULL
+          AND viewed_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY post_id
+        ORDER BY view_count DESC
+        <if test="limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+</mapper>

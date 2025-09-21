@@ -1,4 +1,4 @@
-package com.kisesaki.blog.user.dto;
+package com.kisesaki.blog.user.dto.info;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

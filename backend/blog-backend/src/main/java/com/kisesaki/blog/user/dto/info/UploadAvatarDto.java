@@ -1,4 +1,4 @@
-package com.kisesaki.blog.user.dto;
+package com.kisesaki.blog.user.dto.info;
 
 import org.springframework.web.multipart.MultipartFile;
 

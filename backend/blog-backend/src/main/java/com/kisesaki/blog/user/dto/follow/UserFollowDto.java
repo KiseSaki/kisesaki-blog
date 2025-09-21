@@ -1,4 +1,4 @@
-package com.kisesaki.blog.user.dto;
+package com.kisesaki.blog.user.dto.follow;
 
 import java.time.OffsetDateTime;
 

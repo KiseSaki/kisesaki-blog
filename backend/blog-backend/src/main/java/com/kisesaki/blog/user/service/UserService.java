@@ -6,10 +6,10 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kisesaki.blog.user.dto.UpdateProfileDto;
-import com.kisesaki.blog.user.dto.UserInfoDto;
-import com.kisesaki.blog.user.dto.UserProfileDto;
 import com.kisesaki.blog.user.dto.UserStatsDto;
+import com.kisesaki.blog.user.dto.info.UpdateProfileDto;
+import com.kisesaki.blog.user.dto.info.UserInfoDto;
+import com.kisesaki.blog.user.dto.info.UserProfileDto;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.entity.UserProfile;
 import com.kisesaki.blog.user.entity.UserSettings;

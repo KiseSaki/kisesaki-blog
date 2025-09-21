@@ -1,4 +1,4 @@
-package com.kisesaki.blog.user.dto;
+package com.kisesaki.blog.user.dto.info;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;

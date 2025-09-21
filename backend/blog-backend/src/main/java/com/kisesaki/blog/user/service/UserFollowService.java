@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kisesaki.blog.user.dto.UserFollowDto;
+import com.kisesaki.blog.user.dto.follow.UserFollowDto;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.entity.UserFollow;
 import com.kisesaki.blog.user.entity.UserProfile;

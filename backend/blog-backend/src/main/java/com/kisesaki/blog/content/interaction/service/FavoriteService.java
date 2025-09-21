@@ -60,7 +60,11 @@ public class FavoriteService {
         validatePostExists(postId);
 
         // 检查是否已经收藏
-        Favorites existingFavorite = favoriteMapper.findUserFavorite(userId, postId);
+        Favorites existingFavorite = favoriteMapper.selectOne(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getUserId, userId)
+                        .eq(Favorites::getPostId, postId)
+                        .last("LIMIT 1"));
         if (existingFavorite != null) {
             throw new BusinessException(ErrorCode.BUSINESS_ERROR, "您已经收藏过这篇文章");
         }
@@ -78,8 +82,10 @@ public class FavoriteService {
         updatePostFavoriteCount(postId);
 
         // 返回收藏状态
-        int favoriteCount = favoriteMapper.countFavoritesByPost(postId);
-        return new FavoriteStatusResponse(postId, true, favoriteCount);
+        Long favoriteCount = favoriteMapper.selectCount(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getPostId, postId));
+        return new FavoriteStatusResponse(postId, true, favoriteCount.intValue());
     }
 
     /**
@@ -97,7 +103,10 @@ public class FavoriteService {
         validatePostExists(postId);
 
         // 删除收藏记录
-        int deletedCount = favoriteMapper.deleteFavorite(userId, postId);
+        int deletedCount = favoriteMapper.delete(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getUserId, userId)
+                        .eq(Favorites::getPostId, postId));
         if (deletedCount == 0) {
             throw new BusinessException(ErrorCode.BUSINESS_ERROR, "您还未收藏这篇文章");
         }
@@ -108,8 +117,10 @@ public class FavoriteService {
         updatePostFavoriteCount(postId);
 
         // 返回收藏状态
-        int favoriteCount = favoriteMapper.countFavoritesByPost(postId);
-        return new FavoriteStatusResponse(postId, false, favoriteCount);
+        Long favoriteCount = favoriteMapper.selectCount(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getPostId, postId));
+        return new FavoriteStatusResponse(postId, false, favoriteCount.intValue());
     }
 
     /**
@@ -125,13 +136,19 @@ public class FavoriteService {
         if (authentication != null) {
             Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
             if (userId != null) {
-                Favorites favorite = favoriteMapper.findUserFavorite(userId, postId);
+                Favorites favorite = favoriteMapper.selectOne(
+                        new LambdaQueryWrapper<Favorites>()
+                                .eq(Favorites::getUserId, userId)
+                                .eq(Favorites::getPostId, postId)
+                                .last("LIMIT 1"));
                 favorited = (favorite != null);
             }
         }
 
-        int favoriteCount = favoriteMapper.countFavoritesByPost(postId);
-        return new FavoriteStatusResponse(postId, favorited, favoriteCount);
+        Long favoriteCount = favoriteMapper.selectCount(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getPostId, postId));
+        return new FavoriteStatusResponse(postId, favorited, favoriteCount.intValue());
     }
 
     /**
@@ -171,7 +188,10 @@ public class FavoriteService {
         validatePostExists(postId);
 
         Page<Favorites> favoritePage = new Page<>(page, size);
-        Page<Favorites> favoriteResult = favoriteMapper.selectFavoritesByPost(favoritePage, postId);
+        Page<Favorites> favoriteResult = favoriteMapper.selectPage(favoritePage,
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getPostId, postId)
+                        .orderByDesc(Favorites::getCreatedAt));
 
         Page<FavoriteUserResponse> resultPage = new Page<>(page, size);
         resultPage.setTotal(favoriteResult.getTotal());
@@ -227,7 +247,10 @@ public class FavoriteService {
         validateUserExists(userId);
 
         Page<Favorites> favoritePage = new Page<>(page, size);
-        Page<Favorites> favoriteResult = favoriteMapper.selectFavoritesByUser(favoritePage, userId);
+        Page<Favorites> favoriteResult = favoriteMapper.selectPage(favoritePage,
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getUserId, userId)
+                        .orderByDesc(Favorites::getCreatedAt));
 
         Page<FavoritePostResponse> resultPage = new Page<>(page, size);
         resultPage.setTotal(favoriteResult.getTotal());
@@ -312,7 +335,10 @@ public class FavoriteService {
      * @return 收藏总数
      */
     public int countUserFavorites(Long userId) {
-        return favoriteMapper.countUserFavorites(userId);
+        Long count = favoriteMapper.selectCount(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getUserId, userId));
+        return count.intValue();
     }
 
     /**
@@ -339,11 +365,13 @@ public class FavoriteService {
      * 更新文章收藏计数
      */
     private void updatePostFavoriteCount(Long postId) {
-        int favoriteCount = favoriteMapper.countFavoritesByPost(postId);
+        Long favoriteCount = favoriteMapper.selectCount(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getPostId, postId));
 
         LambdaUpdateWrapper<Posts> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Posts::getId, postId)
-                .set(Posts::getFavoriteCount, favoriteCount);
+                .set(Posts::getFavoriteCount, favoriteCount.intValue());
 
         postsMapper.update(null, updateWrapper);
     }
@@ -357,5 +385,48 @@ public class FavoriteService {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户未登录");
         }
         return userId;
+    }
+
+    // ============= Lambda Wrapper 便利方法 =============
+
+    /**
+     * 查找用户对指定文章的收藏记录
+     */
+    private Favorites findUserFavorite(Long userId, Long postId) {
+        return favoriteMapper.selectOne(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getUserId, userId)
+                        .eq(Favorites::getPostId, postId)
+                        .last("LIMIT 1"));
+    }
+
+    /**
+     * 统计文章的收藏数量
+     */
+    private Long countFavoritesByPost(Long postId) {
+        return favoriteMapper.selectCount(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getPostId, postId));
+    }
+
+    /**
+     * 删除用户对指定文章的收藏
+     */
+    private int deleteFavorite(Long userId, Long postId) {
+        return favoriteMapper.delete(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getUserId, userId)
+                        .eq(Favorites::getPostId, postId));
+    }
+
+    /**
+     * 检查用户是否收藏了指定文章
+     */
+    private boolean isFavorited(Long userId, Long postId) {
+        Long count = favoriteMapper.selectCount(
+                new LambdaQueryWrapper<Favorites>()
+                        .eq(Favorites::getUserId, userId)
+                        .eq(Favorites::getPostId, postId));
+        return count > 0;
     }
 }

@@ -1,4 +1,4 @@
-package com.kisesaki.blog.content.interaction;
+package com.kisesaki.blog.content.interaction.service;
 
 /**
  * 收藏服务

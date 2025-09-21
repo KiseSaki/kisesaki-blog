@@ -1,4 +1,4 @@
-package com.kisesaki.blog.interaction.entity;
+package com.kisesaki.blog.content.interaction.entity;
 
 import java.time.LocalDateTime;
 

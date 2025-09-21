@@ -3,7 +3,9 @@ package com.kisesaki.blog.content.comment.service;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,8 @@ import com.kisesaki.blog.content.comment.dto.admin.AdminCommentListParams;
 import com.kisesaki.blog.content.comment.dto.admin.AdminCommentReportResponse;
 import com.kisesaki.blog.content.comment.dto.admin.AdminCommentStatsResponse;
 import com.kisesaki.blog.content.comment.entity.Comments;
+import com.kisesaki.blog.content.post.entity.Posts;
+import com.kisesaki.blog.content.post.mapper.PostsMapper;
 import com.kisesaki.blog.content.comment.mapper.CommentMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -36,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminCommentService {
 
     private final CommentMapper commentMapper;
+    private final PostsMapper postsMapper;
 
     /**
      * 获取所有评论列表（管理员）
@@ -73,7 +78,13 @@ public class AdminCommentService {
 
         try {
             Comments.CommentStatus newStatus = Comments.CommentStatus.valueOf(status.toUpperCase());
-            
+
+            // 读取旧状态以决定是否需要更新 posts.comment_count
+            Comments old = commentMapper.selectById(commentId);
+            if (old == null) {
+                throw BusinessException.notFound("评论");
+            }
+
             LambdaUpdateWrapper<Comments> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.eq(Comments::getId, commentId)
                     .set(Comments::getStatus, newStatus)
@@ -82,6 +93,27 @@ public class AdminCommentService {
             int result = commentMapper.update(null, updateWrapper);
             if (result != 1) {
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新评论状态失败");
+            }
+
+            // 仅在审核状态与已审核(APPROVED)之间切换时调整文章评论数
+            if (old.getStatus() != newStatus) {
+                if (old.getStatus() == Comments.CommentStatus.APPROVED && newStatus != Comments.CommentStatus.APPROVED) {
+                    // 从 APPROVED -> 非 APPROVED : 减少评论数
+                    LambdaUpdateWrapper<Posts> postUpdate = new LambdaUpdateWrapper<>();
+                    postUpdate.eq(Posts::getId, old.getPostId()).setSql("comment_count = comment_count - 1");
+                    int ur = postsMapper.update(null, postUpdate);
+                    if (ur != 1) {
+                        throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新文章评论数失败");
+                    }
+                } else if (old.getStatus() != Comments.CommentStatus.APPROVED && newStatus == Comments.CommentStatus.APPROVED) {
+                    // 从 非 APPROVED -> APPROVED : 增加评论数
+                    LambdaUpdateWrapper<Posts> postUpdate = new LambdaUpdateWrapper<>();
+                    postUpdate.eq(Posts::getId, old.getPostId()).setSql("comment_count = comment_count + 1");
+                    int ur = postsMapper.update(null, postUpdate);
+                    if (ur != 1) {
+                        throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新文章评论数失败");
+                    }
+                }
             }
         } catch (IllegalArgumentException e) {
             throw BusinessException.paramError("无效的评论状态");
@@ -107,6 +139,16 @@ public class AdminCommentService {
         int result = commentMapper.deleteById(commentId);
         if (result != 1) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除评论失败");
+        }
+
+        // 若被删除的评论原本是已批准状态，则需减少对应文章的评论数
+        if (comment.getStatus() == Comments.CommentStatus.APPROVED) {
+            LambdaUpdateWrapper<Posts> postUpdate = new LambdaUpdateWrapper<>();
+            postUpdate.eq(Posts::getId, comment.getPostId()).setSql("comment_count = comment_count - 1");
+            int ur = postsMapper.update(null, postUpdate);
+            if (ur != 1) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新文章评论数失败");
+            }
         }
     }
 
@@ -169,13 +211,49 @@ public class AdminCommentService {
 
         try {
             Comments.CommentStatus newStatus = Comments.CommentStatus.valueOf(body.getStatus().toUpperCase());
-            
+
+            // 先查询出所有受影响的评论，按文章分组统计原来处于 APPROVED 的数量
+            List<Comments> affected = commentMapper.selectBatchIds(body.getIds());
+            if (affected.isEmpty()) {
+                log.info("批量审核未发现任何评论");
+                return;
+            }
+
+            // 统计每篇文章原先的 approved 数量与将要的变更量
+            Map<Long, Integer> deltaPerPost = new HashMap<>();
+            for (Comments c : affected) {
+                boolean wasApproved = c.getStatus() == Comments.CommentStatus.APPROVED;
+                boolean willApproved = newStatus == Comments.CommentStatus.APPROVED;
+                int delta = 0;
+                if (wasApproved && !willApproved) delta = -1;
+                if (!wasApproved && willApproved) delta = 1;
+                if (delta != 0) {
+                    deltaPerPost.merge(c.getPostId(), delta, Integer::sum);
+                }
+            }
+
+            // 执行状态更新
             LambdaUpdateWrapper<Comments> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.in(Comments::getId, body.getIds())
                     .set(Comments::getStatus, newStatus)
                     .set(Comments::getUpdatedAt, OffsetDateTime.now());
 
             int result = commentMapper.update(null, updateWrapper);
+
+            // 根据 deltaPerPost 对每篇文章执行原子加减
+            for (Map.Entry<Long, Integer> e : deltaPerPost.entrySet()) {
+                Long postId = e.getKey();
+                Integer delta = e.getValue();
+                if (delta == 0) continue;
+                LambdaUpdateWrapper<Posts> postUpdate = new LambdaUpdateWrapper<>();
+                if (delta > 0) {
+                    postUpdate.eq(Posts::getId, postId).setSql("comment_count = comment_count + " + delta);
+                } else {
+                    postUpdate.eq(Posts::getId, postId).setSql("comment_count = comment_count - " + Math.abs(delta));
+                }
+                postsMapper.update(null, postUpdate);
+            }
+
             log.info("批量审核完成，实际更新了 {} 条评论", result);
         } catch (IllegalArgumentException e) {
             throw BusinessException.paramError("无效的评论状态");

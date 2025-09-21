@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.util.AuthUtils;
@@ -19,6 +20,7 @@ import com.kisesaki.blog.content.comment.entity.Comments;
 import com.kisesaki.blog.content.comment.mapper.CommentMapper;
 import com.kisesaki.blog.content.comment.mapper.CommentReactionMapper;
 import com.kisesaki.blog.content.comment.mapper.CommentReportMapper;
+import com.kisesaki.blog.content.post.entity.Posts;
 import com.kisesaki.blog.content.post.mapper.PostsMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -124,6 +126,16 @@ public class CommentInteractionService {
         if (result != 1) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "评论保存失败");
         }
+        // 如果评论已通过审核，则增加文章的评论计数（原子操作）
+        if (comment.getStatus() == Comments.CommentStatus.APPROVED) {
+            LambdaUpdateWrapper<Posts> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(Posts::getId, postId)
+                    .setSql("comment_count = comment_count + 1");
+            int updateResult = postsMapper.update(null, updateWrapper);
+            if (updateResult != 1) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新文章评论数失败");
+            }
+        }
 
         log.info("用户 {} 在文章 {} 下创建了评论 {}", userId, postId, comment.getId());
         return comment.getId();
@@ -189,6 +201,7 @@ public class CommentInteractionService {
      * @param commentId      评论ID
      * @param authentication 认证信息
      */
+    @Transactional(rollbackFor = Exception.class)
     public void deleteComment(Long commentId, Authentication authentication) {
         // 获取当前用户ID
         Long userId = requireUserId(authentication);
@@ -205,6 +218,17 @@ public class CommentInteractionService {
         int result = commentMapper.deleteById(commentId);
         if (result != 1) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "评论删除失败");
+        }
+
+        // 若被删除的评论是已审核状态，则需要将文章的评论数减1
+        if (comment.getStatus() == Comments.CommentStatus.APPROVED) {
+            LambdaUpdateWrapper<Posts> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(Posts::getId, comment.getPostId())
+                    .setSql("comment_count = comment_count - 1");
+            int updateResult = postsMapper.update(null, updateWrapper);
+            if (updateResult != 1) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新文章评论数失败");
+            }
         }
 
         log.info("用户 {} 删除了评论 {}", userId, commentId);

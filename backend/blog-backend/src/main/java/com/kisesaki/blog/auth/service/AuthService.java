@@ -2,7 +2,6 @@ package com.kisesaki.blog.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,8 +16,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kisesaki.blog.auth.dto.DeviceInfo;
-import com.kisesaki.blog.auth.dto.auth.request.*;
+import com.kisesaki.blog.auth.dto.auth.request.ChangePasswordRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.ForgotPasswordRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.LoginRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.RefreshTokenRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.RegisterRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.ResetPasswordRequestDto;
+import com.kisesaki.blog.auth.dto.auth.request.VerifyEmailRequestDto;
 import com.kisesaki.blog.auth.dto.auth.response.LoginResponseDto;
 import com.kisesaki.blog.auth.event.UserRegistrationEvent;
 import com.kisesaki.blog.auth.security.jwt.DeviceFingerprintService;
@@ -147,12 +153,16 @@ public class AuthService {
         String password = registerRequestDto.getPassword();
         String email = registerRequestDto.getEmail();
 
-        if (userMapper.existsByUsername(username)) {
+        if (userMapper.selectCount(new LambdaQueryWrapper<User>()
+                .eq(User::getUsername, username)
+                .ne(User::getStatus, "deleted")) > 0) {
             log.warn("注册失败，用户名已存在：{}", username);
             return ApiResponse.error("用户名已存在");
         }
 
-        if (userMapper.existsByEmail(email)) {
+        if (userMapper.selectCount(new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, email)
+                .ne(User::getStatus, "deleted")) > 0) {
             log.warn("注册失败，邮箱已被占用：{}", email);
             return ApiResponse.error("邮箱已被占用");
         }
@@ -239,7 +249,7 @@ public class AuthService {
      * @return 新的访问令牌
      */
     public ApiResponse<LoginResponseDto> refreshToken(RefreshTokenRequestDto refreshTokenRequestDto,
-                                                      HttpServletRequest request) {
+            HttpServletRequest request) {
         String refreshToken = refreshTokenRequestDto.getRefreshToken();
         String deviceId = refreshTokenRequestDto.getDeviceId();
 
@@ -287,7 +297,7 @@ public class AuthService {
      * @return 登出结果
      */
     public ApiResponse<String> logout(String username, String refreshToken, String deviceId,
-                                      HttpServletRequest request) {
+            HttpServletRequest request) {
         // 如果提供了设备ID，需要验证设备指纹
         if (deviceId != null && !validateDeviceFingerprint(request, username, deviceId)) {
             log.warn("用户 {} 登出时设备指纹验证失败，设备: {}", username, formatDeviceIdForLog(deviceId));
@@ -373,7 +383,8 @@ public class AuthService {
      * @param request                  HTTP请求对象，用于设备指纹验证
      * @return 修改结果
      */
-    public ApiResponse<String> changePassword(String username, ChangePasswordRequestDto changePasswordRequestDto, HttpServletRequest request) {
+    public ApiResponse<String> changePassword(String username, ChangePasswordRequestDto changePasswordRequestDto,
+            HttpServletRequest request) {
         String oldPassword = changePasswordRequestDto.getOldPassword();
         String newPassword = changePasswordRequestDto.getNewPassword();
 
@@ -381,33 +392,34 @@ public class AuthService {
             return ApiResponse.error("新密码不能与旧密码相同");
         }
 
-        Optional<User> user = userMapper.findByUsername(username);
-        if (user.isEmpty()) {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getUsername, username)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
             return ApiResponse.error("用户不存在");
         }
 
-        if (!user.get().getEmailVerified()) {
+        if (!user.getEmailVerified()) {
             return ApiResponse.error("请先验证邮箱");
         }
 
-        if (!passwordEncoder.matches(oldPassword, user.get().getPassword())) {
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             return ApiResponse.error("旧密码不正确");
         }
 
-        user.get().setPassword(passwordEncoder.encode(newPassword));
+        user.setPassword(passwordEncoder.encode(newPassword));
         try {
-            userMapper.updateById(user.get());
+            userMapper.updateById(user);
 
             // 修改密码后，删除所有刷新令牌，强制重新登录
             refreshTokenService.deleteAllRefreshTokens(username);
             // 发送密码修改通知邮件
             emailEventPublisher.publishPasswordChangedEvent(
-                    user.get().getEmail(),
-                    user.get().getId(),
-                    user.get().getUsername(),
+                    user.getEmail(),
+                    user.getId(),
+                    user.getUsername(),
                     String.valueOf(LocalDateTime.now()),
-                    request.getRemoteAddr()
-            );
+                    request.getRemoteAddr());
 
             log.info("用户 {} 修改密码成功", username);
             return ApiResponse.success("密码修改成功");
@@ -425,13 +437,14 @@ public class AuthService {
      */
     public ApiResponse<String> forgotPassword(ForgotPasswordRequestDto forgotPasswordRequestDto) {
         String email = forgotPasswordRequestDto.getEmail();
-        Optional<User> userOpt = userMapper.findByEmail(email);
-        if (userOpt.isEmpty()) {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, email)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
             log.warn("密码重置请求失败，邮箱未注册：{}", email);
             return ApiResponse.error("邮箱未注册");
         }
 
-        User user = userOpt.get();
         if (!user.getEmailVerified()) {
             log.warn("密码重置请求失败，用户邮箱未验证：{}", email);
             return ApiResponse.error("请先验证邮箱");
@@ -448,8 +461,7 @@ public class AuthService {
                     user.getEmail(),
                     user.getId(),
                     user.getUsername(),
-                    resetToken
-            );
+                    resetToken);
 
             log.info("密码重置邮件已发送至：{}", email);
             return ApiResponse.success("密码重置邮件已发送，请检查您的邮箱");
@@ -477,13 +489,14 @@ public class AuthService {
         }
 
         Long userId = (Long) resetData.get("userId");
-        Optional<User> userOpt = userMapper.findById(userId);
-        if (userOpt.isEmpty()) {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, userId)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
             log.error("密码重置失败，用户不存在，用户ID: {}", userId);
             return ApiResponse.error("用户不存在");
         }
 
-        User user = userOpt.get();
         if (passwordEncoder.matches(newPassword, user.getPassword())) {
             return ApiResponse.error("新密码不能与旧密码相同");
         }

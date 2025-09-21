@@ -1,4 +1,4 @@
-package com.kisesaki.blog.content.interaction;
+package com.kisesaki.blog.content.interaction.controller;
 
 import java.util.List;
 import java.util.Map;
@@ -30,10 +30,10 @@ import lombok.RequiredArgsConstructor;
  * @author KiseSaki
  */
 @RestController
-@RequestMapping("/api/interactions")
+@RequestMapping("")
 @RequiredArgsConstructor
 @Tag(name = "互动管理", description = "处理文章和评论的点赞、踩等反应功能")
-public class InteractionController {
+public class LikeController {
 
     private final LikeService likeService;
 

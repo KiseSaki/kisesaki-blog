@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.kisesaki.blog.common.dto.PageResponse;
+import com.kisesaki.blog.common.dto.PageableParams;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.util.AuthUtils;
@@ -180,152 +182,144 @@ public class FavoriteService {
      * 获取文章的收藏用户列表
      *
      * @param postId 文章ID
-     * @param page   页码
-     * @param size   每页大小
+     * @param params 分页参数
      * @return 收藏用户分页列表
      */
-    public Page<FavoriteUserResponse> getPostFavoriteUsers(Long postId, int page, int size) {
+    public PageResponse<FavoriteUserResponse> getPostFavoriteUsers(Long postId, PageableParams params) {
         validatePostExists(postId);
 
-        Page<Favorites> favoritePage = new Page<>(page, size);
+        Page<Favorites> favoritePage = new Page<>(params.getCurrentPage(), params.getPageSize());
         Page<Favorites> favoriteResult = favoriteMapper.selectPage(favoritePage,
                 new LambdaQueryWrapper<Favorites>()
                         .eq(Favorites::getPostId, postId)
                         .orderByDesc(Favorites::getCreatedAt));
 
-        Page<FavoriteUserResponse> resultPage = new Page<>(page, size);
-        resultPage.setTotal(favoriteResult.getTotal());
-
-        if (!favoriteResult.getRecords().isEmpty()) {
-            List<Long> userIds = favoriteResult.getRecords().stream()
-                    .map(Favorites::getUserId)
-                    .collect(Collectors.toList());
-
-            List<User> users = userMapper.selectBatchIds(userIds);
-            Map<Long, User> userMap = users.stream()
-                    .collect(Collectors.toMap(User::getId, u -> u));
-
-            // 获取用户档案信息
-            List<UserProfile> userProfiles = userProfileMapper.selectList(
-                    new LambdaQueryWrapper<UserProfile>()
-                            .in(UserProfile::getUserId, userIds));
-            Map<Long, UserProfile> profileMap = userProfiles.stream()
-                    .collect(Collectors.toMap(UserProfile::getUserId, p -> p));
-
-            List<FavoriteUserResponse> userResponses = favoriteResult.getRecords().stream()
-                    .map(favorite -> {
-                        User user = userMap.get(favorite.getUserId());
-                        UserProfile profile = profileMap.get(favorite.getUserId());
-                        if (user != null) {
-                            return new FavoriteUserResponse(
-                                    user.getId(),
-                                    user.getUsername(),
-                                    profile != null ? profile.getDisplayName() : user.getUsername(),
-                                    profile != null ? profile.getAvatarUrl() : null,
-                                    favorite.getCreatedAt());
-                        }
-                        return null;
-                    })
-                    .filter(response -> response != null)
-                    .collect(Collectors.toList());
-
-            resultPage.setRecords(userResponses);
+        if (favoriteResult.getRecords().isEmpty()) {
+            return PageResponse.empty(params.getPageSize());
         }
 
-        return resultPage;
+        List<Long> userIds = favoriteResult.getRecords().stream()
+                .map(Favorites::getUserId)
+                .collect(Collectors.toList());
+
+        List<User> users = userMapper.selectBatchIds(userIds);
+        Map<Long, User> userMap = users.stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+
+        // 获取用户档案信息
+        List<UserProfile> userProfiles = userProfileMapper.selectList(
+                new LambdaQueryWrapper<UserProfile>()
+                        .in(UserProfile::getUserId, userIds));
+        Map<Long, UserProfile> profileMap = userProfiles.stream()
+                .collect(Collectors.toMap(UserProfile::getUserId, p -> p));
+
+        List<FavoriteUserResponse> userResponses = favoriteResult.getRecords().stream()
+                .map(favorite -> {
+                    User user = userMap.get(favorite.getUserId());
+                    UserProfile profile = profileMap.get(favorite.getUserId());
+                    if (user != null) {
+                        return new FavoriteUserResponse(
+                                user.getId(),
+                                user.getUsername(),
+                                profile != null ? profile.getDisplayName() : user.getUsername(),
+                                profile != null ? profile.getAvatarUrl() : null,
+                                favorite.getCreatedAt());
+                    }
+                    return null;
+                })
+                .filter(response -> response != null)
+                .collect(Collectors.toList());
+
+        return PageResponse.of(userResponses, favoriteResult.getTotal(), params);
     }
 
     /**
      * 获取用户的收藏列表
      *
      * @param userId 用户ID
-     * @param page   页码
-     * @param size   每页大小
+     * @param params 分页参数
      * @return 收藏文章分页列表
      */
-    public Page<FavoritePostResponse> getUserFavorites(Long userId, int page, int size) {
+    public PageResponse<FavoritePostResponse> getUserFavorites(Long userId, PageableParams params) {
         validateUserExists(userId);
 
-        Page<Favorites> favoritePage = new Page<>(page, size);
+        Page<Favorites> favoritePage = new Page<>(params.getCurrentPage(), params.getPageSize());
         Page<Favorites> favoriteResult = favoriteMapper.selectPage(favoritePage,
                 new LambdaQueryWrapper<Favorites>()
                         .eq(Favorites::getUserId, userId)
                         .orderByDesc(Favorites::getCreatedAt));
 
-        Page<FavoritePostResponse> resultPage = new Page<>(page, size);
-        resultPage.setTotal(favoriteResult.getTotal());
-
-        if (!favoriteResult.getRecords().isEmpty()) {
-            List<Long> postIds = favoriteResult.getRecords().stream()
-                    .map(Favorites::getPostId)
-                    .collect(Collectors.toList());
-
-            List<Posts> posts = postsMapper.selectBatchIds(postIds);
-            Map<Long, Posts> postMap = posts.stream()
-                    .collect(Collectors.toMap(Posts::getId, p -> p));
-
-            // 获取作者信息
-            List<Long> authorIds = posts.stream()
-                    .map(Posts::getAuthorId)
-                    .distinct()
-                    .collect(Collectors.toList());
-            List<User> authors = userMapper.selectBatchIds(authorIds);
-            Map<Long, User> authorMap = authors.stream()
-                    .collect(Collectors.toMap(User::getId, a -> a));
-
-            // 获取作者档案信息
-            List<UserProfile> authorProfiles = userProfileMapper.selectList(
-                    new LambdaQueryWrapper<UserProfile>()
-                            .in(UserProfile::getUserId, authorIds));
-            Map<Long, UserProfile> authorProfileMap = authorProfiles.stream()
-                    .collect(Collectors.toMap(UserProfile::getUserId, p -> p));
-
-            List<FavoritePostResponse> postResponses = favoriteResult.getRecords().stream()
-                    .map(favorite -> {
-                        Posts post = postMap.get(favorite.getPostId());
-                        if (post != null) {
-                            User author = authorMap.get(post.getAuthorId());
-                            UserProfile authorProfile = authorProfileMap.get(post.getAuthorId());
-                            String authorDisplayName = "未知作者";
-                            if (author != null) {
-                                authorDisplayName = authorProfile != null && authorProfile.getDisplayName() != null
-                                        ? authorProfile.getDisplayName()
-                                        : author.getUsername();
-                            }
-                            return new FavoritePostResponse(
-                                    post.getId(),
-                                    post.getTitle(),
-                                    post.getExcerpt(),
-                                    post.getCoverImageUrl(),
-                                    authorDisplayName,
-                                    post.getPublishedAt(),
-                                    favorite.getCreatedAt(),
-                                    post.getReadingTime(),
-                                    post.getViewCount(),
-                                    post.getLikeCount());
-                        }
-                        return null;
-                    })
-                    .filter(response -> response != null)
-                    .collect(Collectors.toList());
-
-            resultPage.setRecords(postResponses);
+        if (favoriteResult.getRecords().isEmpty()) {
+            return PageResponse.empty(params.getPageSize());
         }
 
-        return resultPage;
+        List<Long> postIds = favoriteResult.getRecords().stream()
+                .map(Favorites::getPostId)
+                .collect(Collectors.toList());
+
+        List<Posts> posts = postsMapper.selectBatchIds(postIds);
+        Map<Long, Posts> postMap = posts.stream()
+                .collect(Collectors.toMap(Posts::getId, p -> p));
+
+        // 获取作者信息
+        List<Long> authorIds = posts.stream()
+                .map(Posts::getAuthorId)
+                .distinct()
+                .collect(Collectors.toList());
+        List<User> authors = userMapper.selectBatchIds(authorIds);
+        Map<Long, User> authorMap = authors.stream()
+                .collect(Collectors.toMap(User::getId, a -> a));
+
+        // 获取作者档案信息
+        List<UserProfile> authorProfiles = userProfileMapper.selectList(
+                new LambdaQueryWrapper<UserProfile>()
+                        .in(UserProfile::getUserId, authorIds));
+        Map<Long, UserProfile> authorProfileMap = authorProfiles.stream()
+                .collect(Collectors.toMap(UserProfile::getUserId, p -> p));
+
+        List<FavoritePostResponse> postResponses = favoriteResult.getRecords().stream()
+                .map(favorite -> {
+                    Posts post = postMap.get(favorite.getPostId());
+                    if (post != null) {
+                        User author = authorMap.get(post.getAuthorId());
+                        UserProfile authorProfile = authorProfileMap.get(post.getAuthorId());
+                        String authorDisplayName = "未知作者";
+                        if (author != null) {
+                            authorDisplayName = authorProfile != null && authorProfile.getDisplayName() != null
+                                    ? authorProfile.getDisplayName()
+                                    : author.getUsername();
+                        }
+                        return new FavoritePostResponse(
+                                post.getId(),
+                                post.getTitle(),
+                                post.getExcerpt(),
+                                post.getCoverImageUrl(),
+                                authorDisplayName,
+                                post.getPublishedAt(),
+                                favorite.getCreatedAt(),
+                                post.getReadingTime(),
+                                post.getViewCount(),
+                                post.getLikeCount());
+                    }
+                    return null;
+                })
+                .filter(response -> response != null)
+                .collect(Collectors.toList());
+
+        return PageResponse.of(postResponses, favoriteResult.getTotal(), params);
     }
 
     /**
      * 获取当前用户的收藏列表
      *
      * @param authentication 认证信息
-     * @param page           页码
-     * @param size           每页大小
+     * @param params         分页参数
      * @return 收藏文章分页列表
      */
-    public Page<FavoritePostResponse> getCurrentUserFavorites(Authentication authentication, int page, int size) {
+    public PageResponse<FavoritePostResponse> getCurrentUserFavorites(Authentication authentication,
+            PageableParams params) {
         Long userId = requireUserId(authentication);
-        return getUserFavorites(userId, page, size);
+        return getUserFavorites(userId, params);
     }
 
     /**

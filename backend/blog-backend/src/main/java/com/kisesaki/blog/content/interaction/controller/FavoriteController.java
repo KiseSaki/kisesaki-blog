@@ -4,14 +4,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.common.dto.ApiResponse;
+import com.kisesaki.blog.common.dto.PageResponse;
+import com.kisesaki.blog.common.dto.PageableParams;
+import com.kisesaki.blog.common.dto.ResultUtils;
 import com.kisesaki.blog.content.interaction.dto.favorite.FavoritePostResponse;
 import com.kisesaki.blog.content.interaction.dto.favorite.FavoriteStatusResponse;
 import com.kisesaki.blog.content.interaction.dto.favorite.FavoriteUserResponse;
@@ -79,13 +81,12 @@ public class FavoriteController {
      */
     @GetMapping("/posts/{id}/favorites")
     @Operation(summary = "获取文章收藏用户列表", description = "分页获取收藏指定文章的用户列表")
-    public ResponseEntity<ApiResponse<Page<FavoriteUserResponse>>> getPostFavoriteUsers(
+    public ResponseEntity<ApiResponse<PageResponse<FavoriteUserResponse>>> getPostFavoriteUsers(
             @Parameter(description = "文章ID") @PathVariable("id") Long postId,
-            @Parameter(description = "页码，从1开始") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "每页大小") @RequestParam(defaultValue = "20") int size) {
+            @ModelAttribute PageableParams params) {
 
-        Page<FavoriteUserResponse> response = favoriteService.getPostFavoriteUsers(postId, page, size);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        PageResponse<FavoriteUserResponse> response = favoriteService.getPostFavoriteUsers(postId, params);
+        return ResponseEntity.ok(ResultUtils.success(response));
     }
 
     /**
@@ -93,13 +94,12 @@ public class FavoriteController {
      */
     @GetMapping("/users/favorites")
     @Operation(summary = "获取我的收藏列表", description = "分页获取当前用户的收藏文章列表")
-    public ResponseEntity<ApiResponse<Page<FavoritePostResponse>>> getCurrentUserFavorites(
-            @Parameter(description = "页码，从1开始") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "每页大小") @RequestParam(defaultValue = "20") int size,
+    public ResponseEntity<ApiResponse<PageResponse<FavoritePostResponse>>> getCurrentUserFavorites(
+            @ModelAttribute PageableParams params,
             Authentication authentication) {
 
-        Page<FavoritePostResponse> response = favoriteService.getCurrentUserFavorites(authentication, page, size);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        PageResponse<FavoritePostResponse> response = favoriteService.getCurrentUserFavorites(authentication, params);
+        return ResponseEntity.ok(ResultUtils.success(response));
     }
 
     /**
@@ -107,13 +107,12 @@ public class FavoriteController {
      */
     @GetMapping("/users/{userId}/favorites")
     @Operation(summary = "获取用户的收藏列表", description = "分页获取指定用户的公开收藏文章列表")
-    public ResponseEntity<ApiResponse<Page<FavoritePostResponse>>> getUserFavorites(
+    public ResponseEntity<ApiResponse<PageResponse<FavoritePostResponse>>> getUserFavorites(
             @Parameter(description = "用户ID") @PathVariable Long userId,
-            @Parameter(description = "页码，从1开始") @RequestParam(defaultValue = "1") int page,
-            @Parameter(description = "每页大小") @RequestParam(defaultValue = "20") int size) {
+            @ModelAttribute PageableParams params) {
 
-        Page<FavoritePostResponse> response = favoriteService.getUserFavorites(userId, page, size);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        PageResponse<FavoritePostResponse> response = favoriteService.getUserFavorites(userId, params);
+        return ResponseEntity.ok(ResultUtils.success(response));
     }
 
     /**

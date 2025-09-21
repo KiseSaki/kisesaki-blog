@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kisesaki.blog.user.dto.follow.UserFollowDto;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.entity.UserFollow;
@@ -51,7 +52,10 @@ public class UserFollowService {
         }
 
         // 检查被关注者是否存在
-        if (!userMapper.findById(followingId).isPresent()) {
+        User targetUser = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, followingId)
+                .ne(User::getStatus, "deleted"));
+        if (targetUser == null) {
             log.warn("被关注的用户不存在: {}", followingId);
             return false;
         }
@@ -91,7 +95,9 @@ public class UserFollowService {
     public boolean unfollowUser(Long followerId, Long followingId) {
         log.debug("用户 {} 取消关注用户 {}", followerId, followingId);
 
-        int deleted = userFollowMapper.deleteByFollowerAndFollowing(followerId, followingId);
+        int deleted = userFollowMapper.delete(new LambdaQueryWrapper<UserFollow>()
+                .eq(UserFollow::getFollowerId, followerId)
+                .eq(UserFollow::getFollowingId, followingId));
         boolean success = deleted > 0;
 
         if (success) {
@@ -175,12 +181,15 @@ public class UserFollowService {
      * @return UserFollowDto
      */
     private UserFollowDto buildUserFollowDto(UserFollow follow, Long targetUserId, Long currentUserId) {
-        User user = userMapper.findById(targetUserId).orElse(null);
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, targetUserId)
+                .ne(User::getStatus, "deleted"));
         if (user == null) {
             return null;
         }
 
-        UserProfile profile = userProfileMapper.findByUserId(targetUserId).orElse(null);
+        UserProfile profile = userProfileMapper.selectOne(new LambdaQueryWrapper<UserProfile>()
+                .eq(UserProfile::getUserId, targetUserId));
 
         // 检查是否互相关注
         boolean isMultualFollow = false;

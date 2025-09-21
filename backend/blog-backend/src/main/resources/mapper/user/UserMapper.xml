@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kisesaki.blog.user.mapper.UserMapper">
+
+    <!-- OAuth用户查询，比较复杂需要多个条件 -->
+    <select id="findByOAuth" resultType="com.kisesaki.blog.user.entity.User">
+        SELECT * FROM "user" 
+        WHERE oauth_provider = #{oauthProvider} 
+        AND oauth_id = #{oauthId} 
+        AND status != 'deleted'
+    </select>
+
+</mapper>

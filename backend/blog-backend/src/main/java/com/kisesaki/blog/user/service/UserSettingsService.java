@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kisesaki.blog.user.entity.UserSettings;
 import com.kisesaki.blog.user.mapper.UserSettingsMapper;
 
@@ -32,7 +33,8 @@ public class UserSettingsService {
      */
     public Map<String, String> getUserSettings(Long userId) {
         log.debug("获取用户 {} 的所有设置", userId);
-        List<UserSettings> settingsList = userSettingsMapper.findAllByUserId(userId);
+        List<UserSettings> settingsList = userSettingsMapper.selectList(new LambdaQueryWrapper<UserSettings>()
+                .eq(UserSettings::getUserId, userId));
 
         Map<String, String> settingsMap = new HashMap<>();
         for (UserSettings settings : settingsList) {
@@ -54,9 +56,10 @@ public class UserSettingsService {
      */
     public String getUserSetting(Long userId, String settingKey) {
         log.debug("获取用户 {} 的设置 {}", userId, settingKey);
-        return userSettingsMapper.findByUserIdAndKey(userId, settingKey)
-                .map(UserSettings::getSettingValue)
-                .orElse(null);
+        UserSettings settings = userSettingsMapper.selectOne(new LambdaQueryWrapper<UserSettings>()
+                .eq(UserSettings::getUserId, userId)
+                .eq(UserSettings::getSettingKey, settingKey));
+        return settings != null ? settings.getSettingValue() : null;
     }
 
     /**
@@ -69,13 +72,14 @@ public class UserSettingsService {
     public void setUserSetting(Long userId, String settingKey, String settingValue) {
         log.debug("设置用户 {} 的配置 {} = {}", userId, settingKey, settingValue);
 
-        var existingSetting = userSettingsMapper.findByUserIdAndKey(userId, settingKey);
+        UserSettings existingSetting = userSettingsMapper.selectOne(new LambdaQueryWrapper<UserSettings>()
+                .eq(UserSettings::getUserId, userId)
+                .eq(UserSettings::getSettingKey, settingKey));
 
-        if (existingSetting.isPresent()) {
+        if (existingSetting != null) {
             // 更新现有设置
-            UserSettings settings = existingSetting.get();
-            settings.setSettingValue(settingValue);
-            userSettingsMapper.updateById(settings);
+            existingSetting.setSettingValue(settingValue);
+            userSettingsMapper.updateById(existingSetting);
             log.debug("更新用户 {} 的设置 {}", userId, settingKey);
         } else {
             // 创建新设置
@@ -114,7 +118,9 @@ public class UserSettingsService {
     public boolean deleteUserSetting(Long userId, String settingKey) {
         log.debug("删除用户 {} 的设置 {}", userId, settingKey);
 
-        int deletedCount = userSettingsMapper.deleteByUserIdAndKey(userId, settingKey);
+        int deletedCount = userSettingsMapper.delete(new LambdaQueryWrapper<UserSettings>()
+                .eq(UserSettings::getUserId, userId)
+                .eq(UserSettings::getSettingKey, settingKey));
         boolean success = deletedCount > 0;
 
         if (success) {
@@ -135,7 +141,8 @@ public class UserSettingsService {
     public int deleteAllUserSettings(Long userId) {
         log.debug("删除用户 {} 的所有设置", userId);
 
-        int deletedCount = userSettingsMapper.deleteAllByUserId(userId);
+        int deletedCount = userSettingsMapper.delete(new LambdaQueryWrapper<UserSettings>()
+                .eq(UserSettings::getUserId, userId));
         log.info("删除用户 {} 的设置数量: {}", userId, deletedCount);
 
         return deletedCount;
@@ -149,7 +156,10 @@ public class UserSettingsService {
      * @return 是否存在
      */
     public boolean hasUserSetting(Long userId, String settingKey) {
-        return userSettingsMapper.existsByUserIdAndKey(userId, settingKey);
+        long count = userSettingsMapper.selectCount(new LambdaQueryWrapper<UserSettings>()
+                .eq(UserSettings::getUserId, userId)
+                .eq(UserSettings::getSettingKey, settingKey));
+        return count > 0;
     }
 
     /**
@@ -159,6 +169,7 @@ public class UserSettingsService {
      * @return 设置数量
      */
     public int getUserSettingsCount(Long userId) {
-        return userSettingsMapper.findAllByUserId(userId).size();
+        return Math.toIntExact(userSettingsMapper.selectCount(new LambdaQueryWrapper<UserSettings>()
+                .eq(UserSettings::getUserId, userId)));
     }
 }

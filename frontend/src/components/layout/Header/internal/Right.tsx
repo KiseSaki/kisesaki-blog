@@ -6,7 +6,7 @@ export const Right = () => {
     <div className="flex items-center space-x-4">
       <ThemeToggle className="text-theme-primary-text" />
       {/* TODO 完成登陆后需要头像显示、identifier、fallback的首字母 */}
-      <Avatar>
+      <Avatar className="cursor-pointer">
         <AvatarImage src="/path/to/image.jpg" alt="User Avatar" />
         <AvatarFallback identifier="username">U</AvatarFallback>
       </Avatar>

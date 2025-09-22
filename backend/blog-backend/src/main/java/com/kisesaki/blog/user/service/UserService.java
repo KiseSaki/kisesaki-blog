@@ -1,15 +1,18 @@
-package com.kisesaki.blog.user;
+package com.kisesaki.blog.user.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kisesaki.blog.user.dto.UpdateProfileDto;
-import com.kisesaki.blog.user.dto.UserInfoDto;
-import com.kisesaki.blog.user.dto.UserProfileDto;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kisesaki.blog.user.dto.UserStatsDto;
+import com.kisesaki.blog.user.dto.info.UpdateProfileDto;
+import com.kisesaki.blog.user.dto.info.UserInfoDto;
+import com.kisesaki.blog.user.dto.info.UserProfileDto;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.entity.UserProfile;
 import com.kisesaki.blog.user.entity.UserSettings;
@@ -35,6 +38,7 @@ public class UserService {
     private final UserProfileMapper userProfileMapper;
     private final UserSettingsMapper userSettingsMapper;
     private final UserFollowMapper userFollowMapper;
+    private final UserActivityService userActivityService;
 
     /**
      * 根据用户ID获取用户信息
@@ -44,10 +48,20 @@ public class UserService {
      */
     public UserInfoDto getUserInfoById(Long id) {
         log.debug("根据用户ID获取用户信息: {}", id);
-        User user = userMapper.findById(id)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
-        UserProfile profile = userProfileMapper.findByUserId(id).orElse(null);
-        List<UserSettings> settings = userSettingsMapper.findAllByUserId(id);
+
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, id)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        UserProfile profile = userProfileMapper.selectOne(new LambdaQueryWrapper<UserProfile>()
+                .eq(UserProfile::getUserId, id));
+
+        List<UserSettings> settings = userSettingsMapper.selectList(new LambdaQueryWrapper<UserSettings>()
+                .eq(UserSettings::getUserId, id));
+
         return UserInfoDto.from(user, profile, settings);
     }
 
@@ -59,10 +73,20 @@ public class UserService {
      */
     public UserInfoDto getUserInfoByUsername(String username) {
         log.debug("根据用户名获取用户信息: {}", username);
-        User user = userMapper.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
-        UserProfile profile = userProfileMapper.findByUserId(user.getId()).orElse(null);
-        List<UserSettings> settings = userSettingsMapper.findAllByUserId(user.getId());
+
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getUsername, username)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        UserProfile profile = userProfileMapper.selectOne(new LambdaQueryWrapper<UserProfile>()
+                .eq(UserProfile::getUserId, user.getId()));
+
+        List<UserSettings> settings = userSettingsMapper.selectList(new LambdaQueryWrapper<UserSettings>()
+                .eq(UserSettings::getUserId, user.getId()));
+
         return UserInfoDto.from(user, profile, settings);
     }
 
@@ -74,9 +98,16 @@ public class UserService {
      */
     public UserProfileDto getUserProfile(Long userId) {
         log.debug("获取用户简要信息: {}", userId);
-        User user = userMapper.findById(userId)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
-        UserProfile profile = userProfileMapper.findByUserId(userId).orElse(null);
+
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, userId)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        UserProfile profile = userProfileMapper.selectOne(new LambdaQueryWrapper<UserProfile>()
+                .eq(UserProfile::getUserId, userId));
 
         return UserProfileDto.builder()
                 .id(user.getId())
@@ -105,11 +136,16 @@ public class UserService {
         log.debug("更新用户资料: {}", userId);
 
         // 检查用户是否存在
-        userMapper.findById(userId)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, userId)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
 
         // 获取或创建用户扩展信息
-        UserProfile profile = userProfileMapper.findByUserId(userId).orElse(null);
+        UserProfile profile = userProfileMapper.selectOne(new LambdaQueryWrapper<UserProfile>()
+                .eq(UserProfile::getUserId, userId));
         if (profile == null) {
             profile = new UserProfile();
             profile.setUserId(userId);
@@ -171,6 +207,13 @@ public class UserService {
             log.debug("更新用户扩展信息: {}", userId);
         }
 
+        // 记录活动日志
+        userActivityService.logUserActivity(
+                userId,
+                UserActivityType.PROFILE_UPDATE,
+                "用户更新个人资料",
+                updateDto);
+
         log.info("用户资料更新成功: {}", userId);
         return getUserInfoById(userId);
     }
@@ -187,11 +230,18 @@ public class UserService {
         log.debug("更新用户头像: {}, URL: {}", userId, avatarUrl);
 
         // 检查用户是否存在
-        userMapper.findById(userId)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, userId)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
 
         // 获取或创建用户扩展信息
-        UserProfile profile = userProfileMapper.findByUserId(userId).orElse(null);
+        UserProfile profile = userProfileMapper.selectOne(new LambdaQueryWrapper<UserProfile>()
+                .eq(UserProfile::getUserId, userId));
+
+        String oldAvatarUrl = null;
         if (profile == null) {
             profile = new UserProfile();
             profile.setUserId(userId);
@@ -199,10 +249,22 @@ public class UserService {
             userProfileMapper.insert(profile);
             log.debug("创建用户扩展信息并设置头像: {}", userId);
         } else {
+            oldAvatarUrl = profile.getAvatarUrl();
             profile.setAvatarUrl(avatarUrl);
             userProfileMapper.updateById(profile);
             log.debug("更新用户头像: {}", userId);
         }
+
+        // 记录活动日志
+        Map<String, Object> logDetails = new HashMap<>();
+        logDetails.put("oldAvatarUrl", oldAvatarUrl);
+        logDetails.put("newAvatarUrl", avatarUrl);
+
+        userActivityService.logUserActivity(
+                userId,
+                UserActivityType.AVATAR_UPDATE,
+                "用户更新头像",
+                logDetails);
 
         log.info("用户头像更新成功: {}", userId);
         return getUserInfoById(userId);
@@ -217,8 +279,12 @@ public class UserService {
     public UserStatsDto getUserStats(Long userId) {
         log.debug("获取用户统计信息: {}", userId);
 
-        User user = userMapper.findById(userId)
-                .orElseThrow(() -> new RuntimeException("用户不存在"));
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, userId)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
 
         // TODO: 这里需要根据实际的业务表来计算统计数据
         // 目前返回默认值，后续集成博客、评论、点赞等模块后再实现
@@ -252,7 +318,10 @@ public class UserService {
      */
     public boolean isUsernameAvailable(String username) {
         log.debug("检查用户名是否可用: {}", username);
-        return !userMapper.existsByUsername(username);
+        long count = userMapper.selectCount(new LambdaQueryWrapper<User>()
+                .eq(User::getUsername, username)
+                .ne(User::getStatus, "deleted"));
+        return count == 0;
     }
 
     /**
@@ -263,7 +332,10 @@ public class UserService {
      */
     public boolean isEmailAvailable(String email) {
         log.debug("检查邮箱是否可用: {}", email);
-        return !userMapper.existsByEmail(email);
+        long count = userMapper.selectCount(new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, email)
+                .ne(User::getStatus, "deleted"));
+        return count == 0;
     }
 
     /**
@@ -274,12 +346,16 @@ public class UserService {
      */
     public Optional<UserInfoDto> getUserInfoByEmail(String email) {
         log.debug("根据邮箱获取用户信息: {}", email);
-        Optional<User> userOptional = userMapper.findByEmail(email);
 
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            UserProfile profile = userProfileMapper.findByUserId(user.getId()).orElse(null);
-            List<UserSettings> settings = userSettingsMapper.findAllByUserId(user.getId());
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getEmail, email)
+                .ne(User::getStatus, "deleted"));
+
+        if (user != null) {
+            UserProfile profile = userProfileMapper.selectOne(new LambdaQueryWrapper<UserProfile>()
+                    .eq(UserProfile::getUserId, user.getId()));
+            List<UserSettings> settings = userSettingsMapper.selectList(new LambdaQueryWrapper<UserSettings>()
+                    .eq(UserSettings::getUserId, user.getId()));
             return Optional.of(UserInfoDto.from(user, profile, settings));
         }
 

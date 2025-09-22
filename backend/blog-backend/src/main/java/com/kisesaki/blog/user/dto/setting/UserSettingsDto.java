@@ -1,4 +1,4 @@
-package com.kisesaki.blog.user.dto;
+package com.kisesaki.blog.user.dto.setting;
 
 import java.util.Map;
 

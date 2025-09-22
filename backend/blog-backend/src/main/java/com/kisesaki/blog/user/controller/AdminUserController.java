@@ -1,0 +1,90 @@
+package com.kisesaki.blog.user.controller;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.kisesaki.blog.common.dto.ApiResponse;
+import com.kisesaki.blog.common.dto.PageResponse;
+import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.user.dto.admin.AdminUserActivityParams;
+import com.kisesaki.blog.user.dto.admin.AdminUserActivityResponse;
+import com.kisesaki.blog.user.dto.admin.AdminUserInfoResponse;
+import com.kisesaki.blog.user.dto.admin.AdminUserListParams;
+import com.kisesaki.blog.user.dto.admin.AdminUserListResponse;
+import com.kisesaki.blog.user.dto.admin.AdminUserStatsResponse;
+import com.kisesaki.blog.user.dto.admin.AdminUserStatusUpdateRequest;
+import com.kisesaki.blog.user.dto.admin.AdminUserUpdateRequest;
+import com.kisesaki.blog.user.service.AdminUserService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/admin/users")
+@RequiredArgsConstructor
+@Tag(name = "管理员用户管理", description = "管理员用户管理相关接口")
+@PreAuthorize("hasRole('ADMIN')")
+public class AdminUserController {
+
+    private final AdminUserService adminUserService;
+
+    /**
+     * 获取用户列表
+     */
+    @GetMapping()
+    public ApiResponse<PageResponse<AdminUserListResponse>> getUserList(@Valid AdminUserListParams params) {
+        return ResultUtils.success(adminUserService.getUserList(params));
+    }
+
+    /**
+     * 获取用户详细信息
+     */
+    @GetMapping("/{id}")
+    public ApiResponse<AdminUserInfoResponse> getUserInfo(@PathVariable Long id) {
+        return ResultUtils.success(adminUserService.getUserInfo(id));
+    }
+
+    /**
+     * 更新用户信息
+     */
+    @PutMapping("/{id}")
+    public ApiResponse<Void> updateUser(@PathVariable Long id, @Valid @RequestBody AdminUserUpdateRequest request) {
+        adminUserService.updateUserInfo(id, request);
+        return ResultUtils.success();
+    }
+
+    /**
+     * 更新用户状态
+     */
+    @PutMapping("/{id}/status")
+    public ApiResponse<Void> updateUserStatus(@PathVariable Long id,
+            @Valid @RequestBody AdminUserStatusUpdateRequest request,
+            Authentication authentication) {
+        adminUserService.updateUserStatus(id, request, authentication);
+        return ResultUtils.success();
+    }
+
+    /**
+     * 获取用户活动日志
+     */
+    @GetMapping("/{id}/activity")
+    public ApiResponse<PageResponse<AdminUserActivityResponse>> getUserActivity(@PathVariable Long id,
+            @Valid AdminUserActivityParams params) {
+        return ResultUtils.success(adminUserService.getUserActivity(id, params));
+    }
+
+    /**
+     * 获取用户统计数据
+     */
+    @GetMapping("/stats")
+    public ApiResponse<AdminUserStatsResponse> getUserStats() {
+        return ResultUtils.success(adminUserService.getUserStats());
+    }
+}

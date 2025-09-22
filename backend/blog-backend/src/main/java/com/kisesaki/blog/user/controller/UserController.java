@@ -1,4 +1,4 @@
-package com.kisesaki.blog.user;
+package com.kisesaki.blog.user.controller;
 
 import java.util.List;
 import java.util.Map;
@@ -19,12 +19,15 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.util.AuthUtils;
 import com.kisesaki.blog.file.FileUploadService;
-import com.kisesaki.blog.user.dto.UpdateProfileDto;
-import com.kisesaki.blog.user.dto.UserFollowDto;
-import com.kisesaki.blog.user.dto.UserInfoDto;
-import com.kisesaki.blog.user.dto.UserProfileDto;
-import com.kisesaki.blog.user.dto.UserSettingsDto;
 import com.kisesaki.blog.user.dto.UserStatsDto;
+import com.kisesaki.blog.user.dto.follow.UserFollowDto;
+import com.kisesaki.blog.user.dto.info.UpdateProfileDto;
+import com.kisesaki.blog.user.dto.info.UserInfoDto;
+import com.kisesaki.blog.user.dto.info.UserProfileDto;
+import com.kisesaki.blog.user.dto.setting.UserSettingsDto;
+import com.kisesaki.blog.user.service.UserFollowService;
+import com.kisesaki.blog.user.service.UserService;
+import com.kisesaki.blog.user.service.UserSettingsService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

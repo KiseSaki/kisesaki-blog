@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kisesaki.blog.auth.entity.Role;
 import com.kisesaki.blog.auth.mapper.RoleMapper;
 import com.kisesaki.blog.user.entity.User;
@@ -39,8 +40,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // 获取用户信息
-        User user = userMapper.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("该用户不存在"));
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getUsername, username)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
+            throw new UsernameNotFoundException("该用户不存在");
+        }
 
         List<Role> roles = roleMapper.findRolesByUserId(user.getId());
 
@@ -57,8 +62,12 @@ public class CustomUserDetailsService implements UserDetailsService {
      */
     public UserDetails loadUserById(Long id) throws UserPrincipalNotFoundException {
         // 获取用户信息
-        User user = userMapper.findById(id)
-                .orElseThrow(() -> new UserPrincipalNotFoundException("该用户不存在"));
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, id)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
+            throw new UserPrincipalNotFoundException("该用户不存在");
+        }
 
         List<Role> roles = roleMapper.findRolesByUserId(user.getId());
         log.info("User {} loaded with roles: {}", user.getUsername(),

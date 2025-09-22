@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kisesaki.blog.user.mapper.UserMapper">
+
+    <!-- OAuth用户查询，比较复杂需要多个条件 -->
+    <select id="findByOAuth" resultType="com.kisesaki.blog.user.entity.User">
+        SELECT * FROM "user" 
+        WHERE oauth_provider = #{oauthProvider} 
+        AND oauth_id = #{oauthId} 
+        AND status != 'deleted'
+    </select>
+
+    <select id="adminGetUserList" resultType="com.kisesaki.blog.user.dto.admin.AdminUserListResponse">
+        SELECT u.id,
+               u.username,
+               u.email,
+               u.status,
+               up.display_name AS displayName,
+               up.avatar_url AS avatarUrl,
+               u.last_login_at AS lastLoginAt,
+               u.created_at AS createdAt
+        FROM "user" u
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        WHERE u.status != 'deleted'
+        <if test="params.username != null and params.username != ''">
+            AND u.username LIKE CONCAT('%', #{params.username}, '%')
+        </if>
+        <if test="params.displayName != null and params.displayName != ''">
+            AND up.display_name LIKE CONCAT('%', #{params.displayName}, '%')
+        </if>
+        <if test="params.email != null and params.email != ''">
+            AND u.email = #{params.email}
+        </if>
+        <if test="params.accountType != null and params.accountType != ''">
+            AND u.account_type = #{params.accountType}
+        </if>
+        <if test="params.status != null and params.status != ''">
+            AND u.status = #{params.status}
+        </if>
+        <if test="params.pageable.startTime != null">
+            AND u.created_at &gt;= #{params.pageable.startTime}
+        </if>
+        <if test="params.pageable.endTime != null">
+            AND u.created_at &lt;= #{params.pageable.endTime}
+        </if>
+        <if test="params.pageable.date != null">
+            AND DATE(u.created_at) = #{params.pageable.date}
+        </if>
+
+        ORDER BY
+        <choose>
+            <when test="params.pageable.sort != null and params.pageable.sort != ''">
+                <choose>
+                    <when test="params.pageable.sort == 'createdAt'">u.created_at</when>
+                    <when test="params.pageable.sort == 'lastLoginAt'">u.last_login_at</when>
+                    <when test="params.pageable.sort == 'username'">u.username</when>
+                    <when test="params.pageable.sort == 'email'">u.email</when>
+                    <when test="params.pageable.sort == 'displayName'">up.display_name</when>
+                    <otherwise>u.created_at</otherwise>
+                </choose>
+                <if test="params.pageable.descending">DESC</if>
+                <if test="!params.pageable.descending">ASC</if>
+            </when>
+            <otherwise>
+                u.created_at DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="adminGetUserListCount" resultType="long">
+        SELECT COUNT(DISTINCT u.id)
+        FROM "user" u
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        WHERE u.status != 'deleted'
+        <if test="params.username != null and params.username != ''">
+            AND u.username LIKE CONCAT('%', #{params.username}, '%')
+        </if>
+        <if test="params.displayName != null and params.displayName != ''">
+            AND up.display_name LIKE CONCAT('%', #{params.displayName}, '%')
+        </if>
+        <if test="params.email != null and params.email != ''">
+            AND u.email = #{params.email}
+        </if>
+        <if test="params.accountType != null and params.accountType != ''">
+            AND u.account_type = #{params.accountType}
+        </if>
+        <if test="params.status != null and params.status != ''">
+            AND u.status = #{params.status}
+        </if>
+        <if test="params.pageable.startTime != null">
+            AND u.created_at &gt;= #{params.pageable.startTime}
+        </if>
+        <if test="params.pageable.endTime != null">
+            AND u.created_at &lt;= #{params.pageable.endTime}
+        </if>
+        <if test="params.pageable.date != null">
+            AND DATE(u.created_at) = #{params.pageable.date}
+        </if>
+    </select>
+    <!-- 复杂的统计查询相关 - 保留需要分组、日期函数等复杂逻辑的查询 -->
+
+    <!-- 获取最近N天的用户注册趋势 -->
+    <select id="getRegistrationTrend" resultType="com.kisesaki.blog.user.dto.admin.AdminUserStatsResponse$DailyUserStats">
+        SELECT 
+            TO_CHAR(created_at, 'YYYY-MM-DD') as date,
+            COUNT(*) as count
+        FROM "user" 
+        WHERE created_at >= (CURRENT_DATE - INTERVAL '#{days} days')
+        AND status != 'deleted'
+        GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD')
+        ORDER BY date
+    </select>
+
+    <!-- 获取最近N天的用户登录趋势 -->
+    <select id="getLoginTrend" resultType="com.kisesaki.blog.user.dto.admin.AdminUserStatsResponse$DailyUserStats">
+        SELECT 
+            TO_CHAR(last_login_at, 'YYYY-MM-DD') as date,
+            COUNT(DISTINCT id) as count
+        FROM "user" 
+        WHERE last_login_at >= (CURRENT_DATE - INTERVAL '#{days} days')
+        AND last_login_at IS NOT NULL
+        AND status != 'deleted'
+        GROUP BY TO_CHAR(last_login_at, 'YYYY-MM-DD')
+        ORDER BY date
+    </select>
+
+    <!-- 按账号类型分组统计 -->
+    <select id="getAccountTypeStats" resultType="map">
+        SELECT 
+            account_type as accountType,
+            COUNT(*) as count
+        FROM "user" 
+        WHERE status != 'deleted'
+        GROUP BY account_type
+    </select>
+
+    <!-- 按状态分组统计 -->
+    <select id="getStatusStats" resultType="map">
+        SELECT 
+            status,
+            COUNT(*) as count
+        FROM "user" 
+        GROUP BY status
+    </select>
+
+</mapper>

@@ -1,12 +1,15 @@
-package com.kisesaki.blog.user;
+package com.kisesaki.blog.user.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kisesaki.blog.user.dto.UserFollowDto;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.kisesaki.blog.user.dto.follow.UserFollowDto;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.entity.UserFollow;
 import com.kisesaki.blog.user.entity.UserProfile;
@@ -30,6 +33,7 @@ public class UserFollowService {
     private final UserFollowMapper userFollowMapper;
     private final UserMapper userMapper;
     private final UserProfileMapper userProfileMapper;
+    private final UserActivityService userActivityService;
 
     private static final String FOLLOW_STATUS_ACTIVE = "active";
 
@@ -51,7 +55,10 @@ public class UserFollowService {
         }
 
         // 检查被关注者是否存在
-        if (!userMapper.findById(followingId).isPresent()) {
+        User targetUser = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, followingId)
+                .ne(User::getStatus, "deleted"));
+        if (targetUser == null) {
             log.warn("被关注的用户不存在: {}", followingId);
             return false;
         }
@@ -73,6 +80,17 @@ public class UserFollowService {
 
         if (success) {
             log.info("用户 {} 成功关注用户 {}", followerId, followingId);
+
+            // 记录关注者的活动日志
+            Map<String, Object> logDetails = new HashMap<>();
+            logDetails.put("followingId", followingId);
+            logDetails.put("followingUsername", targetUser.getUsername());
+
+            userActivityService.logUserActivity(
+                    followerId,
+                    UserActivityType.FOLLOW_USER,
+                    String.format("关注用户 %s", targetUser.getUsername()),
+                    logDetails);
         } else {
             log.error("用户 {} 关注用户 {} 失败", followerId, followingId);
         }
@@ -91,11 +109,29 @@ public class UserFollowService {
     public boolean unfollowUser(Long followerId, Long followingId) {
         log.debug("用户 {} 取消关注用户 {}", followerId, followingId);
 
-        int deleted = userFollowMapper.deleteByFollowerAndFollowing(followerId, followingId);
+        // 获取被取消关注用户的信息用于记录日志
+        User targetUser = userMapper.selectById(followingId);
+
+        int deleted = userFollowMapper.delete(new LambdaQueryWrapper<UserFollow>()
+                .eq(UserFollow::getFollowerId, followerId)
+                .eq(UserFollow::getFollowingId, followingId));
         boolean success = deleted > 0;
 
         if (success) {
             log.info("用户 {} 成功取消关注用户 {}", followerId, followingId);
+
+            // 记录取消关注的活动日志
+            if (targetUser != null) {
+                Map<String, Object> logDetails = new HashMap<>();
+                logDetails.put("followingId", followingId);
+                logDetails.put("followingUsername", targetUser.getUsername());
+
+                userActivityService.logUserActivity(
+                        followerId,
+                        UserActivityType.UNFOLLOW_USER,
+                        String.format("取消关注用户 %s", targetUser.getUsername()),
+                        logDetails);
+            }
         } else {
             log.debug("用户 {} 取消关注用户 {} - 关注关系不存在", followerId, followingId);
         }
@@ -175,12 +211,15 @@ public class UserFollowService {
      * @return UserFollowDto
      */
     private UserFollowDto buildUserFollowDto(UserFollow follow, Long targetUserId, Long currentUserId) {
-        User user = userMapper.findById(targetUserId).orElse(null);
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, targetUserId)
+                .ne(User::getStatus, "deleted"));
         if (user == null) {
             return null;
         }
 
-        UserProfile profile = userProfileMapper.findByUserId(targetUserId).orElse(null);
+        UserProfile profile = userProfileMapper.selectOne(new LambdaQueryWrapper<UserProfile>()
+                .eq(UserProfile::getUserId, targetUserId));
 
         // 检查是否互相关注
         boolean isMultualFollow = false;

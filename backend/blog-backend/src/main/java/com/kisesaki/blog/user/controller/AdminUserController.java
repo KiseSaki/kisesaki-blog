@@ -6,15 +6,13 @@ import com.kisesaki.blog.common.dto.ResultUtils;
 import com.kisesaki.blog.user.dto.admin.AdminUserInfoResponse;
 import com.kisesaki.blog.user.dto.admin.AdminUserListParams;
 import com.kisesaki.blog.user.dto.admin.AdminUserListResponse;
+import com.kisesaki.blog.user.dto.admin.AdminUserUpdateRequest;
 import com.kisesaki.blog.user.service.AdminUserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin/users")
@@ -39,5 +37,14 @@ public class AdminUserController {
     @GetMapping("/{id}")
     public ApiResponse<AdminUserInfoResponse> getUserInfo(@PathVariable Long id) {
         return ResultUtils.success(adminUserService.getUserInfo(id));
+    }
+
+    /**
+     * 更新用户信息
+     */
+    @PutMapping("/{id}")
+    public ApiResponse<Void> updateUser(@PathVariable Long id, @Valid @RequestBody AdminUserUpdateRequest request) {
+        adminUserService.updateUserInfo(id, request);
+        return ResultUtils.success();
     }
 }

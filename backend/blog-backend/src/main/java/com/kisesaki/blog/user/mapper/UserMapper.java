@@ -1,5 +1,7 @@
 package com.kisesaki.blog.user.mapper;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -9,6 +11,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.user.dto.admin.AdminUserListParams;
 import com.kisesaki.blog.user.dto.admin.AdminUserListResponse;
+import com.kisesaki.blog.user.dto.admin.AdminUserStatsResponse.DailyUserStats;
 import com.kisesaki.blog.user.entity.User;
 
 /**
@@ -45,4 +48,34 @@ public interface UserMapper extends BaseMapper<User> {
      * @return 用户总数
      */
     Long adminGetUserListCount(@Param("params") AdminUserListParams params);
+
+    /**
+     * 获取最近N天的用户注册趋势
+     * 
+     * @param days 天数
+     * @return 每日注册统计
+     */
+    List<DailyUserStats> getRegistrationTrend(@Param("days") Integer days);
+
+    /**
+     * 获取最近N天的用户登录趋势
+     * 
+     * @param days 天数
+     * @return 每日登录统计
+     */
+    List<DailyUserStats> getLoginTrend(@Param("days") Integer days);
+
+    /**
+     * 按账号类型分组统计
+     * 
+     * @return 账号类型统计
+     */
+    List<Map<String, Object>> getAccountTypeStats();
+
+    /**
+     * 按状态分组统计
+     * 
+     * @return 状态统计
+     */
+    List<Map<String, Object>> getStatusStats();
 }

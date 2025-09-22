@@ -97,4 +97,50 @@
             AND DATE(u.created_at) = #{params.pageable.date}
         </if>
     </select>
+    <!-- 复杂的统计查询相关 - 保留需要分组、日期函数等复杂逻辑的查询 -->
+
+    <!-- 获取最近N天的用户注册趋势 -->
+    <select id="getRegistrationTrend" resultType="com.kisesaki.blog.user.dto.admin.AdminUserStatsResponse$DailyUserStats">
+        SELECT 
+            TO_CHAR(created_at, 'YYYY-MM-DD') as date,
+            COUNT(*) as count
+        FROM "user" 
+        WHERE created_at >= (CURRENT_DATE - INTERVAL '#{days} days')
+        AND status != 'deleted'
+        GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD')
+        ORDER BY date
+    </select>
+
+    <!-- 获取最近N天的用户登录趋势 -->
+    <select id="getLoginTrend" resultType="com.kisesaki.blog.user.dto.admin.AdminUserStatsResponse$DailyUserStats">
+        SELECT 
+            TO_CHAR(last_login_at, 'YYYY-MM-DD') as date,
+            COUNT(DISTINCT id) as count
+        FROM "user" 
+        WHERE last_login_at >= (CURRENT_DATE - INTERVAL '#{days} days')
+        AND last_login_at IS NOT NULL
+        AND status != 'deleted'
+        GROUP BY TO_CHAR(last_login_at, 'YYYY-MM-DD')
+        ORDER BY date
+    </select>
+
+    <!-- 按账号类型分组统计 -->
+    <select id="getAccountTypeStats" resultType="map">
+        SELECT 
+            account_type as accountType,
+            COUNT(*) as count
+        FROM "user" 
+        WHERE status != 'deleted'
+        GROUP BY account_type
+    </select>
+
+    <!-- 按状态分组统计 -->
+    <select id="getStatusStats" resultType="map">
+        SELECT 
+            status,
+            COUNT(*) as count
+        FROM "user" 
+        GROUP BY status
+    </select>
+
 </mapper>

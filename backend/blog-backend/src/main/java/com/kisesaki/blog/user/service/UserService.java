@@ -1,6 +1,8 @@
 package com.kisesaki.blog.user.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -36,6 +38,7 @@ public class UserService {
     private final UserProfileMapper userProfileMapper;
     private final UserSettingsMapper userSettingsMapper;
     private final UserFollowMapper userFollowMapper;
+    private final UserActivityService userActivityService;
 
     /**
      * 根据用户ID获取用户信息
@@ -204,6 +207,13 @@ public class UserService {
             log.debug("更新用户扩展信息: {}", userId);
         }
 
+        // 记录活动日志
+        userActivityService.logUserActivity(
+                userId,
+                UserActivityType.PROFILE_UPDATE,
+                "用户更新个人资料",
+                updateDto);
+
         log.info("用户资料更新成功: {}", userId);
         return getUserInfoById(userId);
     }
@@ -230,6 +240,8 @@ public class UserService {
         // 获取或创建用户扩展信息
         UserProfile profile = userProfileMapper.selectOne(new LambdaQueryWrapper<UserProfile>()
                 .eq(UserProfile::getUserId, userId));
+
+        String oldAvatarUrl = null;
         if (profile == null) {
             profile = new UserProfile();
             profile.setUserId(userId);
@@ -237,10 +249,22 @@ public class UserService {
             userProfileMapper.insert(profile);
             log.debug("创建用户扩展信息并设置头像: {}", userId);
         } else {
+            oldAvatarUrl = profile.getAvatarUrl();
             profile.setAvatarUrl(avatarUrl);
             userProfileMapper.updateById(profile);
             log.debug("更新用户头像: {}", userId);
         }
+
+        // 记录活动日志
+        Map<String, Object> logDetails = new HashMap<>();
+        logDetails.put("oldAvatarUrl", oldAvatarUrl);
+        logDetails.put("newAvatarUrl", avatarUrl);
+
+        userActivityService.logUserActivity(
+                userId,
+                UserActivityType.AVATAR_UPDATE,
+                "用户更新头像",
+                logDetails);
 
         log.info("用户头像更新成功: {}", userId);
         return getUserInfoById(userId);

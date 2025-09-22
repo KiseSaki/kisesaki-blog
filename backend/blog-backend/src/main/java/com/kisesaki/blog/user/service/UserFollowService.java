@@ -1,6 +1,8 @@
 package com.kisesaki.blog.user.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -31,6 +33,7 @@ public class UserFollowService {
     private final UserFollowMapper userFollowMapper;
     private final UserMapper userMapper;
     private final UserProfileMapper userProfileMapper;
+    private final UserActivityService userActivityService;
 
     private static final String FOLLOW_STATUS_ACTIVE = "active";
 
@@ -77,6 +80,17 @@ public class UserFollowService {
 
         if (success) {
             log.info("用户 {} 成功关注用户 {}", followerId, followingId);
+
+            // 记录关注者的活动日志
+            Map<String, Object> logDetails = new HashMap<>();
+            logDetails.put("followingId", followingId);
+            logDetails.put("followingUsername", targetUser.getUsername());
+
+            userActivityService.logUserActivity(
+                    followerId,
+                    UserActivityType.FOLLOW_USER,
+                    String.format("关注用户 %s", targetUser.getUsername()),
+                    logDetails);
         } else {
             log.error("用户 {} 关注用户 {} 失败", followerId, followingId);
         }
@@ -95,6 +109,9 @@ public class UserFollowService {
     public boolean unfollowUser(Long followerId, Long followingId) {
         log.debug("用户 {} 取消关注用户 {}", followerId, followingId);
 
+        // 获取被取消关注用户的信息用于记录日志
+        User targetUser = userMapper.selectById(followingId);
+
         int deleted = userFollowMapper.delete(new LambdaQueryWrapper<UserFollow>()
                 .eq(UserFollow::getFollowerId, followerId)
                 .eq(UserFollow::getFollowingId, followingId));
@@ -102,6 +119,19 @@ public class UserFollowService {
 
         if (success) {
             log.info("用户 {} 成功取消关注用户 {}", followerId, followingId);
+
+            // 记录取消关注的活动日志
+            if (targetUser != null) {
+                Map<String, Object> logDetails = new HashMap<>();
+                logDetails.put("followingId", followingId);
+                logDetails.put("followingUsername", targetUser.getUsername());
+
+                userActivityService.logUserActivity(
+                        followerId,
+                        UserActivityType.UNFOLLOW_USER,
+                        String.format("取消关注用户 %s", targetUser.getUsername()),
+                        logDetails);
+            }
         } else {
             log.debug("用户 {} 取消关注用户 {} - 关注关系不存在", followerId, followingId);
         }

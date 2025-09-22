@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserSettingsService {
 
     private final UserSettingsMapper userSettingsMapper;
+    private final UserActivityService userActivityService;
 
     /**
      * 获取用户的所有设置
@@ -104,6 +105,13 @@ public class UserSettingsService {
         for (Map.Entry<String, String> entry : settings.entrySet()) {
             setUserSetting(userId, entry.getKey(), entry.getValue());
         }
+
+        // 记录活动日志
+        userActivityService.logUserActivity(
+                userId,
+                UserActivityType.SETTINGS_UPDATE,
+                "用户批量更新个人设置",
+                settings);
 
         log.info("完成用户 {} 的批量设置更新", userId);
     }

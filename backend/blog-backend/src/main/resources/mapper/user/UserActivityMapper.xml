@@ -23,10 +23,10 @@
                 AND ua.action = #{params.action}
             </if>
             <if test="params.fromDate != null">
-                AND ua.created_at >= #{params.fromDate}
+                AND ua.created_at &gt;= #{params.fromDate}
             </if>
             <if test="params.toDate != null">
-                AND ua.created_at <= #{params.toDate}
+                AND ua.created_at &lt;= #{params.toDate}
             </if>
 </where>
         ORDER BY ua.created_at DESC
@@ -34,20 +34,20 @@
 
 <!-- 管理员获取用户活动日志总数 -->
 <select id="adminGetUserActivityCount" parameterType="com.kisesaki.blog.user.dto.admin.AdminUserActivityParams" resultType="java.lang.Long">
-        SELECT COUNT(*)
-        FROM user_activity ua
-                <where>
-            ua.user_id = #{userId}
-                    <if test="params.action != null and params.action != ''">
-                AND ua.action = #{params.action}
-                    </if>
-                    <if test="params.fromDate != null">
-                AND ua.created_at >= #{params.fromDate}
-                    </if>
-                    <if test="params.toDate != null">
-                AND ua.created_at <= #{params.toDate}
-            </if>
-</where>
+    SELECT COUNT(*)
+    FROM user_activity ua
+    <where>
+        ua.user_id = #{userId}
+        <if test="params.action != null and params.action != ''">
+            AND ua.action = #{params.action}
+        </if>
+        <if test="params.fromDate != null">
+            AND ua.created_at &gt;= #{params.fromDate}
+        </if>
+        <if test="params.toDate != null">
+            AND ua.created_at &lt;= #{params.toDate}
+        </if>
+    </where>
 </select>
 
 </mapper>

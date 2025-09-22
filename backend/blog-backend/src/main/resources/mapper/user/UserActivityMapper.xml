@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kisesaki.blog.user.mapper.UserActivityMapper">
+
+    <!-- 管理员获取用户活动日志列表 -->
+    <select id="adminGetUserActivityList" parameterType="com.kisesaki.blog.user.dto.admin.AdminUserActivityParams" resultType="com.kisesaki.blog.user.dto.admin.AdminUserActivityResponse">
+        SELECT 
+            ua.id,
+            ua.user_id AS userId,
+            u.username,
+            ua.action,
+            ua.description,
+            ua.ip_address AS ipAddress,
+            ua.user_agent AS userAgent,
+            ua.details,
+            ua.result,
+            ua.created_at AS createdAt
+        FROM user_activity ua
+        LEFT JOIN "user" u ON ua.user_id = u.id
+        <where>
+            ua.user_id = #{userId}
+            <if test="params.action != null and params.action != ''">
+                AND ua.action = #{params.action}
+            </if>
+            <if test="params.fromDate != null">
+                AND ua.created_at >= #{params.fromDate}
+            </if>
+            <if test="params.toDate != null">
+                AND ua.created_at <= #{params.toDate}
+            </if>
+</where>
+        ORDER BY ua.created_at DESC
+    </select>
+
+<!-- 管理员获取用户活动日志总数 -->
+<select id="adminGetUserActivityCount" parameterType="com.kisesaki.blog.user.dto.admin.AdminUserActivityParams" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM user_activity ua
+                <where>
+            ua.user_id = #{userId}
+                    <if test="params.action != null and params.action != ''">
+                AND ua.action = #{params.action}
+                    </if>
+                    <if test="params.fromDate != null">
+                AND ua.created_at >= #{params.fromDate}
+                    </if>
+                    <if test="params.toDate != null">
+                AND ua.created_at <= #{params.toDate}
+            </if>
+</where>
+</select>
+
+</mapper>

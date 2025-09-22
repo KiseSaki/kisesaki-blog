@@ -12,9 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.user.dto.admin.AdminUserActivityParams;
+import com.kisesaki.blog.user.dto.admin.AdminUserActivityResponse;
 import com.kisesaki.blog.user.dto.admin.AdminUserInfoResponse;
 import com.kisesaki.blog.user.dto.admin.AdminUserListParams;
 import com.kisesaki.blog.user.dto.admin.AdminUserListResponse;
+import com.kisesaki.blog.user.dto.admin.AdminUserStatsResponse;
 import com.kisesaki.blog.user.dto.admin.AdminUserStatusUpdateRequest;
 import com.kisesaki.blog.user.dto.admin.AdminUserUpdateRequest;
 import com.kisesaki.blog.user.service.AdminUserService;
@@ -66,5 +69,22 @@ public class AdminUserController {
             Authentication authentication) {
         adminUserService.updateUserStatus(id, request, authentication);
         return ResultUtils.success();
+    }
+
+    /**
+     * 获取用户活动日志
+     */
+    @GetMapping("/{id}/activity")
+    public ApiResponse<PageResponse<AdminUserActivityResponse>> getUserActivity(@PathVariable Long id,
+            @Valid AdminUserActivityParams params) {
+        return ResultUtils.success(adminUserService.getUserActivity(id, params));
+    }
+
+    /**
+     * 获取用户统计数据
+     */
+    @GetMapping("/stats")
+    public ApiResponse<AdminUserStatsResponse> getUserStats() {
+        return ResultUtils.success(adminUserService.getUserStats());
     }
 }

@@ -1,7 +1,9 @@
 package com.kisesaki.blog.user.service;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -13,9 +15,12 @@ import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.util.AuthUtils;
+import com.kisesaki.blog.user.dto.admin.AdminUserActivityParams;
+import com.kisesaki.blog.user.dto.admin.AdminUserActivityResponse;
 import com.kisesaki.blog.user.dto.admin.AdminUserInfoResponse;
 import com.kisesaki.blog.user.dto.admin.AdminUserListParams;
 import com.kisesaki.blog.user.dto.admin.AdminUserListResponse;
+import com.kisesaki.blog.user.dto.admin.AdminUserStatsResponse;
 import com.kisesaki.blog.user.dto.admin.AdminUserStatusUpdateRequest;
 import com.kisesaki.blog.user.dto.admin.AdminUserUpdateRequest;
 import com.kisesaki.blog.user.entity.User;
@@ -36,6 +41,7 @@ public class AdminUserService {
     private final UserMapper userMapper;
     private final UserProfileMapper userProfileMapper;
     private final UserStatusChangeMapper userStatusChangeMapper;
+    private final UserActivityService userActivityService;
 
     /**
      * 获取用户列表
@@ -122,6 +128,13 @@ public class AdminUserService {
             throw BusinessException.of(ErrorCode.NOT_FOUND, "用户不存在");
         }
 
+        // 记录更新前的信息用于活动日志
+        Map<String, Object> oldValues = new HashMap<>();
+        oldValues.put("username", user.getUsername());
+        oldValues.put("email", user.getEmail());
+        oldValues.put("status", user.getStatus());
+        oldValues.put("emailVerified", user.getEmailVerified());
+
         // 更新User字段
         updateUserFields(user, request);
 
@@ -133,6 +146,14 @@ public class AdminUserService {
             userProfile = new UserProfile();
             userProfile.setUserId(userId);
         }
+
+        // 记录 UserProfile 更新前的信息
+        if (userProfile.getId() != null) {
+            oldValues.put("displayName", userProfile.getDisplayName());
+            oldValues.put("bio", userProfile.getBio());
+            oldValues.put("avatarUrl", userProfile.getAvatarUrl());
+        }
+
         updateUserProfileFields(userProfile, request);
 
         if (userProfile.getId() == null) {
@@ -140,6 +161,27 @@ public class AdminUserService {
         } else {
             userProfileMapper.updateById(userProfile);
         }
+
+        // 记录活动日志
+        Map<String, Object> newValues = new HashMap<>();
+        newValues.put("username", user.getUsername());
+        newValues.put("email", user.getEmail());
+        newValues.put("status", user.getStatus());
+        newValues.put("emailVerified", user.getEmailVerified());
+        newValues.put("displayName", userProfile.getDisplayName());
+        newValues.put("bio", userProfile.getBio());
+        newValues.put("avatarUrl", userProfile.getAvatarUrl());
+
+        Map<String, Object> logDetails = new HashMap<>();
+        logDetails.put("oldValues", oldValues);
+        logDetails.put("newValues", newValues);
+        logDetails.put("requestData", request);
+
+        userActivityService.logUserActivity(
+                userId,
+                UserActivityType.ADMIN_USER_UPDATE,
+                "管理员更新用户信息",
+                logDetails);
     }
 
     /**
@@ -216,6 +258,19 @@ public class AdminUserService {
         statusChange.setCreatedAt(now);
 
         userStatusChangeMapper.insert(statusChange);
+
+        // 记录活动日志
+        Map<String, Object> logDetails = new HashMap<>();
+        logDetails.put("oldStatus", oldStatus);
+        logDetails.put("newStatus", request.getStatus());
+        logDetails.put("reason", request.getReason());
+        logDetails.put("adminId", adminId);
+
+        userActivityService.logUserActivity(
+                userId,
+                UserActivityType.ADMIN_USER_STATUS_CHANGE,
+                String.format("管理员将用户状态从 %s 更改为 %s", oldStatus, request.getStatus()),
+                logDetails);
     }
 
     /**
@@ -306,5 +361,99 @@ public class AdminUserService {
         if (count != null && count > 0) {
             throw BusinessException.of(ErrorCode.PARAM_ERROR, "邮箱已被占用");
         }
+    }
+
+    /**
+     * 获取用户活动日志
+     *
+     * @param userId 用户ID
+     * @param params 查询参数
+     * @return 活动日志列表
+     */
+    public PageResponse<AdminUserActivityResponse> getUserActivity(Long userId, AdminUserActivityParams params) {
+        log.debug("获取用户 {} 的活动日志", userId);
+
+        // 检查用户是否存在
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        return userActivityService.getUserActivityList(userId, params);
+    }
+
+    /**
+     * 获取用户统计数据
+     *
+     * @return 用户统计数据
+     */
+    public AdminUserStatsResponse getUserStats() {
+        log.debug("获取用户统计数据");
+
+        AdminUserStatsResponse response = new AdminUserStatsResponse();
+
+        // 使用 Lambda Wrapper 进行基础统计
+        response.setTotalUsers(userMapper.selectCount(null));
+        response.setActiveUsers(userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getStatus, "active")));
+        response.setInactiveUsers(userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getStatus, "inactive")));
+        response.setBannedUsers(userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getStatus, "banned")));
+
+        // 账号类型统计
+        response.setOauthUsers(userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getAccountType, "oauth")));
+        response.setLocalUsers(userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getAccountType, "local")));
+
+        // 邮箱验证统计
+        response.setEmailVerifiedUsers(userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getEmailVerified, true)));
+
+        // 时间范围统计
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime todayStart = now.toLocalDate().atStartOfDay().atOffset(now.getOffset());
+        OffsetDateTime todayEnd = todayStart.plusDays(1).minusNanos(1);
+        OffsetDateTime weekStart = todayStart.minusDays(7);
+        OffsetDateTime monthStart = todayStart.minusDays(30);
+
+        // 今日注册用户数
+        response.setTodayRegistrations(userMapper.selectCount(
+                new LambdaQueryWrapper<User>()
+                        .ge(User::getCreatedAt, todayStart)
+                        .le(User::getCreatedAt, todayEnd)));
+
+        // 一周内注册用户数
+        response.setWeekRegistrations(userMapper.selectCount(
+                new LambdaQueryWrapper<User>()
+                        .ge(User::getCreatedAt, weekStart)
+                        .le(User::getCreatedAt, now)));
+
+        // 一月内注册用户数
+        response.setMonthRegistrations(userMapper.selectCount(
+                new LambdaQueryWrapper<User>()
+                        .ge(User::getCreatedAt, monthStart)
+                        .le(User::getCreatedAt, now)));
+
+        // 复杂的趋势数据和分组统计仍使用 XML 查询
+        response.setRegistrationTrend(userMapper.getRegistrationTrend(7));
+        response.setLoginTrend(userMapper.getLoginTrend(7));
+
+        // 分组统计
+        Map<String, Long> accountTypeStats = new HashMap<>();
+        userMapper.getAccountTypeStats()
+                .forEach(map -> accountTypeStats.put((String) map.get("accountType"), (Long) map.get("count")));
+        response.setAccountTypeStats(accountTypeStats);
+
+        Map<String, Long> statusStats = new HashMap<>();
+        userMapper.getStatusStats()
+                .forEach(map -> statusStats.put((String) map.get("status"), (Long) map.get("count")));
+        response.setStatusStats(statusStats);
+
+        response.setGeneratedAt(now);
+
+        log.debug("用户统计数据获取完成，总用户数: {}", response.getTotalUsers());
+        return response;
     }
 }

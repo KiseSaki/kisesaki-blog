@@ -1,7 +1,9 @@
 package com.kisesaki.blog.user.service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,14 +12,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
+import com.kisesaki.blog.common.util.AuthUtils;
 import com.kisesaki.blog.user.dto.admin.AdminUserInfoResponse;
 import com.kisesaki.blog.user.dto.admin.AdminUserListParams;
 import com.kisesaki.blog.user.dto.admin.AdminUserListResponse;
+import com.kisesaki.blog.user.dto.admin.AdminUserStatusUpdateRequest;
 import com.kisesaki.blog.user.dto.admin.AdminUserUpdateRequest;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.entity.UserProfile;
+import com.kisesaki.blog.user.entity.UserStatusChange;
 import com.kisesaki.blog.user.mapper.UserMapper;
 import com.kisesaki.blog.user.mapper.UserProfileMapper;
+import com.kisesaki.blog.user.mapper.UserStatusChangeMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +35,7 @@ public class AdminUserService {
 
     private final UserMapper userMapper;
     private final UserProfileMapper userProfileMapper;
+    private final UserStatusChangeMapper userStatusChangeMapper;
 
     /**
      * 获取用户列表
@@ -162,6 +169,53 @@ public class AdminUserService {
             }
         }
         userMapper.updateById(user);
+    }
+
+    /**
+     * 更新用户状态
+     * 
+     * @param userId         用户ID
+     * @param request        状态更新请求
+     * @param authentication 当前认证信息
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUserStatus(Long userId, AdminUserStatusUpdateRequest request, Authentication authentication) {
+        OffsetDateTime now = OffsetDateTime.now();
+
+        Long adminId = AuthUtils.getUserIdFromAuthentication(authentication);
+        if (adminId == null) {
+            throw BusinessException.of(ErrorCode.UNAUTHORIZED, "无法获取操作用户信息");
+        }
+
+        // 获取用户状态
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw BusinessException.of(ErrorCode.NOT_FOUND, "用户不存在");
+        }
+
+        if (request.getStatus() == null) {
+            throw BusinessException.of(ErrorCode.PARAM_ERROR, "用户状态未传递");
+        }
+        if (request.getStatus().equals(user.getStatus())) {
+            throw BusinessException.of(ErrorCode.PARAM_ERROR, "用户状态未改变");
+        }
+
+        // 记录状态变更
+        String oldStatus = user.getStatus();
+        user.setStatus(request.getStatus());
+        user.setUpdatedAt(now);
+        userMapper.updateById(user);
+
+        // 记录状态变更日志
+        UserStatusChange statusChange = new UserStatusChange();
+        statusChange.setUserId(userId);
+        statusChange.setChangedBy(adminId);
+        statusChange.setOldStatus(oldStatus);
+        statusChange.setNewStatus(request.getStatus());
+        statusChange.setReason(request.getReason());
+        statusChange.setCreatedAt(now);
+
+        userStatusChangeMapper.insert(statusChange);
     }
 
     /**

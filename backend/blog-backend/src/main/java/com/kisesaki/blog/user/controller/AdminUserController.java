@@ -1,18 +1,27 @@
 package com.kisesaki.blog.user.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.PageResponse;
 import com.kisesaki.blog.common.dto.ResultUtils;
 import com.kisesaki.blog.user.dto.admin.AdminUserInfoResponse;
 import com.kisesaki.blog.user.dto.admin.AdminUserListParams;
 import com.kisesaki.blog.user.dto.admin.AdminUserListResponse;
+import com.kisesaki.blog.user.dto.admin.AdminUserStatusUpdateRequest;
 import com.kisesaki.blog.user.dto.admin.AdminUserUpdateRequest;
 import com.kisesaki.blog.user.service.AdminUserService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin/users")
@@ -45,6 +54,17 @@ public class AdminUserController {
     @PutMapping("/{id}")
     public ApiResponse<Void> updateUser(@PathVariable Long id, @Valid @RequestBody AdminUserUpdateRequest request) {
         adminUserService.updateUserInfo(id, request);
+        return ResultUtils.success();
+    }
+
+    /**
+     * 更新用户状态
+     */
+    @PutMapping("/{id}/status")
+    public ApiResponse<Void> updateUserStatus(@PathVariable Long id,
+            @Valid @RequestBody AdminUserStatusUpdateRequest request,
+            Authentication authentication) {
+        adminUserService.updateUserStatus(id, request, authentication);
         return ResultUtils.success();
     }
 }

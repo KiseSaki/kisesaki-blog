@@ -2,7 +2,7 @@ import React from "react";
 import { Center } from "./internal/Center";
 import { Left } from "./internal/Left";
 import { Right } from "./internal/Right";
-import { useHeader } from "./useHeader";
+import { useHeader } from "./hooks/useHeader";
 
 export const Header: React.FC = () => {
   const {

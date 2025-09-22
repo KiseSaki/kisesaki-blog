@@ -1,5 +1,5 @@
+import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components";
 import { ThemeToggle } from "@/components/common";
-import { Avatar, AvatarFallback, AvatarImage, Button } from "@/components/ui";
 import { useAuth } from "@/hooks";
 import { useNavigate } from "react-router";
 import { LOGIN_LINK } from "../config";

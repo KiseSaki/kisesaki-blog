@@ -3,6 +3,8 @@
  * 包含用户信息、权限、个人资料等用户相关的数据类型
  */
 
+import type { ExtendedPageableParams, PageResponse } from './api';
+
 /**
  * 用户基础信息
  * 对应后端 User 实体的核心字段
@@ -216,30 +218,16 @@ export interface FollowUserParams {
 /**
  * 用户搜索参数
  */
-export interface SearchUsersParams {
-  // 搜索关键词
-  keyword?: string;
-  // 状态筛选
-  status?: string;
+export interface SearchUsersParams extends ExtendedPageableParams {
   // 账号类型筛选
   accountType?: string;
-  // 页码
-  page?: number;
-  // 每页大小
-  size?: number;
-  // 排序字段
-  sortBy?: string;
-  // 排序方向
-  sortOrder?: "asc" | "desc";
+  // 是否已验证邮箱
+  emailVerified?: boolean;
+  // 索引签名，兼容 Record<string, unknown>
+  [key: string]: unknown;
 }
 
 /**
  * 用户搜索响应
  */
-export interface SearchUsersResponse {
-  users: UserListItem[];
-  total: number;
-  page: number;
-  size: number;
-  totalPages: number;
-}
+export type SearchUsersResponse = PageResponse<UserListItem>;

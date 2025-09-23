@@ -1,6 +1,6 @@
-import React from "react";
-import { headerMenusConfig } from "../config";
-import { HeaderMenu } from "./Menu";
+import React from 'react';
+import { headerMenusConfig } from '../config';
+import { HeaderMenu } from './Menu';
 
 interface CenterProps {
   frosted: boolean;
@@ -12,14 +12,14 @@ export const Center: React.FC<CenterProps> = ({ frosted, isHeaderHovered }) => {
   const showMenu = !frosted || (frosted && isHeaderHovered);
 
   return (
-    <div className="flex justify-center self-center relative h-10 min-w-[280px]">
+    <div className='flex justify-center self-center relative h-10 min-w-[280px]'>
       {/* 菜单 */}
-      <div className={`flex  ${showMenu ? "opacity-100" : "opacity-0"}`}>
-        {headerMenusConfig.map((menu) => (
+      <div className={`flex  ${showMenu ? 'opacity-100' : 'opacity-0'}`}>
+        {headerMenusConfig.map(menu => (
           <div
             key={menu.path}
             className={`flex justify-center self-center ${
-              showMenu ? "opacity-100" : "opacity-0"
+              showMenu ? 'opacity-100' : 'opacity-0'
             }`}
           >
             <HeaderMenu label={menu.label} path={menu.path} />

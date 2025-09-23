@@ -3,9 +3,7 @@
  * 管理员用于配置网站设置、SEO、系统参数等
  */
 const SettingsPage = () => {
-    return (
-        <div>SettingsPage</div>
-    )
-}
+  return <div>SettingsPage</div>;
+};
 
 export default SettingsPage;

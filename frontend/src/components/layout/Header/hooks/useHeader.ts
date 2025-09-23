@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 export const useHeader = (opts?: { scrollThreshold?: number }) => {
   const threshold = opts?.scrollThreshold ?? 10;
@@ -40,13 +40,13 @@ export const useHeader = (opts?: { scrollThreshold?: number }) => {
     };
 
     // 监听滚动事件
-    window.addEventListener("scroll", onScroll, {
+    window.addEventListener('scroll', onScroll, {
       passive: true,
       capture: true,
     });
 
     // 清理函数，useEffect 要求通过返回一个“清理函数”来处理副作用的收尾工作
-    return () => window.removeEventListener("scroll", onScroll, true);
+    return () => window.removeEventListener('scroll', onScroll, true);
   }, [threshold]);
 
   const handleHeaderMouseEnter = () => {

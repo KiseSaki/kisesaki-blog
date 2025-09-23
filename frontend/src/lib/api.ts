@@ -36,12 +36,13 @@ export function useApiCall<T, P = unknown>(
   const execute = useCallback(
     async (params?: P) => {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      
+
       try {
         const data = await apiFunction(params);
         setState({ data, loading: false, error: null });
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : '请求失败';
+        const errorMessage =
+          error instanceof Error ? error.message : '请求失败';
         setState(prev => ({ ...prev, loading: false, error: errorMessage }));
       }
     },
@@ -69,7 +70,7 @@ export function useApiData<T, P = unknown>(
 
   const execute = useCallback(async () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
-    
+
     try {
       const data = await apiFunction(params);
       setState({ data, loading: false, error: null });

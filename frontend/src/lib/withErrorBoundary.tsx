@@ -4,7 +4,7 @@ import React from 'react';
 
 /**
  * 高阶组件：为组件添加错误边界
- * 
+ *
  * @example
  * ```tsx
  * const SafeComponent = withErrorBoundary(MyComponent, {
@@ -14,16 +14,16 @@ import React from 'react';
  * ```
  */
 export function withErrorBoundary<P extends object>(
-    Component: React.ComponentType<P>,
-    errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
+  Component: React.ComponentType<P>,
+  errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
 ) {
-    const WrappedComponent = (props: P) => (
-        <ErrorBoundary {...errorBoundaryProps}>
-            <Component {...props} />
-        </ErrorBoundary>
-    );
+  const WrappedComponent = (props: P) => (
+    <ErrorBoundary {...errorBoundaryProps}>
+      <Component {...props} />
+    </ErrorBoundary>
+  );
 
-    WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
+  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
 
-    return WrappedComponent;
+  return WrappedComponent;
 }

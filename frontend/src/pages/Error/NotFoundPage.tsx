@@ -3,9 +3,7 @@
  * 当访问不存在的路由时显示
  */
 const NotFoundPage = () => {
-    return (
-        <div>NotFoundPage</div>
-    )
-}
+  return <div>NotFoundPage</div>;
+};
 
 export default NotFoundPage;

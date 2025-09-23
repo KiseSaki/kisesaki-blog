@@ -2,7 +2,7 @@
  * 认证相关类型定义
  */
 
-import type { User } from "./user";
+import type { User } from './user';
 
 // 登录
 export interface LoginParams {
@@ -64,7 +64,7 @@ export interface ResetPasswordParams {
  */
 export interface OAuthLoginParams {
   // OAuth 提供商
-  provider: "github" | "gitee" | "google";
+  provider: 'github' | 'gitee' | 'google';
   // 授权码
   code: string;
   // 重定向URI

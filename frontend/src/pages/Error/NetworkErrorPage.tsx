@@ -3,9 +3,7 @@
  * 当网络连接失败时显示
  */
 const NetworkErrorPage = () => {
-    return (
-        <div>NetworkErrorPage</div>
-    )
-}
+  return <div>NetworkErrorPage</div>;
+};
 
 export default NetworkErrorPage;

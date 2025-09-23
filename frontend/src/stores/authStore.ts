@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { AuthState, AuthUser } from "../types/auth";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { AuthState, AuthUser } from '../types/auth';
 
 /**
  * 用户认证状态管理
@@ -60,8 +60,8 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: "auth-storage", // localStorage 中的键名
-      partialize: (state) => ({
+      name: 'auth-storage', // localStorage 中的键名
+      partialize: state => ({
         token: state.token,
         user: state.user,
         roles: state.roles,

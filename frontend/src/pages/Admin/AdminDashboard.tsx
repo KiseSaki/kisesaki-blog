@@ -3,9 +3,7 @@
  * 显示网站统计数据、快捷操作入口等管理员概览信息
  */
 const AdminDashboard = () => {
-    return (
-        <div>AdminDashboard</div>
-    )
-}
+  return <div>AdminDashboard</div>;
+};
 
 export default AdminDashboard;

@@ -13,7 +13,7 @@ import {
   updateUserSettings,
   uploadAvatar,
   uploadCoverImage,
-} from "@/api/user";
+} from '@/api/user';
 import type {
   FollowUserParams,
   SearchUsersParams,
@@ -22,10 +22,10 @@ import type {
   UpdateUserSettingsParams,
   UserInfo,
   UserStats,
-} from "@/types/user";
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
-import { useAuth } from "./useAuth";
+} from '@/types/user';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
+import { useAuth } from './useAuth';
 
 /**
  * 用户相关的自定义 Hook
@@ -43,8 +43,8 @@ export const useUser = () => {
       setLoading(true);
       return await getCurrentUser();
     } catch (error) {
-      console.error("获取当前用户信息失败:", error);
-      toast.error("获取用户信息失败");
+      console.error('获取当前用户信息失败:', error);
+      toast.error('获取用户信息失败');
       return null;
     } finally {
       setLoading(false);
@@ -60,8 +60,8 @@ export const useUser = () => {
         setLoading(true);
         return await getUserById(userId);
       } catch (error) {
-        console.error("获取用户信息失败:", error);
-        toast.error("获取用户信息失败");
+        console.error('获取用户信息失败:', error);
+        toast.error('获取用户信息失败');
         return null;
       } finally {
         setLoading(false);
@@ -79,8 +79,8 @@ export const useUser = () => {
         setLoading(true);
         return await getUserByUsername(username);
       } catch (error) {
-        console.error("获取用户信息失败:", error);
-        toast.error("获取用户信息失败");
+        console.error('获取用户信息失败:', error);
+        toast.error('获取用户信息失败');
         return null;
       } finally {
         setLoading(false);
@@ -98,8 +98,8 @@ export const useUser = () => {
         setLoading(true);
         return await getUserStats(userId);
       } catch (error) {
-        console.error("获取用户统计信息失败:", error);
-        toast.error("获取用户统计信息失败");
+        console.error('获取用户统计信息失败:', error);
+        toast.error('获取用户统计信息失败');
         return null;
       } finally {
         setLoading(false);
@@ -118,11 +118,11 @@ export const useUser = () => {
         const data = await updateUserProfile(params);
         // 更新认证状态中的用户信息
         updateCurrentUser(data);
-        toast.success("个人资料更新成功");
+        toast.success('个人资料更新成功');
         return data;
       } catch (error) {
-        console.error("更新个人资料失败:", error);
-        toast.error("个人资料更新失败");
+        console.error('更新个人资料失败:', error);
+        toast.error('个人资料更新失败');
         return null;
       } finally {
         setLoading(false);
@@ -141,11 +141,11 @@ export const useUser = () => {
       try {
         setLoading(true);
         const data = await updateUserSettings(params);
-        toast.success("设置更新成功");
+        toast.success('设置更新成功');
         return data;
       } catch (error) {
-        console.error("更新设置失败:", error);
-        toast.error("设置更新失败");
+        console.error('更新设置失败:', error);
+        toast.error('设置更新失败');
         return null;
       } finally {
         setLoading(false);
@@ -162,11 +162,11 @@ export const useUser = () => {
       try {
         setLoading(true);
         await followUser(params);
-        toast.success("关注成功");
+        toast.success('关注成功');
         return true;
       } catch (error) {
-        console.error("关注失败:", error);
-        toast.error("关注失败");
+        console.error('关注失败:', error);
+        toast.error('关注失败');
         return false;
       } finally {
         setLoading(false);
@@ -183,11 +183,11 @@ export const useUser = () => {
       try {
         setLoading(true);
         await unfollowUser(params);
-        toast.success("取消关注成功");
+        toast.success('取消关注成功');
         return true;
       } catch (error) {
-        console.error("取消关注失败:", error);
-        toast.error("取消关注失败");
+        console.error('取消关注失败:', error);
+        toast.error('取消关注失败');
         return false;
       } finally {
         setLoading(false);
@@ -203,7 +203,7 @@ export const useUser = () => {
     try {
       return await checkFollowStatus(userId);
     } catch (error) {
-      console.error("检查关注状态失败:", error);
+      console.error('检查关注状态失败:', error);
       return false;
     }
   }, []);
@@ -221,8 +221,8 @@ export const useUser = () => {
         setLoading(true);
         return await getFollowingList(userId, page, size);
       } catch (error) {
-        console.error("获取关注列表失败:", error);
-        toast.error("获取关注列表失败");
+        console.error('获取关注列表失败:', error);
+        toast.error('获取关注列表失败');
         return null;
       } finally {
         setLoading(false);
@@ -244,8 +244,8 @@ export const useUser = () => {
         setLoading(true);
         return await getFollowersList(userId, page, size);
       } catch (error) {
-        console.error("获取粉丝列表失败:", error);
-        toast.error("获取粉丝列表失败");
+        console.error('获取粉丝列表失败:', error);
+        toast.error('获取粉丝列表失败');
         return null;
       } finally {
         setLoading(false);
@@ -263,8 +263,8 @@ export const useUser = () => {
         setLoading(true);
         return await searchUsers(params);
       } catch (error) {
-        console.error("搜索用户失败:", error);
-        toast.error("搜索用户失败");
+        console.error('搜索用户失败:', error);
+        toast.error('搜索用户失败');
         return null;
       } finally {
         setLoading(false);
@@ -283,11 +283,11 @@ export const useUser = () => {
         const avatarUrl = await uploadAvatar(file);
         // 更新当前用户的头像
         updateCurrentUser({ avatarUrl });
-        toast.success("头像上传成功");
+        toast.success('头像上传成功');
         return avatarUrl;
       } catch (error) {
-        console.error("头像上传失败:", error);
-        toast.error("头像上传失败");
+        console.error('头像上传失败:', error);
+        toast.error('头像上传失败');
         return null;
       } finally {
         setLoading(false);
@@ -306,11 +306,11 @@ export const useUser = () => {
         const coverImageUrl = await uploadCoverImage(file);
         // 更新当前用户的封面图
         updateCurrentUser({ coverImageUrl });
-        toast.success("封面图上传成功");
+        toast.success('封面图上传成功');
         return coverImageUrl;
       } catch (error) {
-        console.error("封面图上传失败:", error);
-        toast.error("封面图上传失败");
+        console.error('封面图上传失败:', error);
+        toast.error('封面图上传失败');
         return null;
       } finally {
         setLoading(false);

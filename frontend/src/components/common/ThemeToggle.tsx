@@ -25,7 +25,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   shape = 'circle',
 }) => {
   const { mode, toggleTheme } = useTheme();
-  
+
   return (
     <Button
       className={className}

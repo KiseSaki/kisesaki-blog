@@ -1,20 +1,44 @@
+import {
+  API_CONFIG,
+  ENV_CONFIG,
+  PAGINATION_CONFIG,
+  PUBLIC_API_URLS,
+} from '@/config';
 import axios, {
   type AxiosError,
   type AxiosInstance,
   type AxiosRequestConfig,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
-} from "axios";
-import { toast } from "sonner";
-import { useAuthStore } from "../stores/authStore";
+} from 'axios';
+import { toast } from 'sonner';
+import { useAuthStore } from '../stores/authStore';
+import type {
+  ApiRequestConfig,
+  ApiResponse,
+  ErrorCodeType,
+  PageableParams,
+} from '../types';
+import {
+  ERROR_MESSAGES,
+  ErrorCategory,
+  ErrorCode,
+  getErrorCategory,
+  isLoginRequiredError,
+} from '../types';
 
 /**
- * API 响应数据结构
+ * HTTP 客户端配置
  */
-interface ApiResponse<T = unknown> {
-  code: number;
-  message: string;
-  data: T;
+interface HttpClientConfig {
+  // 基础 URL
+  baseURL?: string;
+  // 请求超时时间(ms)
+  timeout?: number;
+  // 是否启用全局错误提示
+  enableGlobalErrorToast?: boolean;
+  // 是否启用认证重定向
+  enableAuthRedirect?: boolean;
 }
 
 /**
@@ -22,13 +46,22 @@ interface ApiResponse<T = unknown> {
  */
 class HttpClient {
   private instance: AxiosInstance;
+  private config: HttpClientConfig;
 
-  constructor() {
+  constructor(config: HttpClientConfig = {}) {
+    this.config = {
+      baseURL: ENV_CONFIG.API_BASE_URL,
+      timeout: API_CONFIG.DEFAULT_TIMEOUT,
+      enableGlobalErrorToast: true,
+      enableAuthRedirect: true,
+      ...config,
+    };
+
     this.instance = axios.create({
-      baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
-      timeout: 10000,
+      baseURL: this.config.baseURL,
+      timeout: this.config.timeout,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
@@ -50,17 +83,26 @@ class HttpClient {
 
         return config;
       },
-      (error) => Promise.reject(error)
+      error => Promise.reject(error)
     );
 
     // 响应拦截器
     this.instance.interceptors.response.use(
       <T>(response: AxiosResponse<ApiResponse<T>>): T => {
-        // 可以在这里添加全局成功处理逻辑
+        // 调用成功回调
+        const config = response.config as InternalAxiosRequestConfig & {
+          metadata?: ApiRequestConfig;
+        };
+        if (config.metadata?.onSuccess) {
+          config.metadata.onSuccess(response.data.data);
+        }
         return response.data.data;
       },
-      (error: AxiosError<ApiResponse>) => {
-        this.handleError(error);
+      (error: AxiosError<ApiResponse<unknown>>) => {
+        const config = error.config as InternalAxiosRequestConfig & {
+          metadata?: ApiRequestConfig;
+        };
+        this.handleError(error, config?.metadata);
         return Promise.reject(error);
       }
     );
@@ -70,39 +112,122 @@ class HttpClient {
    * 判断是否为公开 URL（不需要 token）
    */
   private isPublicUrl(url?: string): boolean {
-    const publicUrls = ["/auth/login", "/auth/register", "/auth/refresh"];
-    return publicUrls.some((publicUrl) => url?.includes(publicUrl));
+    return PUBLIC_API_URLS.some(publicUrl => url?.includes(publicUrl));
   }
 
   /**
    * 统一错误处理
    */
-  private handleError(error: AxiosError<ApiResponse>) {
-    let errorMessage = "请求失败，请稍后重试";
+  private handleError(
+    error: AxiosError<ApiResponse<unknown>>,
+    config?: ApiRequestConfig
+  ) {
+    let errorMessage = '请求失败，请稍后重试';
+    let errorCode: ErrorCodeType | undefined;
 
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
+    // 从响应中获取错误码和消息
+    if (error.response?.data) {
+      const responseData = error.response.data;
+      errorCode = responseData.code as ErrorCodeType;
+      errorMessage =
+        responseData.message || ERROR_MESSAGES[errorCode] || errorMessage;
     } else if (error.message) {
       errorMessage = error.message;
     }
 
-    // 显示错误提示
-    toast.error(errorMessage);
+    // 如果配置了自定义错误处理，则调用
+    if (config?.onError) {
+      const businessError = errorCode
+        ? (new Error(errorMessage) as Error & { errorCode?: ErrorCodeType })
+        : new Error(errorMessage);
+      if (errorCode) {
+        (businessError as Error & { errorCode: ErrorCodeType }).errorCode =
+          errorCode;
+      }
+      config.onError(businessError);
+      return;
+    }
 
-    // 状态码处理
+    // 根据错误分类处理
+    if (errorCode) {
+      const category = getErrorCategory(errorCode);
+
+      // 认证错误处理
+      if (category === ErrorCategory.AUTH) {
+        this.handleAuthError(errorCode, config);
+        return; // 认证错误不显示通用错误提示
+      }
+    }
+
+    // 显示错误提示（除非配置为静默或禁用错误提示）
+    if (
+      config?.showError !== false &&
+      config?.silent !== true &&
+      this.config.enableGlobalErrorToast
+    ) {
+      toast.error(errorMessage);
+    }
+
+    // HTTP 状态码处理
     switch (error.response?.status) {
-      case 401:
-        this.handleUnauthorized();
-        break;
       case 403:
-        window.location.href = "/403";
+        if (this.config.enableAuthRedirect) {
+          window.location.href = '/403';
+        }
         break;
       case 404:
-        // 可以选择是否全局处理 404
+        // 404 处理
+        if (this.config.enableAuthRedirect) {
+          window.location.href = '/404';
+        }
         break;
       case 500:
-        // 服务器错误处理
+        if (this.config.enableAuthRedirect) {
+          window.location.href = '/500';
+        }
         break;
+    }
+  }
+
+  /**
+   * 处理认证相关错误
+   */
+  private handleAuthError(errorCode: ErrorCodeType, config?: ApiRequestConfig) {
+    // 需要重新登录的错误
+    if (isLoginRequiredError(errorCode)) {
+      this.handleUnauthorized();
+      if (
+        config?.showError !== false &&
+        config?.silent !== true &&
+        this.config.enableGlobalErrorToast
+      ) {
+        toast.error(ERROR_MESSAGES[errorCode] || '登录已过期，请重新登录');
+      }
+      return;
+    }
+
+    // 其他认证错误
+    if (
+      config?.showError !== false &&
+      config?.silent !== true &&
+      this.config.enableGlobalErrorToast
+    ) {
+      switch (errorCode) {
+        case ErrorCode.ACCESS_DENIED:
+          toast.error('权限不足');
+          break;
+        case ErrorCode.LOGIN_FAILED:
+          toast.error('登录失败，请检查用户名和密码');
+          break;
+        case ErrorCode.ACCOUNT_DISABLED:
+          toast.error('账户已被禁用，请联系管理员');
+          break;
+        case ErrorCode.ACCOUNT_LOCKED:
+          toast.error('账户已被锁定，请稍后重试');
+          break;
+        default:
+          toast.error(ERROR_MESSAGES[errorCode] || '认证失败');
+      }
     }
   }
 
@@ -113,9 +238,52 @@ class HttpClient {
     useAuthStore.getState().logout();
 
     // 避免在登录页重复跳转
-    if (window.location.pathname !== "/login") {
-      window.location.href = "/login";
+    if (window.location.pathname !== '/auth/login') {
+      window.location.href = '/auth/login';
     }
+  }
+
+  /**
+   * 序列化查询参数
+   * 处理数组、对象、空值等特殊情况
+   */
+  private serializeParams(params: Record<string, unknown>): URLSearchParams {
+    const searchParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value == null || value === '') {
+        return; // 跳过空值
+      }
+
+      if (Array.isArray(value)) {
+        // 数组参数：tags=["vue", "react"] -> tags=vue&tags=react
+        value.forEach(item => {
+          if (item != null && item !== '') {
+            searchParams.append(key, String(item));
+          }
+        });
+      } else if (typeof value === 'object') {
+        // 对象参数：转为 JSON 字符串
+        searchParams.append(key, JSON.stringify(value));
+      } else {
+        // 普通参数
+        searchParams.append(key, String(value));
+      }
+    });
+
+    return searchParams;
+  }
+
+  /**
+   * 构建分页查询的 URL
+   */
+  private buildPageableUrl(
+    baseUrl: string,
+    params: PageableParams & Record<string, unknown>
+  ): string {
+    const searchParams = this.serializeParams(params);
+    const queryString = searchParams.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
   }
 
   // ============ HTTP 方法封装 ============
@@ -123,8 +291,11 @@ class HttpClient {
   /**
    * GET 请求
    */
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return this.instance.get(url, config);
+  async get<T>(
+    url: string,
+    config?: AxiosRequestConfig & ApiRequestConfig
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'GET', url });
   }
 
   /**
@@ -133,9 +304,9 @@ class HttpClient {
   async post<T>(
     url: string,
     data?: unknown,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
-    return this.instance.post(url, data, config);
+    config?: AxiosRequestConfig & ApiRequestConfig
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'POST', url, data });
   }
 
   /**
@@ -144,9 +315,9 @@ class HttpClient {
   async put<T>(
     url: string,
     data?: unknown,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
-    return this.instance.put(url, data, config);
+    config?: AxiosRequestConfig & ApiRequestConfig
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'PUT', url, data });
   }
 
   /**
@@ -155,24 +326,100 @@ class HttpClient {
   async patch<T>(
     url: string,
     data?: unknown,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
-    return this.instance.patch(url, data, config);
+    config?: AxiosRequestConfig & ApiRequestConfig
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'PATCH', url, data });
   }
 
   /**
    * DELETE 请求
    */
-  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return this.instance.delete(url, config);
+  async delete<T>(
+    url: string,
+    config?: AxiosRequestConfig & ApiRequestConfig
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'DELETE', url });
   }
 
   /**
    * 通用请求方法
    */
-  async request<T>(config: AxiosRequestConfig): Promise<T> {
-    return this.instance.request(config);
+  async request<T>(
+    config: AxiosRequestConfig & ApiRequestConfig
+  ): Promise<ApiResponse<T>> {
+    // 提取 ApiRequestConfig 的配置
+    const {
+      showLoading,
+      showError,
+      silent,
+      onError,
+      onSuccess,
+      ...axiosConfig
+    } = config;
+    const apiConfig: ApiRequestConfig = {
+      showLoading,
+      showError,
+      silent,
+      onError,
+      onSuccess,
+    };
+
+    // 将 ApiRequestConfig 作为元数据附加到请求配置中
+    const requestConfig = {
+      ...axiosConfig,
+      metadata: apiConfig,
+    } as InternalAxiosRequestConfig & { metadata: ApiRequestConfig };
+
+    return this.instance.request(requestConfig);
   }
+
+  // ============ 分页查询便捷方法 ============
+
+  /**
+   * 分页查询 GET 请求
+   * 自动处理查询参数的序列化和 URL 构建
+   *
+   * @param url 基础 URL
+   * @param params 分页和查询参数
+   * @param config 额外的请求配置
+   * @returns 分页响应数据
+   */
+  async getPageable<T>(
+    url: string,
+    params: PageableParams & Record<string, unknown> = {},
+    config?: AxiosRequestConfig & ApiRequestConfig
+  ): Promise<ApiResponse<T>> {
+    // 设置默认分页参数
+    const defaultParams: PageableParams = {
+      currentPage: PAGINATION_CONFIG.DEFAULT_CURRENT_PAGE,
+      pageSize: PAGINATION_CONFIG.DEFAULT_PAGE_SIZE,
+      sort: PAGINATION_CONFIG.DEFAULT_SORT,
+      includeTotal: true,
+    };
+
+    const mergedParams = { ...defaultParams, ...params };
+    const requestUrl = this.buildPageableUrl(url, mergedParams);
+
+    return this.get<T>(requestUrl, config);
+  }
+
+  /**
+   * 搜索查询（通常也是分页的）
+   *
+   * @param url 搜索 URL
+   * @param searchParams 搜索参数
+   * @param config 额外的请求配置
+   * @returns 搜索结果
+   */
+  async search<T>(
+    url: string,
+    searchParams: Record<string, unknown> = {},
+    config?: AxiosRequestConfig & ApiRequestConfig
+  ): Promise<ApiResponse<T>> {
+    return this.getPageable<T>(url, searchParams, config);
+  }
+
+  // ============ 文件相关方法 ============
 
   /**
    * 上传文件
@@ -181,15 +428,41 @@ class HttpClient {
     url: string,
     file: File,
     onProgress?: (progress: number) => void
-  ): Promise<T> {
+  ): Promise<ApiResponse<T>> {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
 
     return this.instance.post(url, formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
-      onUploadProgress: (progressEvent) => {
+      onUploadProgress: progressEvent => {
+        if (onProgress && progressEvent.total) {
+          const progress = (progressEvent.loaded / progressEvent.total) * 100;
+          onProgress(Math.round(progress));
+        }
+      },
+    });
+  }
+
+  /**
+   * 批量上传文件
+   */
+  async uploadMultiple<T>(
+    url: string,
+    files: File[],
+    onProgress?: (progress: number) => void
+  ): Promise<ApiResponse<T>> {
+    const formData = new FormData();
+    files.forEach((file, index) => {
+      formData.append(`files[${index}]`, file);
+    });
+
+    return this.instance.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: progressEvent => {
         if (onProgress && progressEvent.total) {
           const progress = (progressEvent.loaded / progressEvent.total) * 100;
           onProgress(Math.round(progress));
@@ -203,21 +476,49 @@ class HttpClient {
    */
   async download(url: string, filename?: string): Promise<void> {
     const response = await this.instance.get(url, {
-      responseType: "blob",
+      responseType: 'blob',
     });
 
     const blob = new Blob([response.data]);
     const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = downloadUrl;
-    link.download = filename || "download";
+    link.download = filename || 'download';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(downloadUrl);
   }
+
+  // ============ 高级功能方法 ============
+
+  /**
+   * 并发请求
+   */
+  async concurrent<T extends readonly unknown[]>(
+    requests: readonly [...{ [K in keyof T]: Promise<T[K]> }]
+  ): Promise<T> {
+    return Promise.all(requests) as Promise<T>;
+  }
+
+  /**
+   * 取消请求的方法
+   */
+  createCancelToken() {
+    return axios.CancelToken.source();
+  }
+
+  /**
+   * 检查请求是否被取消
+   */
+  isCancel(error: unknown): boolean {
+    return axios.isCancel(error);
+  }
 }
 
 // 导出单例实例
 export const httpClient = new HttpClient();
+
+// 导出类和配置接口供高级用法
+export { HttpClient, type HttpClientConfig };
 export default httpClient;

@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+target/
+
+# Cache
+.vite/
+.cache/
+
+# Generated files
+*.min.js
+*.min.css
+
+# Config files that should maintain their format
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# Public static files
+public/
+
+# Generated documentation
+docs/generated/

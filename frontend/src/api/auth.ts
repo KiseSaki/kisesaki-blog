@@ -7,11 +7,11 @@ import type {
   ChangePasswordParams,
   ForgotPasswordParams,
   LoginParams,
-  LoginResponse,
   LogoutParams,
   RefreshTokenParams,
   RegisterParams,
   ResetPasswordParams,
+  TokenInfo,
   VerifyEmailParams,
 } from '@/types';
 
@@ -21,7 +21,7 @@ import type {
  * @returns 登录结果
  */
 export const loginApi = (params: LoginParams) =>
-  httpClient.post<LoginResponse>('/auth/login', params);
+  httpClient.post<TokenInfo>('/auth/login', params);
 
 /**
  * 用户注册
@@ -45,7 +45,7 @@ export const verifyEmailApi = (params: VerifyEmailParams) =>
  * @returns 新的登录响应
  */
 export const refreshTokenApi = (params: RefreshTokenParams) =>
-  httpClient.post<LoginResponse>('/auth/refreshToken', params);
+  httpClient.post<TokenInfo>('/auth/refreshToken', params);
 
 /**
  * 用户登出

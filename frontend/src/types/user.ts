@@ -143,6 +143,8 @@ export interface UserInfo extends User {
   themePreference?: string;
   privacyLevel?: string;
 
+  // 权限列表
+  roles: string[];
   // UserSettings 字段
   settings?: Record<string, string>;
 }

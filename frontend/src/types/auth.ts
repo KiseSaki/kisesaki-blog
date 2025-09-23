@@ -2,19 +2,12 @@
  * 认证相关类型定义
  */
 
-import type { User } from './user';
+import type { UserInfo } from './user';
 
 // 登录
 export interface LoginParams {
   username: string;
   password: string;
-}
-
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-  deviceId: string;
 }
 
 // 注册
@@ -76,28 +69,19 @@ export interface OAuthLoginParams {
 /**
  * OAuth 登录响应
  */
-export interface OAuthLoginResponse extends LoginResponse {
+export interface OAuthLoginResponse extends TokenInfo {
   // 是否为新用户
   isNewUser: boolean;
 }
 
 /**
- * 认证用户信息
- * 继承基础用户信息，并添加认证相关字段
+ * 认证用户相关
  */
-export interface AuthUser extends User {
-  // 用户角色
-  role: string;
-  // 用户权限列表
-  roles: string[];
-  // 显示名称（来自 profile）
-  displayName?: string;
-  // 头像URL（来自 profile）
-  avatarUrl?: string;
-  // 封面图URL（来自 profile）
-  coverImageUrl?: string;
-  // 个人简介（来自 profile）
-  bio?: string;
+export interface TokenInfo {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  deviceId: string;
 }
 
 /**
@@ -105,21 +89,27 @@ export interface AuthUser extends User {
  */
 export interface AuthState {
   // 当前认证用户
-  user: AuthUser | null;
+  user: UserInfo | null;
   // 访问令牌
-  token: string | null;
-  // 用户角色列表
-  roles: string[];
+  token: TokenInfo | null;
   // 是否已认证
   isAuthenticated: boolean;
   // 是否正在加载
   isLoading: boolean;
-  // 设置用户和令牌
-  setUserAndToken: (user: AuthUser, token: string) => void;
+  // 用户信息是否已加载
+  userLoaded: boolean;
+  // 设置令牌
+  setToken: (token: TokenInfo) => void;
+  // 设置用户信息
+  setUser: (user: UserInfo) => void;
+  // 设置用户和令牌（保留兼容性）
+  setUserAndToken: (user: UserInfo, token: TokenInfo) => void;
   // 更新用户信息
-  updateUser: (user: Partial<AuthUser>) => void;
+  updateUser: (user: Partial<UserInfo>) => void;
   // 登出
   logout: () => void;
   // 设置加载状态
   setLoading: (loading: boolean) => void;
+  // 设置用户加载状态
+  setUserLoaded: (loaded: boolean) => void;
 }

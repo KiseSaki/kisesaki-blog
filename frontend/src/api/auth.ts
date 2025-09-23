@@ -2,7 +2,7 @@
  * 身份验证相关 API 接口函数
  * 包含登录、注册、OAuth 等认证相关的 API 调用
  */
-import httpClient from '@/lib/client';
+import { httpClient } from '@/lib';
 import type {
   ChangePasswordParams,
   ForgotPasswordParams,
@@ -13,7 +13,7 @@ import type {
   RegisterParams,
   ResetPasswordParams,
   VerifyEmailParams,
-} from '@/types/auth';
+} from '@/types';
 
 /**
  * 用户登录

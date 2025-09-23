@@ -4,12 +4,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import com.kisesaki.blog.auth.entity.Permission;
 import com.kisesaki.blog.auth.entity.Role;
 
 import lombok.Getter;
@@ -32,43 +34,69 @@ public class CustomUserPrincipal implements UserDetails, OAuth2User {
     // 用户角色信息
     @Getter
     private final List<Role> roles;
+    // 用户权限信息
+    @Getter
+    private final List<Permission> permissions;
 
     /**
      * 用于本地用户认证的构造函数。
      *
-     * @param id       用户ID
-     * @param username 用户名
-     * @param password 加密后的密码
-     * @param roles    角色列表
+     * @param id          用户ID
+     * @param username    用户名
+     * @param password    加密后的密码
+     * @param roles       角色列表
+     * @param permissions 权限列表
      */
-    public CustomUserPrincipal(Long id, String username, String password, List<Role> roles) {
+    public CustomUserPrincipal(Long id, String username, String password, List<Role> roles,
+            List<Permission> permissions) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.roles = roles;
-        this.authorities = roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()))
-                .collect(Collectors.toList());
+        this.permissions = permissions;
+        this.authorities = buildAuthorities(roles, permissions);
         this.attributes = null;
     }
 
     /**
      * 用于 OAuth2 用户的构造函数。
      *
-     * @param id         用户ID
-     * @param username   用户名
-     * @param roles      角色列表
-     * @param attributes 从 OAuth2 提供商获取的原始属性
+     * @param id          用户ID
+     * @param username    用户名
+     * @param roles       角色列表
+     * @param permissions 权限列表
+     * @param attributes  从 OAuth2 提供商获取的原始属性
      */
-    public CustomUserPrincipal(Long id, String username, List<Role> roles, Map<String, Object> attributes) {
+    public CustomUserPrincipal(Long id, String username, List<Role> roles, List<Permission> permissions,
+            Map<String, Object> attributes) {
         this.id = id;
         this.username = username;
         this.password = null; // OAuth2用户没有密码
         this.roles = roles;
-        this.authorities = roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()))
-                .collect(Collectors.toList());
+        this.permissions = permissions;
+        this.authorities = buildAuthorities(roles, permissions);
         this.attributes = attributes;
+    }
+
+    /**
+     * 构建用户的权限列表，包含角色和具体权限
+     *
+     * @param roles       角色列表
+     * @param permissions 权限列表
+     * @return 权限集合
+     */
+    private Collection<? extends GrantedAuthority> buildAuthorities(List<Role> roles, List<Permission> permissions) {
+        // 角色权限（以ROLE_前缀）
+        Stream<GrantedAuthority> roleAuthorities = roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()));
+
+        // 具体权限
+        Stream<GrantedAuthority> permissionAuthorities = permissions.stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.getName()));
+
+        // 合并角色权限和具体权限
+        return Stream.concat(roleAuthorities, permissionAuthorities)
+                .collect(Collectors.toList());
     }
 
     // --- UserDetails 接口方法实现 ---

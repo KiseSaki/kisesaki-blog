@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import com.kisesaki.blog.auth.entity.Permission;
 import com.kisesaki.blog.auth.entity.Role;
 import com.kisesaki.blog.auth.mapper.RoleMapper;
 import com.kisesaki.blog.auth.security.user.CustomUserPrincipal;
@@ -72,6 +73,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // 获取用户角色信息
         List<Role> userRoles = roleMapper.findRolesByUserId(user.getId());
 
-        return new CustomUserPrincipal(user.getId(), user.getUsername(), userRoles, oauth2User.getAttributes());
+        // 获取用户权限信息
+        List<Permission> userPermissions = roleMapper.findPermissionsByUserId(user.getId());
+
+        return new CustomUserPrincipal(user.getId(), user.getUsername(), userRoles, userPermissions,
+                oauth2User.getAttributes());
     }
 }

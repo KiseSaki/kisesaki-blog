@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.kisesaki.blog.auth.entity.Permission;
 import com.kisesaki.blog.auth.entity.Role;
 import com.kisesaki.blog.auth.mapper.RoleMapper;
 import com.kisesaki.blog.user.entity.User;
@@ -47,10 +48,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("该用户不存在");
         }
 
-        List<Role> roles = roleMapper.findRolesByUserId(user.getId());
-
-        return new CustomUserPrincipal(user.getId(), user.getUsername(), user.getPassword(), roles);
-
+        return loadUserDetails(user);
     }
 
     /**
@@ -69,11 +67,27 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UserPrincipalNotFoundException("该用户不存在");
         }
 
-        List<Role> roles = roleMapper.findRolesByUserId(user.getId());
-        log.info("User {} loaded with roles: {}", user.getUsername(),
-                roles.stream().map(Role::getName).collect(Collectors.toList()));
-
-        return new CustomUserPrincipal(user.getId(), user.getUsername(), user.getPassword(), roles);
+        return loadUserDetails(user);
     }
 
+    /**
+     * 加载用户详细信息，包括角色和权限
+     *
+     * @param user 用户实体
+     * @return UserDetails 对象
+     */
+    private UserDetails loadUserDetails(User user) {
+        // 获取用户角色
+        List<Role> roles = roleMapper.findRolesByUserId(user.getId());
+
+        // 获取用户权限
+        List<Permission> permissions = roleMapper.findPermissionsByUserId(user.getId());
+
+        log.info("User {} loaded with roles: {} and permissions: {}",
+                user.getUsername(),
+                roles.stream().map(Role::getName).collect(Collectors.toList()),
+                permissions.stream().map(Permission::getName).collect(Collectors.toList()));
+
+        return new CustomUserPrincipal(user.getId(), user.getUsername(), user.getPassword(), roles, permissions);
+    }
 }

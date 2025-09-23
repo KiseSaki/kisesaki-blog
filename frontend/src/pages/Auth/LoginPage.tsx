@@ -14,15 +14,12 @@ import {
   FormMessage,
   Input,
 } from '@/components';
+import { useAuth } from '@/hooks';
 import { GithubOutlined, GitlabOutlined } from '@ant-design/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router';
 import z from 'zod';
-
-/**
- * 用户登录页面
- * 支持邮箱密码登录和 GitHub/Gitee OAuth 登录
- */
 
 // 表单验证模式
 const loginSchema = z.object({
@@ -35,7 +32,26 @@ const loginSchema = z.object({
 });
 type LoginFormData = z.infer<typeof loginSchema>;
 
+/**
+ * 用户登录页面
+ * 支持邮箱密码登录和 GitHub/Gitee OAuth 登录
+ */
 const LoginPage = () => {
+  const { login } = useAuth();
+  const navigation = useNavigate();
+
+  /**
+   * 提交登录表单
+   * @param data
+   */
+  const handleSubmit = async (data: LoginFormData) => {
+    const success = await login(data);
+    if (success) {
+      navigation('/'); // 登录成功后跳转到首页
+    }
+  };
+
+  // React Hook Form 表单实例
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -125,7 +141,11 @@ const LoginPage = () => {
                   </a>
                 </div>
 
-                <Button type='submit' className='w-full'>
+                <Button
+                  type='submit'
+                  className='w-full'
+                  onClick={form.handleSubmit(handleSubmit)}
+                >
                   登录
                 </Button>
               </form>

@@ -1,9 +1,4 @@
-import {
-  API_CONFIG,
-  ENV_CONFIG,
-  PAGINATION_CONFIG,
-  PUBLIC_API_URLS,
-} from '@/config';
+import { API_CONFIG, ENV_CONFIG, PAGINATION_CONFIG } from '@/config';
 import axios, {
   type AxiosError,
   type AxiosInstance,
@@ -75,11 +70,8 @@ class HttpClient {
     // 请求拦截器
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        const token = useAuthStore.getState().token;
-
-        if (token && !this.isPublicUrl(config.url)) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
+        const token = useAuthStore.getState().token?.accessToken;
+        config.headers.Authorization = `Bearer ${token}`;
 
         return config;
       },
@@ -106,13 +98,6 @@ class HttpClient {
         return Promise.reject(error);
       }
     );
-  }
-
-  /**
-   * 判断是否为公开 URL（不需要 token）
-   */
-  private isPublicUrl(url?: string): boolean {
-    return PUBLIC_API_URLS.some(publicUrl => url?.includes(publicUrl));
   }
 
   /**
@@ -294,7 +279,7 @@ class HttpClient {
   async get<T>(
     url: string,
     config?: AxiosRequestConfig & ApiRequestConfig
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     return this.request<T>({ ...config, method: 'GET', url });
   }
 
@@ -305,7 +290,7 @@ class HttpClient {
     url: string,
     data?: unknown,
     config?: AxiosRequestConfig & ApiRequestConfig
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     return this.request<T>({ ...config, method: 'POST', url, data });
   }
 
@@ -316,7 +301,7 @@ class HttpClient {
     url: string,
     data?: unknown,
     config?: AxiosRequestConfig & ApiRequestConfig
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     return this.request<T>({ ...config, method: 'PUT', url, data });
   }
 
@@ -327,7 +312,7 @@ class HttpClient {
     url: string,
     data?: unknown,
     config?: AxiosRequestConfig & ApiRequestConfig
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     return this.request<T>({ ...config, method: 'PATCH', url, data });
   }
 
@@ -337,16 +322,14 @@ class HttpClient {
   async delete<T>(
     url: string,
     config?: AxiosRequestConfig & ApiRequestConfig
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     return this.request<T>({ ...config, method: 'DELETE', url });
   }
 
   /**
    * 通用请求方法
    */
-  async request<T>(
-    config: AxiosRequestConfig & ApiRequestConfig
-  ): Promise<ApiResponse<T>> {
+  async request<T>(config: AxiosRequestConfig & ApiRequestConfig): Promise<T> {
     // 提取 ApiRequestConfig 的配置
     const {
       showLoading,
@@ -388,7 +371,7 @@ class HttpClient {
     url: string,
     params: PageableParams & Record<string, unknown> = {},
     config?: AxiosRequestConfig & ApiRequestConfig
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     // 设置默认分页参数
     const defaultParams: PageableParams = {
       currentPage: PAGINATION_CONFIG.DEFAULT_CURRENT_PAGE,
@@ -415,7 +398,7 @@ class HttpClient {
     url: string,
     searchParams: Record<string, unknown> = {},
     config?: AxiosRequestConfig & ApiRequestConfig
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     return this.getPageable<T>(url, searchParams, config);
   }
 
@@ -428,7 +411,7 @@ class HttpClient {
     url: string,
     file: File,
     onProgress?: (progress: number) => void
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -452,7 +435,7 @@ class HttpClient {
     url: string,
     files: File[],
     onProgress?: (progress: number) => void
-  ): Promise<ApiResponse<T>> {
+  ): Promise<T> {
     const formData = new FormData();
     files.forEach((file, index) => {
       formData.append(`files[${index}]`, file);

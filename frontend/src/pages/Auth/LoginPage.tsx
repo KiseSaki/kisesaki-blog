@@ -10,22 +10,11 @@ import {
 } from '@/components';
 import AuthLayout from '@/components/common/AuthLayout';
 import { useAuth } from '@/hooks';
+import { loginSchema, type LoginFormData } from '@/shcema';
 import { GithubOutlined, GitlabOutlined } from '@ant-design/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router'; // changed
-import z from 'zod';
-
-// 表单验证模式
-const loginSchema = z.object({
-  username: z
-    .string()
-    .min(3, '用户名至少3个字符')
-    .max(50, '用户名最多50个字符'),
-  password: z.string().min(6, '密码至少6个字符').max(100, '密码最多100个字符'),
-  remember: z.boolean().default(false).optional(),
-});
-type LoginFormData = z.infer<typeof loginSchema>;
+import { useNavigate } from 'react-router';
 
 /**
  * 用户登录页面

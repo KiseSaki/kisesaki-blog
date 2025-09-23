@@ -1,11 +1,5 @@
 import {
   Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
   Form,
   FormControl,
   FormField,
@@ -14,11 +8,12 @@ import {
   FormMessage,
   Input,
 } from '@/components';
+import AuthLayout from '@/components/common/AuthLayout';
 import { useAuth } from '@/hooks';
 import { GithubOutlined, GitlabOutlined } from '@ant-design/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router'; // changed
 import z from 'zod';
 
 // 表单验证模式
@@ -62,97 +57,20 @@ const LoginPage = () => {
   });
 
   return (
-    <div className='min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 text-sm'>
-      <div className='max-w-md w-full space-y-8'>
-        <Card className='shadow-lg'>
-          <CardHeader className='text-center'>
-            <CardTitle className='text-lg font-bold'>
-              欢迎访问KiseSaki的博客
-            </CardTitle>
-            <CardDescription>
-              没有账户？
-              <a href='/auth/register' className='text-primary'>
-                {' '}
-                注册一个
-              </a>
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <Form {...form}>
-              <form
-                className='space-y-4'
-                onSubmit={form.handleSubmit(data => console.log(data))}
-              >
-                <FormField
-                  name='username'
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>用户名</FormLabel>
-                      <FormControl>
-                        <Input placeholder='请输入用户名' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  name='password'
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>密码</FormLabel>
-                      <FormControl>
-                        <Input
-                          type='password'
-                          placeholder='请输入密码'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className='flex items-center justify-between'>
-                  <FormField
-                    name='remember'
-                    control={form.control}
-                    render={({ field }) => (
-                      <FormItem className='flex items-center'>
-                        <FormControl>
-                          <Input
-                            type='checkbox'
-                            className='h-3 w-3 rounded-sm'
-                            checked={field.value}
-                            onChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className='text-sm font-normal'>
-                          记住我
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                  <a href='/auth/forgot-password' className='text-primary'>
-                    忘记密码？
-                  </a>
-                </div>
-
-                <Button
-                  type='submit'
-                  className='w-full'
-                  onClick={form.handleSubmit(handleSubmit)}
-                >
-                  登录
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-
-          <CardFooter className='flex flex-col space-y-4'>
+    <AuthLayout
+      title='欢迎访问KiseSaki的博客'
+      description={
+        <>
+          没有账户？
+          <a href='/auth/register' className='text-primary'>
+            {' '}
+            注册一个
+          </a>
+        </>
+      }
+      footer={
+        <>
+          <div className='w-full flex flex-col space-y-4'>
             {/* 分割线 */}
             <div className='relative w-full'>
               <div className='absolute inset-0 flex items-center'>
@@ -176,10 +94,72 @@ const LoginPage = () => {
                 Gitee
               </Button>
             </div>
-          </CardFooter>
-        </Card>
-      </div>
-    </div>
+          </div>
+        </>
+      }
+    >
+      <Form {...form}>
+        <form
+          className='space-y-4'
+          onSubmit={form.handleSubmit(handleSubmit)} // 统一在这里处理提交
+        >
+          <FormField
+            name='username'
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>用户名</FormLabel>
+                <FormControl>
+                  <Input placeholder='请输入用户名' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            name='password'
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>密码</FormLabel>
+                <FormControl>
+                  <Input type='password' placeholder='请输入密码' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className='flex items-center justify-between'>
+            <FormField
+              name='remember'
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className='flex items-center'>
+                  <FormControl>
+                    <Input
+                      type='checkbox'
+                      className='h-3 w-3 rounded-sm'
+                      checked={!!field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className='text-sm font-normal'>记住我</FormLabel>
+                </FormItem>
+              )}
+            />
+            <a href='/auth/forgot-password' className='text-primary'>
+              忘记密码？
+            </a>
+          </div>
+
+          <Button type='submit' className='w-full'>
+            登录
+          </Button>
+        </form>
+      </Form>
+    </AuthLayout>
   );
 };
 

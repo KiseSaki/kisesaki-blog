@@ -3,9 +3,7 @@
  * 支持邮箱注册和表单验证
  */
 const RegisterPage = () => {
-    return (
-        <div>RegisterPage</div>
-    )
-}
+  return <div>RegisterPage</div>;
+};
 
 export default RegisterPage;

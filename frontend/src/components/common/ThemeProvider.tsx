@@ -17,25 +17,21 @@ interface ThemeProviderProps {
  */
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const { mode, applyTheme } = useThemeStore();
-  
+
   // 初始化时应用主题
   useEffect(() => {
     applyTheme();
   }, [applyTheme]);
-  
+
   // Ant Design 主题配置
   const antdTheme = useMemo(() => {
     const themeConfig = getAntdTheme(mode);
-    
+
     return {
       ...themeConfig,
       algorithm: mode === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
     };
   }, [mode]);
-  
-  return (
-    <ConfigProvider theme={antdTheme}>
-      {children}
-    </ConfigProvider>
-  );
+
+  return <ConfigProvider theme={antdTheme}>{children}</ConfigProvider>;
 };

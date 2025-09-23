@@ -3,9 +3,7 @@
  * 当用户访问无权限的页面时显示
  */
 const ForbiddenPage = () => {
-    return (
-        <div>ForbiddenPage</div>
-    )
-}
+  return <div>ForbiddenPage</div>;
+};
 
 export default ForbiddenPage;

@@ -3,9 +3,7 @@
  * 当服务器出现内部错误时显示
  */
 const ServerErrorPage = () => {
-    return (
-        <div>ServerErrorPage</div>
-    )
-}
+  return <div>ServerErrorPage</div>;
+};
 
 export default ServerErrorPage;

@@ -1,53 +1,95 @@
 {
-    "github.copilot.chat.commitMessageGeneration.instructions": [
-        {
-            "file": "/guidance/commit-message.md"
-        }
-    ],
-    // 编辑器优化配置
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": "explicit"
-    },
-    "editor.unusedImports.severity": "ignore",
-    "editor.showUnused": false,
-    "problems.decorations.enabled": false,
-    // 自动保存配置
-    "files.autoSave": "afterDelay",
-    "files.autoSaveDelay": 1000,
-    // 文件关联配置
-    "files.associations": {
-        "*.yml": "yaml",
-        "*.yaml": "yaml"
-    },
-    // 代码窥视视图颜色配置
-    "workbench.colorCustomizations": {
-        "peekView.border": "#FF0000",
-        "peekViewEditor.background": "#1e1e1e",
-        "peekViewResult.background": "#252526",
-        "peekViewTitle.background": "#3c3c3c"
-    },
-    // 工作区文件搜索配置
-    "search.exclude": {
-        "**/node_modules": true,
-        "**/target": true,
-        "**/.git": true,
-        "**/dist": true,
-        "**/build": true,
-        "**/*.log": true
-    },
-    // 文件监视排除
-    "files.watcherExclude": {
-        "**/node_modules/**": true,
-        "**/target/**": true,
-        "**/.git/**": true,
-        "**/dist/**": true,
-        "**/build/**": true
-    },
-    // 工作区推荐的文件夹折叠
-    "explorer.compactFolders": false,
-    // 多项目支持
-    "typescript.preferences.includePackageJsonAutoImports": "on",
-    "typescript.suggest.autoImports": true,
-    "java.compile.nullAnalysis.mode": "automatic"
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "file": "/guidance/commit-message.md"
+    }
+  ],
+  // 编辑器优化配置
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "editor.unusedImports.severity": "ignore",
+  "editor.showUnused": false,
+  "problems.decorations.enabled": false,
+  // 缩进和格式化配置
+  "editor.tabSize": 2,
+  "editor.indentSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  // 自动保存配置
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  // 文件关联配置
+  "files.associations": {
+    "*.yml": "yaml",
+    "*.yaml": "yaml"
+  },
+  // 代码窥视视图颜色配置
+  "workbench.colorCustomizations": {
+    "peekView.border": "#FF0000",
+    "peekViewEditor.background": "#1e1e1e",
+    "peekViewResult.background": "#252526",
+    "peekViewTitle.background": "#3c3c3c"
+  },
+  // 工作区文件搜索配置
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/.git": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/*.log": true
+  },
+  // 文件监视排除
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/target/**": true,
+    "**/.git/**": true,
+    "**/dist/**": true,
+    "**/build/**": true
+  },
+  // 工作区推荐的文件夹折叠
+  "explorer.compactFolders": false,
+  // 多项目支持
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "java.compile.nullAnalysis.mode": "automatic"
 }

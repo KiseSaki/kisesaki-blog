@@ -6,4 +6,3 @@ export * from './Pagination';
 export * from './SuspenseWrapper';
 export { ThemeProvider } from './ThemeProvider';
 export { ThemeToggle } from './ThemeToggle';
-

@@ -3,9 +3,7 @@
  * 管理员用于审核、回复、删除评论的页面
  */
 const CommentManagement = () => {
-    return (
-        <div>CommentManagement</div>
-    )
-}
+  return <div>CommentManagement</div>;
+};
 
 export default CommentManagement;

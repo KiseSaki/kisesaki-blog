@@ -1,17 +1,13 @@
 /**
- * 校验相关类型定义
+ * 认证相关类型定义
  */
+
+import type { UserInfo } from './user';
 
 // 登录
 export interface LoginParams {
   username: string;
   password: string;
-}
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-  deviceId: string;
 }
 
 // 注册
@@ -56,25 +52,64 @@ export interface ResetPasswordParams {
   newPassword: string;
 }
 
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  nickname?: string;
-  avatar?: string;
-  role: string;
-  roles: string[];
-  createdAt: string;
-  updatedAt: string;
+/**
+ * OAuth 登录参数
+ */
+export interface OAuthLoginParams {
+  // OAuth 提供商
+  provider: 'github' | 'gitee' | 'google';
+  // 授权码
+  code: string;
+  // 重定向URI
+  redirectUri?: string;
+  // 状态参数
+  state?: string;
+}
+
+/**
+ * OAuth 登录响应
+ */
+export interface OAuthLoginResponse extends TokenInfo {
+  // 是否为新用户
+  isNewUser: boolean;
+}
+
+/**
+ * 认证用户相关
+ */
+export interface TokenInfo {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  deviceId: string;
 }
 
 /**
  * 认证状态接口
  */
 export interface AuthState {
-  user: User | null;
-  token: string | null;
-  roles: string[];
-  setUserAndToken: (user: User, token: string) => void;
+  // 当前认证用户
+  user: UserInfo | null;
+  // 访问令牌
+  token: TokenInfo | null;
+  // 是否已认证
+  isAuthenticated: boolean;
+  // 是否正在加载
+  isLoading: boolean;
+  // 用户信息是否已加载
+  userLoaded: boolean;
+  // 设置令牌
+  setToken: (token: TokenInfo) => void;
+  // 设置用户信息
+  setUser: (user: UserInfo) => void;
+  // 设置用户和令牌（保留兼容性）
+  setUserAndToken: (user: UserInfo, token: TokenInfo) => void;
+  // 更新用户信息
+  updateUser: (user: Partial<UserInfo>) => void;
+  // 登出
   logout: () => void;
+  // 设置加载状态
+  setLoading: (loading: boolean) => void;
+  // 设置用户加载状态
+  setUserLoaded: (loaded: boolean) => void;
 }

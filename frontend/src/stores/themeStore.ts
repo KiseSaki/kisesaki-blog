@@ -29,7 +29,7 @@ export const useThemeStore = create<ThemeState>()(
     (set, get) => ({
       mode: 'light',
       colors: themes.light,
-      
+
       toggleTheme: () => {
         const currentMode = get().mode;
         const newMode: ThemeMode = currentMode === 'light' ? 'dark' : 'light';
@@ -39,7 +39,7 @@ export const useThemeStore = create<ThemeState>()(
         });
         get().applyTheme();
       },
-      
+
       setTheme: (mode: ThemeMode) => {
         set({
           mode,
@@ -47,15 +47,21 @@ export const useThemeStore = create<ThemeState>()(
         });
         get().applyTheme();
       },
-      
+
       applyTheme: () => {
         const { mode, colors } = get();
         const root = document.documentElement;
-        
+
         // 设置 CSS 自定义属性
         root.style.setProperty('--theme-background', colors.background);
-        root.style.setProperty('--theme-card-background', colors.cardBackground);
-        root.style.setProperty('--theme-navbar-background', colors.navbarBackground);
+        root.style.setProperty(
+          '--theme-card-background',
+          colors.cardBackground
+        );
+        root.style.setProperty(
+          '--theme-navbar-background',
+          colors.navbarBackground
+        );
         root.style.setProperty('--theme-primary-text', colors.primaryText);
         root.style.setProperty('--theme-secondary-text', colors.secondaryText);
         root.style.setProperty('--theme-primary', colors.primary);
@@ -67,14 +73,14 @@ export const useThemeStore = create<ThemeState>()(
         root.style.setProperty('--theme-warning', colors.warning);
         root.style.setProperty('--theme-error', colors.error);
         root.style.setProperty('--theme-info', colors.info);
-        
+
         // 设置 dark class 用于 Tailwind CSS
         if (mode === 'dark') {
           root.classList.add('dark');
         } else {
           root.classList.remove('dark');
         }
-        
+
         // 设置主题属性用于其他样式
         root.setAttribute('data-theme', mode);
       },
@@ -91,7 +97,7 @@ export const useThemeStore = create<ThemeState>()(
  */
 export const useTheme = () => {
   const { mode, colors, toggleTheme, setTheme } = useThemeStore();
-  
+
   return {
     mode,
     colors,

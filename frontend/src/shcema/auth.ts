@@ -79,3 +79,9 @@ export const emailVerificationSchema = z.object({
   emailToken: z.string().trim().min(1, '验证令牌不能为空'),
 });
 export type EmailVerificationFormData = z.infer<typeof emailVerificationSchema>;
+
+/**
+ * 邮箱验证
+ */
+export const emailSchema = z.email('请输入有效的邮箱地址').transform(e => e.toLowerCase());
+export type EmailFormData = z.infer<typeof emailSchema>;

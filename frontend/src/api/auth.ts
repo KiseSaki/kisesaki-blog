@@ -107,3 +107,11 @@ export const resetPasswordApi = (params: ResetPasswordParams) =>
  */
 export const cleanExpiredTokensApi = () =>
   httpClient.post<string>('/auth/clean-expired');
+
+/**
+ * 重新发送邮箱验证码
+ * @param email 邮箱地址
+ * @returns 发送结果
+ */
+export const resendVerificationCodeApi = (email: string) =>
+  httpClient.post<string>('/auth/resend-verification', { email });

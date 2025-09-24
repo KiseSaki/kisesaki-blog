@@ -1,197 +1,222 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>新评论通知 - KiseSaki博客</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-        .container {
-            background: white;
-            border-radius: 10px;
-            padding: 40px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 32px;
-            font-weight: bold;
-            color: #6366f1;
-            margin-bottom: 10px;
-        }
-        .title {
-            font-size: 24px;
-            color: #1f2937;
-            margin-bottom: 20px;
-        }
-        .content {
-            margin-bottom: 30px;
-        }
-        .notification-box {
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            color: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin: 30px 0;
-        }
-        .comment-card {
-            background: #f9fafb;
-            border-left: 4px solid #6366f1;
-            padding: 20px;
-            border-radius: 4px;
-            margin: 20px 0;
-        }
-        .commenter-info {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #6366f1;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-right: 15px;
-        }
-        .commenter-details {
-            flex: 1;
-        }
-        .commenter-name {
-            font-weight: 600;
-            color: #374151;
-            margin: 0;
-        }
-        .comment-time {
-            font-size: 12px;
-            color: #6b7280;
-            margin: 0;
-        }
-        .comment-content {
-            background: white;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-            margin: 15px 0;
-            font-style: italic;
-        }
-        .post-info {
-            background: #f3f4f6;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 20px 0;
-        }
-        .button {
-            display: inline-block;
-            background: #6366f1;
-            color: white;
-            padding: 12px 30px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 500;
-            margin: 10px 5px;
-        }
-        .button-secondary {
-            background: #6b7280;
-        }
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            font-size: 14px;
-            color: #6b7280;
-            text-align: center;
-        }
-        .actions {
-            text-align: center;
-            margin: 30px 0;
-        }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      .container {
+        background: white;
+        border-radius: 10px;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .logo {
+        font-size: 32px;
+        font-weight: bold;
+        color: #6366f1;
+        margin-bottom: 10px;
+      }
+      .title {
+        font-size: 24px;
+        color: #1f2937;
+        margin-bottom: 20px;
+      }
+      .content {
+        margin-bottom: 30px;
+      }
+      .notification-box {
+        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin: 30px 0;
+      }
+      .comment-card {
+        background: #f9fafb;
+        border-left: 4px solid #6366f1;
+        padding: 20px;
+        border-radius: 4px;
+        margin: 20px 0;
+      }
+      .commenter-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #6366f1;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+      }
+      .commenter-details {
+        flex: 1;
+      }
+      .commenter-name {
+        font-weight: 600;
+        color: #374151;
+        margin: 0;
+      }
+      .comment-time {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0;
+      }
+      .comment-content {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        margin: 15px 0;
+        font-style: italic;
+      }
+      .post-info {
+        background: #f3f4f6;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 20px 0;
+      }
+      .button {
+        display: inline-block;
+        background: #6366f1;
+        color: white;
+        padding: 12px 30px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 500;
+        margin: 10px 5px;
+      }
+      .button-secondary {
+        background: #6b7280;
+      }
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        font-size: 14px;
+        color: #6b7280;
+        text-align: center;
+      }
+      .actions {
+        text-align: center;
+        margin: 30px 0;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <div class="logo">KiseSaki博客</div>
-            <h1 class="title">💬 您收到了新评论</h1>
+      <div class="header">
+        <div class="logo">KiseSaki博客</div>
+        <h1 class="title">💬 您收到了新评论</h1>
+      </div>
+
+      <div class="content">
+        <p>您好 <strong>${userName}</strong>，</p>
+
+        <div class="notification-box">
+          <h3 style="margin-top: 0; font-size: 20px">🎉 有人评论了您的文章</h3>
+          <p style="margin-bottom: 0">您的文章收到了一条新评论，快去看看吧！</p>
         </div>
-        
-        <div class="content">
-            <p>您好 <strong>${userName}</strong>，</p>
-            
-            <div class="notification-box">
-                <h3 style="margin-top: 0; font-size: 20px;">🎉 有人评论了您的文章</h3>
-                <p style="margin-bottom: 0;">您的文章收到了一条新评论，快去看看吧！</p>
-            </div>
-            
-            <div class="post-info">
-                <h4 style="margin-top: 0; color: #374151;">📝 文章信息</h4>
-                <p style="margin: 5px 0;"><strong>文章标题：</strong>${postTitle}</p>
-                <p style="margin: 5px 0;"><strong>文章链接：</strong><a href="${postUrl}" style="color: #6366f1;">${postUrl}</a></p>
-            </div>
-            
-            <div class="comment-card">
-                <div class="commenter-info">
-                    <div class="avatar">
-                        ${commenterName ? commenterName.substring(0,1).toUpperCase() : '?'}
-                    </div>
-                    <div class="commenter-details">
-                        <p class="commenter-name">${commenterName}</p>
-                        <p class="comment-time">刚刚发表了评论</p>
-                    </div>
-                </div>
-                
-                <div class="comment-content">
-                    "${commentContent}"
-                </div>
-            </div>
-            
-            <div class="actions">
-                <a href="${postUrl}" class="button">查看评论</a>
-                <a href="${postUrl}#comments" class="button">回复评论</a>
-                <a href="http://localhost:3000/notifications" class="button button-secondary">管理通知</a>
-            </div>
-            
-            <div style="background: #f0f9ff; border: 1px solid #0ea5e9; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <h4 style="margin-top: 0; color: #0ea5e9;">💡 互动提示</h4>
-                <p style="margin-bottom: 0;">积极与读者互动能够：</p>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                    <li>增加文章的活跃度和曝光度</li>
-                    <li>建立与读者的良好关系</li>
-                    <li>获得更多有价值的反馈</li>
-                    <li>提升个人影响力</li>
-                </ul>
-            </div>
-            
-            <p><strong>通知设置：</strong> 您可以在<a href="http://localhost:3000/settings/notifications" style="color: #6366f1;">通知设置</a>中管理您希望接收的通知类型。</p>
+
+        <div class="post-info">
+          <h4 style="margin-top: 0; color: #374151">📝 文章信息</h4>
+          <p style="margin: 5px 0"><strong>文章标题：</strong>${postTitle}</p>
+          <p style="margin: 5px 0">
+            <strong>文章链接：</strong
+            ><a href="${postUrl}" style="color: #6366f1">${postUrl}</a>
+          </p>
         </div>
-        
-        <div class="footer">
-            <p>感谢您在KiseSaki博客上的精彩分享！</p>
-            <p>
-                <a href="http://localhost:3000" style="color: #6366f1;">访问博客</a> |
-                <a href="http://localhost:3000/my/posts" style="color: #6366f1;">我的文章</a> |
-                <a href="http://localhost:3000/settings" style="color: #6366f1;">账户设置</a>
-            </p>
-            <p style="margin-top: 20px; font-size: 12px;">
-                此邮件由系统自动发送，请勿回复。<br>
-                © 2024 KiseSaki博客. 保留所有权利.
-            </p>
+
+        <div class="comment-card">
+          <div class="commenter-info">
+            <div class="avatar">
+              ${commenterName ? commenterName.substring(0,1).toUpperCase() :
+              '?'}
+            </div>
+            <div class="commenter-details">
+              <p class="commenter-name">${commenterName}</p>
+              <p class="comment-time">刚刚发表了评论</p>
+            </div>
+          </div>
+
+          <div class="comment-content">"${commentContent}"</div>
         </div>
+
+        <div class="actions">
+          <a href="${postUrl}" class="button">查看评论</a>
+          <a href="${postUrl}#comments" class="button">回复评论</a>
+          <a
+            href="${frontendBaseUrl}/notifications"
+            class="button button-secondary"
+            >管理通知</a
+          >
+        </div>
+
+        <div
+          style="
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+          "
+        >
+          <h4 style="margin-top: 0; color: #0ea5e9">💡 互动提示</h4>
+          <p style="margin-bottom: 0">积极与读者互动能够：</p>
+          <ul style="margin: 10px 0; padding-left: 20px">
+            <li>增加文章的活跃度和曝光度</li>
+            <li>建立与读者的良好关系</li>
+            <li>获得更多有价值的反馈</li>
+            <li>提升个人影响力</li>
+          </ul>
+        </div>
+
+        <p>
+          <strong>通知设置：</strong> 您可以在<a
+            href="${frontendBaseUrl}/settings/notifications"
+            style="color: #6366f1"
+            >通知设置</a
+          >中管理您希望接收的通知类型。
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>感谢您在KiseSaki博客上的精彩分享！</p>
+        <p>
+          <a href="${frontendBaseUrl}" style="color: #6366f1">访问博客</a> |
+          <a href="${frontendBaseUrl}/my/posts" style="color: #6366f1"
+            >我的文章</a
+          >
+          |
+          <a href="${frontendBaseUrl}/settings" style="color: #6366f1"
+            >账户设置</a
+          >
+        </p>
+        <p style="margin-top: 20px; font-size: 12px">
+          此邮件由系统自动发送，请勿回复。<br />
+          © 2024 KiseSaki博客. 保留所有权利.
+        </p>
+      </div>
     </div>
-</body>
+  </body>
 </html>

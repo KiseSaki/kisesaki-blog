@@ -26,7 +26,9 @@ import com.kisesaki.blog.auth.dto.auth.request.RegisterRequestDto;
 import com.kisesaki.blog.auth.dto.auth.request.ResetPasswordRequestDto;
 import com.kisesaki.blog.auth.dto.auth.request.VerifyEmailRequestDto;
 import com.kisesaki.blog.auth.dto.auth.response.LoginResponseDto;
+import com.kisesaki.blog.auth.entity.Role;
 import com.kisesaki.blog.auth.event.UserRegistrationEvent;
+import com.kisesaki.blog.auth.mapper.RoleMapper;
 import com.kisesaki.blog.auth.security.jwt.DeviceFingerprintService;
 import com.kisesaki.blog.auth.security.jwt.JwtTokenProvider;
 import com.kisesaki.blog.auth.security.jwt.RefreshTokenService;
@@ -65,6 +67,8 @@ public class AuthService {
     private final RedisService RedisService;
     private final RedisService redisService;
     private final EmailEventPublisher emailEventPublisher;
+    private final RoleMapper roleMapper;
+    private final UserRoleService userRoleService;
 
     @Value("${kisesaki.blog.jwt.expiration}")
     private Long jwtExpiration;
@@ -181,6 +185,9 @@ public class AuthService {
             userMapper.insert(user);
             log.info("用户注册成功，用户名：{}, ID: {}", user.getUsername(), user.getId());
 
+            // 为新用户分配 GUEST 角色（未验证邮箱用户）
+            assignGuestRoleToNewUser(user.getId());
+
             // 发送欢迎邮件
             UserRegistrationEvent event = new UserRegistrationEvent(
                     user.getId(),
@@ -234,6 +241,10 @@ public class AuthService {
             userMapper.updateById(user);
             // 删除整个key
             redisService.delete(redisKey);
+            
+            // 邮箱验证成功后，将用户从 GUEST 角色升级到 USER 角色
+            upgradeUserFromGuestToUser(user.getId());
+            
             log.info("用户 {} 的邮箱验证成功", user.getUsername());
             return ApiResponse.success("邮箱验证成功", "");
         } catch (Exception e) {
@@ -539,6 +550,56 @@ public class AuthService {
         } catch (Exception e) {
             log.error("清理用户 {} 过期令牌失败", username, e);
             return ApiResponse.error("清理过期令牌失败");
+        }
+    }
+
+    /**
+     * 为新用户分配 GUEST 角色
+     *
+     * @param userId 用户ID
+     */
+    private void assignGuestRoleToNewUser(Long userId) {
+        try {
+            // 查找 GUEST 角色
+            Role guestRole = roleMapper.selectOne(new LambdaQueryWrapper<Role>()
+                    .eq(Role::getName, "GUEST"));
+
+            if (guestRole != null) {
+                userRoleService.assignRoleToUser(userId, guestRole.getId());
+                log.info("为用户 {} 分配 GUEST 角色成功", userId);
+            } else {
+                log.warn("GUEST 角色不存在，无法为用户 {} 分配角色", userId);
+            }
+        } catch (Exception e) {
+            log.error("为用户 {} 分配 GUEST 角色失败：{}", userId, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 邮箱验证完成后，将用户从 GUEST 升级到 USER 角色
+     *
+     * @param userId 用户ID
+     */
+    private void upgradeUserFromGuestToUser(Long userId) {
+        try {
+            // 查找 GUEST 和 USER 角色
+            Role guestRole = roleMapper.selectOne(new LambdaQueryWrapper<Role>()
+                    .eq(Role::getName, "GUEST"));
+            Role userRole = roleMapper.selectOne(new LambdaQueryWrapper<Role>()
+                    .eq(Role::getName, "USER"));
+
+            if (guestRole != null && userRole != null) {
+                // 移除 GUEST 角色
+                userRoleService.removeRoleFromUser(userId, guestRole.getId());
+                // 分配 USER 角色
+                userRoleService.assignRoleToUser(userId, userRole.getId());
+                log.info("用户 {} 从 GUEST 角色升级到 USER 角色成功", userId);
+            } else {
+                log.warn("角色不存在：GUEST={}, USER={}，无法为用户 {} 升级角色", 
+                    guestRole != null, userRole != null, userId);
+            }
+        } catch (Exception e) {
+            log.error("用户 {} 角色升级失败：{}", userId, e.getMessage(), e);
         }
     }
 }

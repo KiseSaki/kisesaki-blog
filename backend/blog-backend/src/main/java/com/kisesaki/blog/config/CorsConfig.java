@@ -1,5 +1,8 @@
 package com.kisesaki.blog.config;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,9 +11,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * CORS 跨域配置类
@@ -32,12 +32,17 @@ import java.util.Collections;
 public class CorsConfig {
 
     /**
-     * 允许的前端域名列表，支持多环境配置
-     * 开发环境通常包括 localhost 的不同端口
-     * 生产环境应配置实际的域名
+     * 前端应用的基础URL
      */
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
-    private String[] allowedOrigins;
+    @Value("${kisesaki.blog.frontend.base-url}")
+    private String frontendBaseUrl;
+
+    /**
+     * 额外允许的前端域名列表，支持多环境配置
+     * 除了主要的前端地址外，还可以配置其他允许的域名（如开发环境的不同端口）
+     */
+    @Value("${app.cors.additional-origins:http://localhost:5173}")
+    private String[] additionalOrigins;
 
     /**
      * 是否允许携带认证信息
@@ -62,9 +67,25 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 设置允许的源
-        if (allowedOrigins != null && allowedOrigins.length > 0) {
-            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
-            log.info("CORS allowed origins: {}", Arrays.toString(allowedOrigins));
+        java.util.List<String> allowedOriginsList = new java.util.ArrayList<>();
+        
+        // 添加主要的前端地址
+        if (frontendBaseUrl != null && !frontendBaseUrl.trim().isEmpty()) {
+            allowedOriginsList.add(frontendBaseUrl.trim());
+        }
+        
+        // 添加额外的允许域名
+        if (additionalOrigins != null && additionalOrigins.length > 0) {
+            for (String origin : additionalOrigins) {
+                if (origin != null && !origin.trim().isEmpty()) {
+                    allowedOriginsList.add(origin.trim());
+                }
+            }
+        }
+        
+        if (!allowedOriginsList.isEmpty()) {
+            configuration.setAllowedOrigins(allowedOriginsList);
+            log.info("CORS allowed origins: {}", allowedOriginsList);
         } else {
             // 如果没有配置，默认允许所有源（仅开发环境）
             configuration.setAllowedOriginPatterns(Collections.singletonList("*"));

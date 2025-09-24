@@ -2,6 +2,7 @@ package com.kisesaki.blog.auth.security.oauth2;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final RefreshTokenService refreshTokenService;
     private final DeviceFingerprintService deviceFingerprintService;
 
+    /**
+     * 前端应用的基础URL，用于OAuth2登录成功后的重定向
+     */
+    @Value("${kisesaki.blog.frontend.base-url}")
+    private String frontendBaseUrl;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
@@ -47,7 +54,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // 构建目标 URL，用于重定向回前端。
         // 前端应该有一个专门的页面来接收这个重定向，并从 URL 中解析出 Token。
-        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:3000/oauth2/redirect") // 前端接收重定向的页面URL
+        String targetUrl = UriComponentsBuilder.fromUriString(frontendBaseUrl + "/oauth2/redirect") // 使用配置的前端地址
                 .queryParam("accessToken", accessToken) // 将 JWT 作为 URL 参数
                 .queryParam("refreshToken", refreshToken) // 将 Refresh Token 作为 URL 参数
                 .queryParam("deviceId", deviceId) // 将设备ID作为 URL 参数，前端需要存储用于后续token刷新

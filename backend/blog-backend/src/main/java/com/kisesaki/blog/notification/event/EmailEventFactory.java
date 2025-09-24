@@ -39,7 +39,7 @@ public class EmailEventFactory {
                 "userDisplayName", userDisplayName,
                 "confirmToken", confirmToken,
                 "confirmUrl",
-                applicationProperties.getFrontend().getBaseUrl() + "/auth/confirm?token=" + confirmToken);
+                applicationProperties.getFrontend().getBaseUrl() + "/auth/verify-email?token=" + confirmToken);
 
         return new EmailEvent(source, EmailType.EMAIL_VERIFICATION, toEmail, userId, userDisplayName,
                 variables, "欢迎注册KiseSaki博客 - 请确认您的邮箱",

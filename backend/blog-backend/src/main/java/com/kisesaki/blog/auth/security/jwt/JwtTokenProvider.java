@@ -55,16 +55,17 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
-        // 获取用户的权限信息
+        // 只获取角色信息，不包含具体权限，减少 token 大小
         String roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
+                .filter(authority -> authority.startsWith("ROLE_")) // 只保留角色，过滤掉权限
                 .collect(Collectors.joining(","));
 
         // 构建Token
         return Jwts.builder()
                 // 使用用户名设置标识符
                 .subject(authentication.getName())
-                // 设置角色信息
+                // 只设置角色信息，权限信息在认证时从数据库加载
                 .claim("roles", roles)
                 // 设置过期时间
                 .expiration(expiryDate)

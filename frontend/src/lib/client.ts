@@ -81,14 +81,32 @@ class HttpClient {
     // 响应拦截器
     this.instance.interceptors.response.use(
       <T>(response: AxiosResponse<ApiResponse<T>>): T => {
-        // 调用成功回调
+        const responseData = response.data;
         const config = response.config as InternalAxiosRequestConfig & {
           metadata?: ApiRequestConfig;
         };
-        if (config.metadata?.onSuccess) {
-          config.metadata.onSuccess(response.data.data);
+
+        // 检查业务状态码，判断业务是否成功
+        if (responseData.code !== 200 || responseData.success === false) {
+          // 业务失败，创建错误对象并抛出
+          const error = new Error(
+            responseData.message || '请求失败'
+          ) as AxiosError<ApiResponse<unknown>>;
+          error.response = response as AxiosResponse<ApiResponse<unknown>>;
+          error.config = response.config;
+          error.isAxiosError = true;
+          error.name = 'AxiosError';
+
+          // 处理业务错误
+          this.handleError(error, config?.metadata);
+          throw error;
         }
-        return response.data.data;
+
+        // 业务成功，调用成功回调
+        if (config.metadata?.onSuccess) {
+          config.metadata.onSuccess(responseData.data);
+        }
+        return responseData.data;
       },
       (error: AxiosError<ApiResponse<unknown>>) => {
         const config = error.config as InternalAxiosRequestConfig & {

@@ -19,8 +19,7 @@ export interface RegisterParams {
 
 // 验证邮箱
 export interface VerifyEmailParams {
-  email: string;
-  code: string;
+  emailToken: string;
 }
 
 /**
@@ -50,6 +49,11 @@ export interface ForgotPasswordParams {
 export interface ResetPasswordParams {
   refreshToken: string;
   newPassword: string;
+}
+
+// 重新发送验证码
+export interface ResendVerificationParams {
+  email: string;
 }
 
 /**

@@ -2,7 +2,7 @@ import { loginApi } from '@/api/auth';
 import { getUserInfoByTokenApi } from '@/api/user';
 import { useAuthStore } from '@/stores';
 import type { LoginParams, UserInfo } from '@/types';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 /**
@@ -25,9 +25,6 @@ export const useAuth = () => {
   } = useAuthStore();
 
   const [loginLoading, setLoginLoading] = useState(false);
-
-  // 从用户信息中提取角色列表
-  const roles = useMemo(() => user?.roles || [], [user]);
 
   /**
    * 获取用户信息
@@ -88,75 +85,6 @@ export const useAuth = () => {
   );
 
   /**
-   * 检查用户是否拥有指定角色
-   */
-  const hasRole = useCallback(
-    (role: string): boolean => {
-      return roles.includes(role);
-    },
-    [roles]
-  );
-
-  /**
-   * 检查用户是否拥有任意一个指定角色
-   */
-  const hasAnyRole = useCallback(
-    (roleList: string[]): boolean => {
-      return roleList.some(role => roles.includes(role));
-    },
-    [roles]
-  );
-
-  /**
-   * 检查用户是否拥有所有指定角色
-   */
-  const hasAllRoles = useCallback(
-    (roleList: string[]): boolean => {
-      return roleList.every(role => roles.includes(role));
-    },
-    [roles]
-  );
-
-  /**
-   * 检查用户是否为管理员
-   */
-  const isAdmin = useCallback((): boolean => {
-    return hasRole('admin') || hasRole('super_admin');
-  }, [hasRole]);
-
-  /**
-   * 检查用户是否为作者
-   */
-  const isAuthor = useCallback((): boolean => {
-    return hasRole('author') || isAdmin();
-  }, [hasRole, isAdmin]);
-
-  /**
-   * 检查用户是否可以执行某个操作
-   */
-  const canPerform = useCallback(
-    (permission: string): boolean => {
-      // 这里可以根据实际的权限系统实现更复杂的逻辑
-      // 现在简单地基于角色进行判断
-      if (isAdmin()) return true;
-
-      switch (permission) {
-        case 'create_post':
-        case 'edit_own_post':
-        case 'delete_own_post':
-          return isAuthor();
-        case 'comment':
-          return isAuthenticated;
-        case 'like':
-          return isAuthenticated;
-        default:
-          return false;
-      }
-    },
-    [isAuthenticated, isAdmin, isAuthor]
-  );
-
-  /**
    * 更新当前用户信息
    */
   const updateCurrentUser = useCallback(
@@ -182,14 +110,6 @@ export const useAuth = () => {
     isLoading,
     loginLoading,
     userLoaded,
-
-    // 权限检查
-    hasRole,
-    hasAnyRole,
-    hasAllRoles,
-    isAdmin,
-    isAuthor,
-    canPerform,
 
     // 操作
     login,

@@ -1,4 +1,8 @@
-import { registerApi, verifyEmailApi } from '@/api/auth';
+import {
+  registerApi,
+  resendVerificationCodeApi,
+  verifyEmailApi,
+} from '@/api/auth';
 import type { RegisterParams, VerifyEmailParams } from '@/types';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -10,6 +14,7 @@ import { toast } from 'sonner';
 export const useRegister = () => {
   const [registerLoading, setRegisterLoading] = useState(false);
   const [verifyEmailLoading, setVerifyEmailLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   /**
    * 用户注册
@@ -50,10 +55,33 @@ export const useRegister = () => {
         return true;
       } catch (error) {
         console.error('邮箱验证失败:', error);
-        toast.error('验证码无效或已过期');
         return false;
       } finally {
         setVerifyEmailLoading(false);
+      }
+    },
+    []
+  );
+
+  /**
+   * 重新发送验证码
+   * @param email 邮箱地址
+   * @returns 发送是否成功
+   */
+  const resendVerificationCode = useCallback(
+    async (email: string): Promise<boolean> => {
+      try {
+        setResendLoading(true);
+
+        await resendVerificationCodeApi(email);
+        toast.success('验证码已重新发送，请查收邮箱');
+        return true;
+      } catch (error) {
+        console.error('重新发送验证码失败:', error);
+        toast.error('重新发送验证码失败，请稍后重试');
+        return false;
+      } finally {
+        setResendLoading(false);
       }
     },
     []
@@ -63,10 +91,12 @@ export const useRegister = () => {
     // 状态
     registerLoading,
     verifyEmailLoading,
-    loading: registerLoading || verifyEmailLoading,
+    resendLoading,
+    loading: registerLoading || verifyEmailLoading || resendLoading,
 
     // 操作
     register,
     verifyEmail,
+    resendVerificationCode,
   };
 };

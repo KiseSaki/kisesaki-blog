@@ -71,3 +71,11 @@ export const registerRequestSchema = registerSchema.omit({
   confirmPassword: true,
 });
 export type RegisterRequest = z.infer<typeof registerRequestSchema>;
+
+/**
+ * 邮箱验证表单验证模式
+ */
+export const emailVerificationSchema = z.object({
+  emailToken: z.string().trim().min(1, '验证令牌不能为空'),
+});
+export type EmailVerificationFormData = z.infer<typeof emailVerificationSchema>;

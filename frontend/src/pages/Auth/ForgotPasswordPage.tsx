@@ -4,6 +4,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
   Input,
 } from '@/components';
 import AuthLayout from '@/components/common/AuthLayout';
@@ -27,7 +28,7 @@ const ForgotPasswordPage = () => {
     },
   });
 
-  const { forgotPassword } = usePassword();
+  const { forgotPassword, forgotLoading } = usePassword();
   // 提交表单
   const handleSubmit = async (data: { email: EmailFormData }) => {
     const success = await forgotPassword(data.email);
@@ -50,10 +51,11 @@ const ForgotPasswordPage = () => {
               <FormItem>
                 <FormLabel>邮箱地址</FormLabel>
                 <Input type='email' placeholder='请输入您的邮箱' {...field} />
+                <FormMessage />
               </FormItem>
             )}
           />
-          <Button type='submit' className='w-full'>
+          <Button loading={forgotLoading} type='submit' className='w-full'>
             发送重置密码邮件
           </Button>
         </form>

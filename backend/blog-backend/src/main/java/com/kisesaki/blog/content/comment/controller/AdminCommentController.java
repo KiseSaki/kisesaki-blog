@@ -49,7 +49,7 @@ public class AdminCommentController {
      */
     @GetMapping("/comments")
     @Operation(summary = "获取所有评论列表", description = "获取所有评论列表，支持按状态、文章、用户等筛选")
-    @PreAuthorize("hasAuthority('comment:manage')")
+    @PreAuthorize("hasAuthority('COMMENT_MODERATE')")
     public ApiResponse<PageResponse<CommentListResponse>> getAllComments(@Valid AdminCommentListParams params) {
         PageResponse<CommentListResponse> pageResponse = adminCommentService.getAllComments(params);
         return ResultUtils.success(pageResponse);
@@ -60,7 +60,7 @@ public class AdminCommentController {
      */
     @PutMapping("/comments/{id}/status")
     @Operation(summary = "更新评论状态", description = "更新指定评论的状态（审核通过、拒绝、标记为垃圾等）")
-    @PreAuthorize("hasAuthority('comment:moderate')")
+    @PreAuthorize("hasAuthority('COMMENT_MODERATE')")
     public ApiResponse<Void> updateCommentStatus(
             @PathVariable @Parameter(description = "评论ID", example = "123") Long id,
             @RequestBody @Valid AdminUpdateCommentStatusBody body,
@@ -75,7 +75,7 @@ public class AdminCommentController {
      */
     @DeleteMapping("/comments/{id}")
     @Operation(summary = "彻底删除评论", description = "物理删除指定评论，不可恢复")
-    @PreAuthorize("hasAuthority('comment:delete')")
+    @PreAuthorize("hasAuthority('COMMENT_DELETE')")
     public ApiResponse<Void> deleteComment(
             @PathVariable @Parameter(description = "评论ID", example = "123") Long id,
             Authentication authentication) {
@@ -89,7 +89,7 @@ public class AdminCommentController {
      */
     @PutMapping("/comments/{id}/pin")
     @Operation(summary = "置顶评论", description = "设置或取消评论置顶")
-    @PreAuthorize("hasAuthority('comment:manage')")
+    @PreAuthorize("hasAuthority('COMMENT_MODERATE')")
     public ApiResponse<Void> pinComment(
             @PathVariable @Parameter(description = "评论ID", example = "123") Long id,
             @RequestBody @Valid AdminPinCommentBody body,
@@ -104,7 +104,7 @@ public class AdminCommentController {
      */
     @GetMapping("/comments/reports")
     @Operation(summary = "获取被举报的评论列表", description = "获取所有被举报的评论及举报详情")
-    @PreAuthorize("hasAuthority('comment:moderate')")
+    @PreAuthorize("hasAuthority('COMMENT_MODERATE')")
     public ApiResponse<PageResponse<AdminCommentReportResponse>> getReportedComments(
             @RequestParam(defaultValue = "1") @Parameter(description = "页码", example = "1") int page,
             @RequestParam(defaultValue = "10") @Parameter(description = "每页大小", example = "10") int size) {
@@ -117,7 +117,7 @@ public class AdminCommentController {
      */
     @PostMapping("/comments/batch-moderate")
     @Operation(summary = "批量审核评论", description = "批量修改多个评论的状态")
-    @PreAuthorize("hasAuthority('comment:moderate')")
+    @PreAuthorize("hasAuthority('COMMENT_MODERATE')")
     public ApiResponse<Void> batchModerateComments(
             @RequestBody @Valid AdminBatchModerateBody body,
             Authentication authentication) {
@@ -131,7 +131,7 @@ public class AdminCommentController {
      */
     @GetMapping("/comments/stats")
     @Operation(summary = "评论统计数据", description = "获取评论的各种统计数据")
-    @PreAuthorize("hasAuthority('comment:manage')")
+    @PreAuthorize("hasAuthority('COMMENT_MODERATE')")
     public ApiResponse<AdminCommentStatsResponse> getCommentStats() {
         AdminCommentStatsResponse stats = adminCommentService.getCommentStats();
         return ResultUtils.success(stats);

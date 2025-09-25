@@ -174,6 +174,7 @@ public class UserController {
 
     @PostMapping("/{id}/follow")
     @Operation(summary = "关注用户", description = "关注指定用户")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<String>> followUser(
             Authentication authentication,
             @Parameter(description = "用户ID", required = true) @PathVariable Long id) {
@@ -189,6 +190,7 @@ public class UserController {
 
     @PostMapping("/{id}/unfollow")
     @Operation(summary = "取消关注用户", description = "取消关注指定用户")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<String>> unfollowUser(
             Authentication authentication,
             @Parameter(description = "用户ID", required = true) @PathVariable Long id) {
@@ -204,6 +206,7 @@ public class UserController {
 
     @GetMapping("/{id}/is-following")
     @Operation(summary = "检查是否已关注", description = "检查当前用户是否已关注指定用户")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Boolean>> isFollowing(
             Authentication authentication,
             @Parameter(description = "用户ID", required = true) @PathVariable Long id) {

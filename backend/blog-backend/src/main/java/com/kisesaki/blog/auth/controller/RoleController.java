@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/admin/roles")
 @RequiredArgsConstructor
 @Tag(name = "角色管理", description = "角色的创建、删除、分配等操作")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAuthority('USER_MANAGE')")
 public class RoleController {
 
     private final RoleService roleService;

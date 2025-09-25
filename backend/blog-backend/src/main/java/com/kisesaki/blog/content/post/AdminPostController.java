@@ -37,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "管理员文章管理", description = "管理员文章管理相关接口")
-@PreAuthorize("hasAuthority('POST_MANAGE')")
 public class AdminPostController {
 
     private final AdminPostService postAdminService;
@@ -50,6 +49,7 @@ public class AdminPostController {
      */
     @GetMapping("")
     @Operation(summary = "获取所有文章列表", description = "管理员获取所有文章列表，包含草稿、已删除等状态的文章")
+    @PreAuthorize("hasAuthority('POST_VIEW_ALL')")
     public ApiResponse<PageResponse<AdminPostQueryDto.AdminPostListResponse>> getAdminPostsList(
             @Valid AdminPostQueryDto.AdminPostListParams params) {
         log.info("管理员获取文章列表：{}", params);
@@ -65,6 +65,7 @@ public class AdminPostController {
      */
     @PostMapping("")
     @Operation(summary = "管理员创建文章", description = "管理员创建文章，可以指定作者")
+    @PreAuthorize("hasAuthority('POST_CREATE')")
     public ApiResponse<Long> createPostAsAdmin(@Valid @RequestBody AdminCreatePostRequest request) {
         log.info("管理员创建文章：{}", request);
         Long postId = postAdminService.createPostAsAdmin(request);
@@ -80,6 +81,7 @@ public class AdminPostController {
      */
     @PutMapping("/{id}")
     @Operation(summary = "更新任意文章", description = "管理员可以更新任何文章")
+    @PreAuthorize("hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<Void> updatePostAsAdmin(@PathVariable Long id,
             @Valid @RequestBody AdminUpdatePostRequest request) {
         log.info("管理员更新文章 {}：{}", id, request);
@@ -95,6 +97,7 @@ public class AdminPostController {
      */
     @DeleteMapping("/{id}")
     @Operation(summary = "删除任意文章", description = "管理员可以删除任何文章（软删除）")
+    @PreAuthorize("hasAuthority('POST_DELETE_ALL')")
     public ApiResponse<Void> deletePostAsAdmin(@PathVariable Long id) {
         log.info("管理员删除文章：{}", id);
         postAdminService.deletePostAsAdmin(id);
@@ -110,6 +113,7 @@ public class AdminPostController {
      */
     @PutMapping("/{id}/status")
     @Operation(summary = "更新文章状态", description = "管理员更新文章状态（发布/草稿/归档）")
+    @PreAuthorize("hasAuthority('POST_PUBLISH')")
     public ApiResponse<Void> updatePostStatus(@PathVariable Long id,
             @Valid @RequestBody AdminPostStatusDto.UpdateStatusRequest request) {
         log.info("管理员更新文章 {} 状态：{}", id, request);
@@ -126,6 +130,7 @@ public class AdminPostController {
      */
     @PutMapping("/{id}/featured")
     @Operation(summary = "设置/取消精选", description = "管理员设置或取消文章精选状态")
+    @PreAuthorize("hasAuthority('POST_MANAGE')")
     public ApiResponse<Void> setPostFeatured(@PathVariable Long id,
             @Valid @RequestBody AdminPostStatusDto.SetFeaturedRequest request) {
         log.info("管理员设置文章 {} 精选状态：{}", id, request);
@@ -142,6 +147,7 @@ public class AdminPostController {
      */
     @PutMapping("/{id}/top")
     @Operation(summary = "设置/取消置顶", description = "管理员设置或取消文章置顶状态")
+    @PreAuthorize("hasAuthority('POST_MANAGE')")
     public ApiResponse<Void> setPostTop(@PathVariable Long id,
             @Valid @RequestBody AdminPostStatusDto.SetTopRequest request) {
         log.info("管理员设置文章 {} 置顶状态：{}", id, request);
@@ -158,6 +164,7 @@ public class AdminPostController {
      */
     @PutMapping("/{id}/author")
     @Operation(summary = "转移文章作者", description = "管理员转移文章作者")
+    @PreAuthorize("hasAuthority('POST_MANAGE')")
     public ApiResponse<Void> transferPostAuthor(@PathVariable Long id,
             @Valid @RequestBody AdminPostStatusDto.TransferAuthorRequest request) {
         log.info("管理员转移文章 {} 作者：{}", id, request);
@@ -173,6 +180,7 @@ public class AdminPostController {
      */
     @PostMapping("/batch-delete")
     @Operation(summary = "批量删除文章", description = "管理员批量删除文章")
+    @PreAuthorize("hasAuthority('POST_DELETE_ALL')")
     public ApiResponse<Void> batchDeletePosts(@Valid @RequestBody AdminPostBatchDto.BatchDeleteRequest request) {
         log.info("管理员批量删除文章：{}", request);
         postAdminService.batchDeletePosts(request);
@@ -187,6 +195,7 @@ public class AdminPostController {
      */
     @PutMapping("/batch-status")
     @Operation(summary = "批量更新状态", description = "管理员批量更新文章状态")
+    @PreAuthorize("hasAuthority('POST_PUBLISH')")
     public ApiResponse<Void> batchUpdateStatus(@Valid @RequestBody AdminPostBatchDto.BatchUpdateStatusRequest request) {
         log.info("管理员批量更新文章状态：{}", request);
         postAdminService.batchUpdateStatus(request);
@@ -201,6 +210,7 @@ public class AdminPostController {
      */
     @PutMapping("/batch-author")
     @Operation(summary = "批量转移作者", description = "管理员批量转移文章作者")
+    @PreAuthorize("hasAuthority('POST_MANAGE')")
     public ApiResponse<Void> batchTransferAuthor(
             @Valid @RequestBody AdminPostBatchDto.BatchTransferAuthorRequest request) {
         log.info("管理员批量转移文章作者：{}", request);
@@ -215,6 +225,7 @@ public class AdminPostController {
      */
     @GetMapping("/stats")
     @Operation(summary = "获取文章统计数据", description = "管理员获取文章统计数据")
+    @PreAuthorize("hasAuthority('AUDIT_VIEW')")
     public ApiResponse<AdminPostStatsDto.PostStatsResponse> getPostStats() {
         log.info("管理员获取文章统计数据");
         AdminPostStatsDto.PostStatsResponse stats = postAdminService.getPostStats();

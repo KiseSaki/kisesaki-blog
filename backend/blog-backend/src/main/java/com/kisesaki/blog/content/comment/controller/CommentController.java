@@ -1,5 +1,6 @@
 package com.kisesaki.blog.content.comment.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -86,6 +87,7 @@ public class CommentController {
      */
     @PostMapping("/posts/{postId}/comments")
     @Operation(summary = "创建评论", description = "在指定文章下创建一条评论")
+    @PreAuthorize("hasAuthority('COMMENT_CREATE')")
     public ApiResponse<Long> createComment(@PathVariable Long postId, @RequestBody CreateCommentBody body,
             Authentication authentication, HttpServletRequest request) {
         return ResultUtils.success(commentInteractionService.createComment(postId, body, authentication, request));
@@ -96,6 +98,7 @@ public class CommentController {
      */
     @PostMapping("/comments/{id}")
     @Operation(summary = "更新评论", description = "更新指定ID的评论内容，仅限15分钟内的评论")
+    @PreAuthorize("hasAuthority('COMMENT_EDIT_OWN')")
     public ApiResponse<Long> updateComment(@PathVariable Long id, @RequestBody UpdateCommentBody body,
             Authentication authentication, HttpServletRequest request) {
         return ResultUtils.success(commentInteractionService.updateComment(id, body, authentication, request));
@@ -106,6 +109,7 @@ public class CommentController {
      */
     @DeleteMapping("/comments/{id}")
     @Operation(summary = "删除评论", description = "删除指定ID的评论，管理员或评论作者可执行此操作")
+    @PreAuthorize("hasAuthority('COMMENT_DELETE_OWN') or hasAuthority('COMMENT_DELETE_ALL')")
     public ApiResponse<Void> deleteComment(@PathVariable Long id, Authentication authentication) {
         commentInteractionService.deleteComment(id, authentication);
         return ResultUtils.success();
@@ -116,6 +120,7 @@ public class CommentController {
      */
     @GetMapping("/comments/my")
     @Operation(summary = "获取我的评论列表", description = "获取当前用户的评论列表，支持按文章和状态筛选")
+    @PreAuthorize("isAuthenticated()")
     public ApiResponse<PageResponse<CommentListResponse>> getMyComments(
             @Valid MyCommentParams params,
             Authentication authentication) {
@@ -134,6 +139,7 @@ public class CommentController {
      */
     @PostMapping("/comments/{id}/report")
     @Operation(summary = "举报评论", description = "举报指定ID的评论")
+    @PreAuthorize("isAuthenticated()")
     public ApiResponse<Void> reportComment(@PathVariable Long id, @RequestBody @Valid ReportCommentBody body,
             Authentication authentication, HttpServletRequest request) {
         commentInteractionService.reportComment(id, body, authentication, request);

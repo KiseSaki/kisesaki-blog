@@ -8,6 +8,7 @@ export * from './useAuth';
 export * from './useAuthManager';
 export * from './useBlog';
 export * from './useLocalStorage';
+export * from './usePassword';
 export * from './usePermissions';
 export * from './useRegister';
 export * from './useResponsive';

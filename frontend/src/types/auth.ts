@@ -47,7 +47,7 @@ export interface ForgotPasswordParams {
 
 // 确认重置密码
 export interface ResetPasswordParams {
-  refreshToken: string;
+  resetToken: string;
   newPassword: string;
 }
 

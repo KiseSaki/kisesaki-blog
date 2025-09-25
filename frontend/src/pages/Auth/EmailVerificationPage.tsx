@@ -1,5 +1,6 @@
 import { Button } from '@/components';
 import AuthLayout from '@/components/common/AuthLayout';
+import { FailedCard } from '@/components/common/FailedCard';
 import { useAuth, useRegister } from '@/hooks';
 import { AlertCircle, CheckCircle, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -102,7 +103,7 @@ const EmailVerificationPage = () => {
   // 如果验证失败，显示错误状态
   if (verificationFailed) {
     return (
-      <FailedCard>
+      <FailedCard title='邮箱验证' description='验证令牌无效或已过期'>
         <div className='text-center space-y-4'>
           <div className='flex justify-center'>
             <AlertCircle className='h-16 w-16 text-theme-success' />
@@ -136,7 +137,7 @@ const EmailVerificationPage = () => {
 
   // 如果没有token，显示提示信息
   return (
-    <FailedCard>
+    <FailedCard title='邮箱验证' description='验证令牌无效或已过期'>
       <div className='text-center space-y-4'>
         <div className='flex justify-center'>
           <Mail className='h-16 w-16 text-muted-foreground' />
@@ -157,28 +158,3 @@ const EmailVerificationPage = () => {
 };
 
 export default EmailVerificationPage;
-
-/**
- * 邮箱验证失败卡片
- * @param children 卡片内容
- */
-const FailedCard = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <AuthLayout
-      title='邮箱验证失败'
-      description='验证令牌无效或已过期'
-      footer={
-        <div className='w-full text-center space-y-2'>
-          <div className='text-sm'>
-            还没有账户？{' '}
-            <a href='/auth/register' className='text-primary hover:underline'>
-              立即注册
-            </a>
-          </div>
-        </div>
-      }
-    >
-      {children}
-    </AuthLayout>
-  );
-};

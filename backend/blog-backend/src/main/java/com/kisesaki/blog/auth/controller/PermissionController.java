@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "权限", description = "权限相关接口")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAuthority('USER_MANAGE')")
 public class PermissionController {
 
     private final PermissionService permissionService;

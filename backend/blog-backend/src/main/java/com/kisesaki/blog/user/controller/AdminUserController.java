@@ -30,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
 @Tag(name = "管理员用户管理", description = "管理员用户管理相关接口")
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
 
     private final AdminUserService adminUserService;
@@ -39,6 +38,7 @@ public class AdminUserController {
      * 获取用户列表
      */
     @GetMapping()
+    @PreAuthorize("hasAuthority('USER_VIEW_ALL')")
     public ApiResponse<PageResponse<AdminUserListResponse>> getUserList(@Valid AdminUserListParams params) {
         return ResultUtils.success(adminUserService.getUserList(params));
     }
@@ -47,6 +47,7 @@ public class AdminUserController {
      * 获取用户详细信息
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER_VIEW_ALL')")
     public ApiResponse<AdminUserInfoResponse> getUserInfo(@PathVariable Long id) {
         return ResultUtils.success(adminUserService.getUserInfo(id));
     }
@@ -55,6 +56,7 @@ public class AdminUserController {
      * 更新用户信息
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER_EDIT')")
     public ApiResponse<Void> updateUser(@PathVariable Long id, @Valid @RequestBody AdminUserUpdateRequest request) {
         adminUserService.updateUserInfo(id, request);
         return ResultUtils.success();
@@ -64,6 +66,7 @@ public class AdminUserController {
      * 更新用户状态
      */
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasAuthority('USER_BAN')")
     public ApiResponse<Void> updateUserStatus(@PathVariable Long id,
             @Valid @RequestBody AdminUserStatusUpdateRequest request,
             Authentication authentication) {
@@ -75,6 +78,7 @@ public class AdminUserController {
      * 获取用户活动日志
      */
     @GetMapping("/{id}/activity")
+    @PreAuthorize("hasAuthority('AUDIT_VIEW')")
     public ApiResponse<PageResponse<AdminUserActivityResponse>> getUserActivity(@PathVariable Long id,
             @Valid AdminUserActivityParams params) {
         return ResultUtils.success(adminUserService.getUserActivity(id, params));
@@ -84,6 +88,7 @@ public class AdminUserController {
      * 获取用户统计数据
      */
     @GetMapping("/stats")
+    @PreAuthorize("hasAuthority('SYSTEM_STATS_VIEW')")
     public ApiResponse<AdminUserStatsResponse> getUserStats() {
         return ResultUtils.success(adminUserService.getUserStats());
     }

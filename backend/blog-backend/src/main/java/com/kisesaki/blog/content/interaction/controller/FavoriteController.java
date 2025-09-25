@@ -1,6 +1,7 @@
 package com.kisesaki.blog.content.interaction.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,6 +43,7 @@ public class FavoriteController {
      */
     @PostMapping("/posts/{id}/favorite")
     @Operation(summary = "收藏文章", description = "用户收藏指定文章")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<FavoriteStatusResponse>> favoritePost(
             @Parameter(description = "文章ID") @PathVariable("id") Long postId,
             Authentication authentication) {
@@ -55,6 +57,7 @@ public class FavoriteController {
      */
     @DeleteMapping("/posts/{id}/favorite")
     @Operation(summary = "取消收藏文章", description = "用户取消收藏指定文章")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<FavoriteStatusResponse>> unfavoritePost(
             @Parameter(description = "文章ID") @PathVariable("id") Long postId,
             Authentication authentication) {
@@ -68,6 +71,7 @@ public class FavoriteController {
      */
     @GetMapping("/posts/{id}/favorite-status")
     @Operation(summary = "获取文章收藏状态", description = "获取当前用户对指定文章的收藏状态")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<FavoriteStatusResponse>> getFavoriteStatus(
             @Parameter(description = "文章ID") @PathVariable("id") Long postId,
             Authentication authentication) {
@@ -94,6 +98,7 @@ public class FavoriteController {
      */
     @GetMapping("/users/favorites")
     @Operation(summary = "获取我的收藏列表", description = "分页获取当前用户的收藏文章列表")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PageResponse<FavoritePostResponse>>> getCurrentUserFavorites(
             @ModelAttribute PageableParams params,
             Authentication authentication) {

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,7 @@ public class LikeController {
 
     @PostMapping("/posts/{postId}/like")
     @Operation(summary = "点赞文章")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> likePost(
             @Parameter(description = "文章ID") @PathVariable Long postId,
             Authentication authentication) {
@@ -50,6 +52,7 @@ public class LikeController {
 
     @DeleteMapping("/posts/{postId}/like")
     @Operation(summary = "取消点赞文章")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> unlikePost(
             @Parameter(description = "文章ID") @PathVariable Long postId,
             Authentication authentication) {
@@ -90,6 +93,7 @@ public class LikeController {
 
     @PostMapping("/comments/{commentId}/like")
     @Operation(summary = "点赞评论")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> likeComment(
             @Parameter(description = "评论ID") @PathVariable Long commentId,
             Authentication authentication) {
@@ -99,6 +103,7 @@ public class LikeController {
 
     @DeleteMapping("/comments/{commentId}/like")
     @Operation(summary = "取消点赞评论")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> unlikeComment(
             @Parameter(description = "评论ID") @PathVariable Long commentId,
             Authentication authentication) {

@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.kisesaki.blog.auth.entity.Permission;
+import com.kisesaki.blog.auth.entity.Role;
+import com.kisesaki.blog.auth.mapper.RoleMapper;
 import com.kisesaki.blog.user.dto.UserStatsDto;
 import com.kisesaki.blog.user.dto.info.UpdateProfileDto;
 import com.kisesaki.blog.user.dto.info.UserInfoDto;
@@ -39,6 +42,7 @@ public class UserService {
     private final UserSettingsMapper userSettingsMapper;
     private final UserFollowMapper userFollowMapper;
     private final UserActivityService userActivityService;
+    private final RoleMapper roleMapper;
 
     /**
      * 根据用户ID获取用户信息
@@ -62,7 +66,11 @@ public class UserService {
         List<UserSettings> settings = userSettingsMapper.selectList(new LambdaQueryWrapper<UserSettings>()
                 .eq(UserSettings::getUserId, id));
 
-        return UserInfoDto.from(user, profile, settings);
+        // 查询用户角色和权限
+        List<Role> roles = roleMapper.findRolesByUserId(id);
+        List<Permission> permissions = roleMapper.findPermissionsByUserId(id);
+
+        return UserInfoDto.from(user, profile, settings, roles, permissions);
     }
 
     /**
@@ -87,7 +95,11 @@ public class UserService {
         List<UserSettings> settings = userSettingsMapper.selectList(new LambdaQueryWrapper<UserSettings>()
                 .eq(UserSettings::getUserId, user.getId()));
 
-        return UserInfoDto.from(user, profile, settings);
+        // 查询用户角色和权限
+        List<Role> roles = roleMapper.findRolesByUserId(user.getId());
+        List<Permission> permissions = roleMapper.findPermissionsByUserId(user.getId());
+
+        return UserInfoDto.from(user, profile, settings, roles, permissions);
     }
 
     /**
@@ -356,7 +368,12 @@ public class UserService {
                     .eq(UserProfile::getUserId, user.getId()));
             List<UserSettings> settings = userSettingsMapper.selectList(new LambdaQueryWrapper<UserSettings>()
                     .eq(UserSettings::getUserId, user.getId()));
-            return Optional.of(UserInfoDto.from(user, profile, settings));
+            
+            // 查询用户角色和权限
+            List<Role> roles = roleMapper.findRolesByUserId(user.getId());
+            List<Permission> permissions = roleMapper.findPermissionsByUserId(user.getId());
+            
+            return Optional.of(UserInfoDto.from(user, profile, settings, roles, permissions));
         }
 
         return Optional.empty();

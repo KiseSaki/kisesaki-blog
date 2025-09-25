@@ -2,11 +2,15 @@ package com.kisesaki.blog.user.dto.info;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.kisesaki.blog.auth.entity.Permission;
+import com.kisesaki.blog.auth.entity.Role;
 import com.kisesaki.blog.user.entity.User;
 import com.kisesaki.blog.user.entity.UserProfile;
 import com.kisesaki.blog.user.entity.UserSettings;
@@ -118,6 +122,13 @@ public class UserInfoDto {
     /** 用户设置键值对映射（settingKey -> settingValue） */
     private Map<String, String> settings;
 
+    // ===== 权限相关信息 =====
+    /** 用户角色列表 */
+    private List<String> roles;
+
+    /** 用户权限列表 */
+    private List<String> permissions;
+
     /**
      * 从实体构建 DTO 的静态工厂方法。
      *
@@ -127,6 +138,21 @@ public class UserInfoDto {
      * @return UserInfoDto
      */
     public static UserInfoDto from(User user, UserProfile profile, List<UserSettings> settingsList) {
+        return from(user, profile, settingsList, null, null);
+    }
+
+    /**
+     * 从实体构建 DTO 的静态工厂方法（包含角色和权限）。
+     *
+     * @param user 用户实体，不能为空
+     * @param profile 用户扩展资料，允许为空
+     * @param settingsList 用户设置列表，允许为空
+     * @param rolesList 用户角色列表，允许为空
+     * @param permissionsList 用户权限列表，允许为空
+     * @return UserInfoDto
+     */
+    public static UserInfoDto from(User user, UserProfile profile, List<UserSettings> settingsList, 
+                                   List<Role> rolesList, List<Permission> permissionsList) {
         if (user == null) return null;
 
         Map<String, String> settingsMap = new HashMap<>();
@@ -136,6 +162,22 @@ public class UserInfoDto {
                     settingsMap.put(s.getSettingKey(), s.getSettingValue());
                 }
             }
+        }
+
+        List<String> rolesNameList = new ArrayList<>();
+        if (rolesList != null) {
+            rolesNameList = rolesList.stream()
+                .filter(role -> role != null && role.getName() != null)
+                .map(Role::getName)
+                .collect(Collectors.toList());
+        }
+
+        List<String> permissionsNameList = new ArrayList<>();
+        if (permissionsList != null) {
+            permissionsNameList = permissionsList.stream()
+                .filter(permission -> permission != null && permission.getName() != null)
+                .map(Permission::getName)
+                .collect(Collectors.toList());
         }
 
         return UserInfoDto.builder()
@@ -171,6 +213,9 @@ public class UserInfoDto {
                 .privacyLevel(profile == null ? null : profile.getPrivacyLevel())
                 // Settings
                 .settings(settingsMap)
+                // Roles and Permissions
+                .roles(rolesNameList)
+                .permissions(permissionsNameList)
                 .build();
     }
 }

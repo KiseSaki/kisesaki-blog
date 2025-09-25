@@ -145,6 +145,7 @@ export interface UserInfo extends User {
 
   // 权限列表
   roles: string[];
+  permissions: string[];
   // UserSettings 字段
   settings?: Record<string, string>;
 }

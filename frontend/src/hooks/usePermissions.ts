@@ -64,71 +64,16 @@ export const usePermissions = () => {
   }, [hasRole, isAdmin]);
 
   /**
-   * 检查用户是否可以执行某个操作
+   * 检查用户是否拥有指定权限
    * @param permission 权限名称
-   * @returns 是否有执行权限
    */
-  const canPerform = useCallback(
+  const hasPermission = useCallback(
     (permission: string): boolean => {
       // 未登录用户无权限
-      if (!isAuthenticated) return false;
-
-      // 管理员拥有所有权限
-      if (isAdmin()) return true;
-
-      // 根据具体权限进行判断
-      switch (permission) {
-        case 'create_post':
-        case 'edit_own_post':
-        case 'delete_own_post':
-          return isAuthor();
-        case 'comment':
-        case 'like':
-          return isAuthenticated;
-        case 'edit_all_posts':
-        case 'delete_all_posts':
-        case 'manage_users':
-        case 'manage_system':
-          return isAdmin();
-        default:
-          return false;
-      }
-    },
-    [isAuthenticated, isAdmin, isAuthor]
-  );
-
-  /**
-   * 检查用户是否可以编辑指定内容
-   * @param contentUserId 内容所有者的用户ID
-   * @returns 是否可以编辑
-   */
-  const canEdit = useCallback(
-    (contentUserId: number): boolean => {
       if (!isAuthenticated || !user) return false;
+      if (isAdmin()) return true; // 管理员拥有所有权限
 
-      // 管理员可以编辑所有内容
-      if (isAdmin()) return true;
-
-      // 用户可以编辑自己的内容
-      return user.id === contentUserId;
-    },
-    [isAuthenticated, user, isAdmin]
-  );
-
-  /**
-   * 检查用户是否可以删除指定内容
-   * @param contentUserId 内容所有者的用户ID
-   * @returns 是否可以删除
-   */
-  const canDelete = useCallback(
-    (contentUserId: number): boolean => {
-      if (!isAuthenticated || !user) return false;
-
-      // 管理员可以删除所有内容
-      if (isAdmin()) return true;
-
-      // 用户可以删除自己的内容
-      return user.id === contentUserId;
+      return user.permissions.includes(permission);
     },
     [isAuthenticated, user, isAdmin]
   );
@@ -146,8 +91,6 @@ export const usePermissions = () => {
     isAuthor,
 
     // 权限检查
-    canPerform,
-    canEdit,
-    canDelete,
+    hasPermission,
   };
 };

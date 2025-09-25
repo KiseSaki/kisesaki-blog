@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,12 @@ public class EmailTemplateService {
     private final ResourceLoader resourceLoader;
     private final EmailTemplatePreloadListener templatePreloader;
     private final EmailConfigurationProperties emailProperties;
+
+    /**
+     * 前端应用的基础URL
+     */
+    @Value("${kisesaki.blog.frontend.base-url}")
+    private String frontendBaseUrl;
 
     /**
      * 模板元数据缓存
@@ -274,6 +281,9 @@ public class EmailTemplateService {
         variables.put("appName", "KiseSaki Blog");
         variables.put("appUrl", "https://kisesaki.com");
         variables.put("supportEmail", "support@kisesaki.com");
+
+        // 添加前端基础URL - 邮件模板中的关键变量
+        variables.put("frontendBaseUrl", frontendBaseUrl);
 
         // 添加公共资源链接
         variables.put("baseUrl", "https://kisesaki.com");

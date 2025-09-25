@@ -19,7 +19,7 @@ export const passwordSchema = z
   .refine(p => /[A-Za-z]/.test(p) && /[0-9]/.test(p), {
     message: '密码需包含字母和数字',
   });
-
+export type PasswordField = z.infer<typeof passwordSchema>;
 /**
  * 认证基础表单验证模式
  */
@@ -83,5 +83,7 @@ export type EmailVerificationFormData = z.infer<typeof emailVerificationSchema>;
 /**
  * 邮箱验证
  */
-export const emailSchema = z.email('请输入有效的邮箱地址').transform(e => e.toLowerCase());
+export const emailSchema = z
+  .email('请输入有效的邮箱地址')
+  .transform(e => e.toLowerCase());
 export type EmailFormData = z.infer<typeof emailSchema>;

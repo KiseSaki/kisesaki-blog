@@ -5,4 +5,5 @@
 
 export * from './api';
 export * from './constants';
+export * from './permission';
 export * from './theme';

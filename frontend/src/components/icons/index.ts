@@ -7,6 +7,7 @@
 export {
   ArticleIcon,
   CategoryIcon,
+  FavoritesIcon,
   HomeIcon,
   SearchIcon,
   TagIcon,

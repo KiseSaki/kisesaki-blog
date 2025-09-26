@@ -7,6 +7,9 @@ export * from './user';
 export * from './layout';
 export * from './ui';
 
+// 图标组件
+export * from './icons';
+
 // 功能性组件
 export * from './feedback';
 export * from './navigation';

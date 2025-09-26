@@ -31,6 +31,7 @@ export { CloseIcon, MenuIcon, MoonIcon, SunIcon } from './ThemeIcons';
 export {
   CommentIcon,
   DashboardIcon,
+  PostIcon,
   ProfileIcon,
   UsersIcon,
 } from './AdminIcons';

@@ -1,6 +1,6 @@
 import { Button } from '@/components';
 import AuthLayout from '@/components/common/AuthLayout';
-import { FailedCard } from '@/components/common/FailedCard';
+import { FailedCard } from '@/components/feedback/FailedCard';
 import { useAuth, useRegister } from '@/hooks';
 import { AlertCircle, CheckCircle, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';

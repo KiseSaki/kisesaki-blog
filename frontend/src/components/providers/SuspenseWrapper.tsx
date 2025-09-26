@@ -6,7 +6,7 @@
 import type { ErrorInfo } from '@/types/common';
 import type { ReactNode } from 'react';
 import React, { Suspense } from 'react';
-import ErrorBoundary from './ErrorBoundary';
+import ErrorBoundary from '../feedback/ErrorBoundary';
 
 /**
  * SuspenseWrapper 组件属性

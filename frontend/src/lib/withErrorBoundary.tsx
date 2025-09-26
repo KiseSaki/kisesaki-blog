@@ -1,5 +1,5 @@
-import type { ErrorBoundaryProps } from '@/components/common/ErrorBoundary';
-import ErrorBoundary from '@/components/common/ErrorBoundary';
+import type { ErrorBoundaryProps } from '@/components/feedback/ErrorBoundary';
+import ErrorBoundary from '@/components/feedback/ErrorBoundary';
 import React from 'react';
 
 /**

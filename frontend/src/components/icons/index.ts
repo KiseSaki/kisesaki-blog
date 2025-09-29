@@ -18,6 +18,8 @@ export {
 // 操作类图标
 export {
   AddIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   DeleteIcon,
   EditIcon,
   SettingsIcon,

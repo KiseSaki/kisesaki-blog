@@ -1,13 +1,4 @@
-interface Permission {
-  name: string;
-  description: string;
-  resource: string;
-  action: string;
-  level: string;
-  note: string;
-}
-
-export const PERMISSIONS: Permission[] = [
+export const PERMISSIONS = [
   // 文章管理权限
   {
     name: 'POST_CREATE',
@@ -431,4 +422,7 @@ export const PERMISSIONS: Permission[] = [
     level: '管理员级',
     note: '访问管理员仪表板',
   },
-];
+] as const;
+
+// 权限名称类型
+export type PermissionsType = (typeof PERMISSIONS)[number]['name'];

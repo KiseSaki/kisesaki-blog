@@ -60,106 +60,193 @@
 }
 
 :root {
+  /* 基础圆角半径 */
   --radius: 0.625rem;
 
-  /* Shadcn/ui 明亮主题 */
+  /* Shadcn/ui 明亮主题 - 页面背景色 */
   --background: #f8f8f8;
+  /* Shadcn/ui 明亮主题 - 前景色（文本） */
   --foreground: #333333;
+  /* Shadcn/ui 明亮主题 - 卡片背景色 */
   --card: #ffffff;
+  /* Shadcn/ui 明亮主题 - 卡片前景色（文本） */
   --card-foreground: #333333;
+  /* Shadcn/ui 明亮主题 - 弹出框背景色 */
   --popover: #ffffff;
+  /* Shadcn/ui 明亮主题 - 弹出框前景色（文本） */
   --popover-foreground: #333333;
+  /* Shadcn/ui 明亮主题 - 主色调 */
   --primary: #28a745;
+  /* Shadcn/ui 明亮主题 - 主色调前景色（文本） */
   --primary-foreground: #ffffff;
+  /* Shadcn/ui 明亮主题 - 次要色调 */
   --secondary: #f8f8f8;
+  /* Shadcn/ui 明亮主题 - 次要色调前景色（文本） */
   --secondary-foreground: #333333;
+  /* Shadcn/ui 明亮主题 - 静音色调（用于禁用状态） */
   --muted: #f8f8f8;
+  /* Shadcn/ui 明亮主题 - 静音色调前景色（文本） */
   --muted-foreground: #666666;
+  /* Shadcn/ui 明亮主题 - 强调色调 */
   --accent: #28a745;
+  /* Shadcn/ui 明亮主题 - 强调色调前景色（文本） */
   --accent-foreground: #ffffff;
+  /* Shadcn/ui 明亮主题 - 破坏性颜色（错误） */
   --destructive: #dc3545;
+  /* Shadcn/ui 明亮主题 - 边框颜色 */
   --border: #e0e0e0;
+  /* Shadcn/ui 明亮主题 - 输入框背景色 */
   --input: #e0e0e0;
+  /* Shadcn/ui 明亮主题 - 焦点环颜色 */
   --ring: #28a745;
+  /* Shadcn/ui 明亮主题 - 图表颜色1 */
   --chart-1: #28a745;
+  /* Shadcn/ui 明亮主题 - 图表颜色2 */
   --chart-2: #17a2b8;
+  /* Shadcn/ui 明亮主题 - 图表颜色3 */
   --chart-3: #ffc107;
+  /* Shadcn/ui 明亮主题 - 图表颜色4 */
   --chart-4: #dc3545;
+  /* Shadcn/ui 明亮主题 - 图表颜色5 */
   --chart-5: #6f42c1;
+  /* Shadcn/ui 明亮主题 - 侧边栏背景色 */
   --sidebar: #ffffff;
+  /* Shadcn/ui 明亮主题 - 侧边栏前景色（文本） */
   --sidebar-foreground: #333333;
+  /* Shadcn/ui 明亮主题 - 侧边栏主色调 */
   --sidebar-primary: #28a745;
+  /* Shadcn/ui 明亮主题 - 侧边栏主色调前景色（文本） */
   --sidebar-primary-foreground: #ffffff;
+  /* Shadcn/ui 明亮主题 - 侧边栏强调色调 */
   --sidebar-accent: #f8f8f8;
+  /* Shadcn/ui 明亮主题 - 侧边栏强调色调前景色（文本） */
   --sidebar-accent-foreground: #333333;
+  /* Shadcn/ui 明亮主题 - 侧边栏边框颜色 */
   --sidebar-border: #e0e0e0;
+  /* Shadcn/ui 明亮主题 - 侧边栏焦点环颜色 */
   --sidebar-ring: #28a745;
 
-  /* 自定义主题变量 - 明亮主题 */
+  /* 自定义主题变量 - 明亮主题 - 页面背景色 */
   --theme-background: #f8f8f8;
+  /* 自定义主题变量 - 明亮主题 - 卡片背景色 */
   --theme-card-background: #ffffff;
+  /* 自定义主题变量 - 明亮主题 - 导航栏背景色 */
   --theme-navbar-background: #ffffff;
+  /* 自定义主题变量 - 明亮主题 - 主要文本颜色 */
   --theme-primary-text: #333333;
+  /* 自定义主题变量 - 明亮主题 - 次要文本颜色 */
   --theme-secondary-text: #666666;
+  /* 自定义主题变量 - 明亮主题 - 主色调 */
   --theme-primary: #28a745;
+  /* 自定义主题变量 - 明亮主题 - 主色调悬停色 */
   --theme-primary-hover: #218838;
+  /* 自定义主题变量 - 明亮主题 - 边框颜色 */
   --theme-border: #e0e0e0;
+  /* 自定义主题变量 - 明亮主题 - 分割线颜色 */
   --theme-divider: #e0e0e0;
+  /* 自定义主题变量 - 明亮主题 - 阴影颜色 */
   --theme-shadow: rgba(0, 0, 0, 0.1);
+  /* 自定义主题变量 - 明亮主题 - 成功颜色 */
   --theme-success: #28a745;
+  /* 自定义主题变量 - 明亮主题 - 警告颜色 */
   --theme-warning: #ffc107;
+  /* 自定义主题变量 - 明亮主题 - 错误颜色 */
   --theme-error: #dc3545;
+  /* 自定义主题变量 - 明亮主题 - 信息颜色 */
   --theme-info: #17a2b8;
 }
 
 .dark {
-  /* Shadcn/ui 暗黑主题 */
+  /* Shadcn/ui 暗黑主题 - 页面背景色 */
   --background: #2c2c2c;
+  /* Shadcn/ui 暗黑主题 - 前景色（文本） */
   --foreground: #e0e0e0;
+  /* Shadcn/ui 暗黑主题 - 卡片背景色 */
   --card: #3c3c3c;
+  /* Shadcn/ui 暗黑主题 - 卡片前景色（文本） */
   --card-foreground: #e0e0e0;
+  /* Shadcn/ui 暗黑主题 - 弹出框背景色 */
   --popover: #3c3c3c;
+  /* Shadcn/ui 暗黑主题 - 弹出框前景色（文本） */
   --popover-foreground: #e0e0e0;
+  /* Shadcn/ui 暗黑主题 - 主色调 */
   --primary: #64b5f6;
+  /* Shadcn/ui 暗黑主题 - 主色调前景色（文本） */
   --primary-foreground: #1a1a1a;
+  /* Shadcn/ui 暗黑主题 - 次要色调 */
   --secondary: #555555;
+  /* Shadcn/ui 暗黑主题 - 次要色调前景色（文本） */
   --secondary-foreground: #e0e0e0;
+  /* Shadcn/ui 暗黑主题 - 静音色调（用于禁用状态） */
   --muted: #555555;
+  /* Shadcn/ui 暗黑主题 - 静音色调前景色（文本） */
   --muted-foreground: #a0a0a0;
+  /* Shadcn/ui 暗黑主题 - 强调色调 */
   --accent: #64b5f6;
+  /* Shadcn/ui 暗黑主题 - 强调色调前景色（文本） */
   --accent-foreground: #1a1a1a;
+  /* Shadcn/ui 暗黑主题 - 破坏性颜色（错误） */
   --destructive: #ef5350;
+  /* Shadcn/ui 暗黑主题 - 边框颜色 */
   --border: #555555;
+  /* Shadcn/ui 暗黑主题 - 输入框背景色 */
   --input: #555555;
+  /* Shadcn/ui 暗黑主题 - 焦点环颜色 */
   --ring: #64b5f6;
+  /* Shadcn/ui 暗黑主题 - 图表颜色1 */
   --chart-1: #64b5f6;
+  /* Shadcn/ui 暗黑主题 - 图表颜色2 */
   --chart-2: #29b6f6;
+  /* Shadcn/ui 暗黑主题 - 图表颜色3 */
   --chart-3: #ffeb3b;
+  /* Shadcn/ui 暗黑主题 - 图表颜色4 */
   --chart-4: #ef5350;
+  /* Shadcn/ui 暗黑主题 - 图表颜色5 */
   --chart-5: #ab47bc;
+  /* Shadcn/ui 暗黑主题 - 侧边栏背景色 */
   --sidebar: #3c3c3c;
+  /* Shadcn/ui 暗黑主题 - 侧边栏前景色（文本） */
   --sidebar-foreground: #e0e0e0;
+  /* Shadcn/ui 暗黑主题 - 侧边栏主色调 */
   --sidebar-primary: #64b5f6;
+  /* Shadcn/ui 暗黑主题 - 侧边栏主色调前景色（文本） */
   --sidebar-primary-foreground: #1a1a1a;
+  /* Shadcn/ui 暗黑主题 - 侧边栏强调色调 */
   --sidebar-accent: #555555;
+  /* Shadcn/ui 暗黑主题 - 侧边栏强调色调前景色（文本） */
   --sidebar-accent-foreground: #e0e0e0;
+  /* Shadcn/ui 暗黑主题 - 侧边栏边框颜色 */
   --sidebar-border: #555555;
+  /* Shadcn/ui 暗黑主题 - 侧边栏焦点环颜色 */
   --sidebar-ring: #64b5f6;
 
-  /* 自定义主题变量 - 暗黑主题 */
+  /* 自定义主题变量 - 暗黑主题 - 页面背景色 */
   --theme-background: #2c2c2c;
+  /* 自定义主题变量 - 暗黑主题 - 卡片背景色 */
   --theme-card-background: #3c3c3c;
+  /* 自定义主题变量 - 暗黑主题 - 导航栏背景色 */
   --theme-navbar-background: #1a1a1a;
+  /* 自定义主题变量 - 暗黑主题 - 主要文本颜色 */
   --theme-primary-text: #e0e0e0;
+  /* 自定义主题变量 - 暗黑主题 - 次要文本颜色 */
   --theme-secondary-text: #a0a0a0;
+  /* 自定义主题变量 - 暗黑主题 - 主色调 */
   --theme-primary: #64b5f6;
+  /* 自定义主题变量 - 暗黑主题 - 主色调悬停色 */
   --theme-primary-hover: #42a5f5;
+  /* 自定义主题变量 - 暗黑主题 - 边框颜色 */
   --theme-border: #555555;
+  /* 自定义主题变量 - 暗黑主题 - 分割线颜色 */
   --theme-divider: #555555;
+  /* 自定义主题变量 - 暗黑主题 - 阴影颜色 */
   --theme-shadow: rgba(0, 0, 0, 0.5);
+  /* 自定义主题变量 - 暗黑主题 - 成功颜色 */
   --theme-success: #8bc34a;
+  /* 自定义主题变量 - 暗黑主题 - 警告颜色 */
   --theme-warning: #ffeb3b;
+  /* 自定义主题变量 - 暗黑主题 - 错误颜色 */
   --theme-error: #ef5350;
+  /* 自定义主题变量 - 暗黑主题 - 信息颜色 */
   --theme-info: #29b6f6;
 }
 

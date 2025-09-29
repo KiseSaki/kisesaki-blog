@@ -1,8 +1,8 @@
 import React from 'react';
+import { useHeader } from './hooks/useHeader';
 import { Center } from './internal/Center';
 import { Left } from './internal/Left';
 import { Right } from './internal/Right';
-import { useHeader } from './hooks/useHeader';
 
 export const Header: React.FC = () => {
   const {
@@ -19,7 +19,7 @@ export const Header: React.FC = () => {
     <header
       className={
         // 固定高度、固定顶部及过渡
-        `h-14 px-3 py-2 fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ease-in-out box-border` +
+        `h-14 px-3 py-2 sticky top-0 left-0 right-0 z-50 transition-colors duration-300 ease-in-out box-border` +
         // 根据状态切换背景/毛玻璃/阴影（去掉 border-b，改为绝对定位的底线）
         (showFrostedBackground
           ? 'backdrop-blur-lg bg-theme-card-background/90 shadow-sm'

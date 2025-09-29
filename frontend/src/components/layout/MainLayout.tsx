@@ -1,8 +1,12 @@
 import { Outlet } from 'react-router';
 import { Footer } from './Footer';
 import { Header } from './Header';
+import { Sidebar } from './Siderbar';
+import { useSidebar } from './Siderbar/hooks/useSidebar';
 
 export const MainLayout = () => {
+  const { sidebarType } = useSidebar();
+
   return (
     <div className='min-h-screen flex flex-col bg-background'>
       <a
@@ -16,14 +20,17 @@ export const MainLayout = () => {
       <Header />
 
       {/* Main Content Area */}
-      <main
-        id='main-content'
-        className='flex-1 pt-14 transition-all duration-300 ease-in-out'
-        role='main'
-        aria-label='主要内容区域'
-      >
-        <Outlet />
-      </main>
+      <div className='flex flex-1'>
+        {sidebarType && <Sidebar className='hidden md:block flex-shrink-0' />}
+        <main
+          id='main-content'
+          className='flex-1 transition-all duration-300 ease-in-out'
+          role='main'
+          aria-label='主要内容区域'
+        >
+          <Outlet />
+        </main>
+      </div>
 
       {/* Footer */}
       <Footer />

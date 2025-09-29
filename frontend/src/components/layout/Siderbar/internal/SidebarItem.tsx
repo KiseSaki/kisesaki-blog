@@ -22,16 +22,24 @@ export const SidebarItem = ({
     onClick?.({ id, label, icon, path, children, disabled, ...rest });
   };
 
+  // 不同状态的样式
+  const baseClasses =
+    'cursor-pointer p-2 rounded-md transition-colors flex gap-2 items-center';
+  const hoverClasses =
+    !active && !disabled
+      ? 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+      : '';
+  const activeClasses = active
+    ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+    : '';
+  const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : '';
+
   return (
     <div
-      className={`flex gap-2 cursor-pointer p-2 rounded-md transition-colors
-        hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
-        ${active ? 'bg-sidebar-primary text-sidebar-primary-foreground' : ''}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-      `}
+      className={`${baseClasses} ${hoverClasses} ${activeClasses} ${disabledClasses}`}
       onClick={handleClick}
     >
-      <Icon />
+      <Icon className='w-5 h-5' />
       <span>{label}</span>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useAuth, usePermissions } from '@/hooks';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { adminSidebarConfig } from '../config/adminConfig';
 import { userSidebarConfig } from '../config/userConfig';
@@ -81,6 +81,51 @@ export const useSidebar = () => {
     },
     [setActive, activeItemId, navigate]
   );
+
+  // 获取判断sidebarItem以及其子项是否符合路径
+  const isActiveSidebarItem = useCallback(
+    (item: SidebarItemType): string | null => {
+      if (item.children && item.children.length > 0) {
+        const childItems = item.children.filter(child =>
+          isActiveSidebarItem(child)
+        );
+        if (childItems.length === 0) {
+          return null;
+        } else {
+          return childItems[0].id; // 返回第一个匹配的子项ID
+        }
+      }
+
+      if (item.path && location.pathname.startsWith(item.path)) {
+        return item.id;
+      }
+      return null;
+    },
+    [location.pathname]
+  );
+
+  // 根据当前URL设置初始激活项
+  useEffect(() => {
+    if (!sidebarConfig) return;
+    const activeItemIds: string[] = [];
+
+    sidebarConfig.groups.forEach(group => {
+      group.items.forEach(item => {
+        const id = isActiveSidebarItem(item);
+        if (id) activeItemIds.push(id);
+      });
+    });
+
+    if (activeItemIds.length > 0) {
+      if (activeItemIds.length > 0) {
+        if (activeItemIds.length > 1) {
+          setActive(activeItemIds[activeItemIds.length - 1]);
+        } else {
+          setActive(activeItemIds[0]);
+        }
+      }
+    }
+  }, [isActiveSidebarItem, sidebarConfig, setActive]);
 
   return {
     sidebarType: getSidebarType,

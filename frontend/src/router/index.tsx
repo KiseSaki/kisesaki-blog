@@ -225,7 +225,9 @@ export const router = createBrowserRouter([
       // 管理员相关路由（需要管理员权限）
       {
         path: 'admin',
-        element: <PrivateRoute requiredRoles={['ADMIN']} />,
+        element: (
+          <PrivateRoute requiredPermissions={['DASHBOARD_ADMIN_ACCESS']} />
+        ),
         children: [
           {
             index: true,
@@ -246,50 +248,94 @@ export const router = createBrowserRouter([
           {
             path: 'posts',
             element: (
-              <SuspenseWrapper>
-                <PostManagement />
-              </SuspenseWrapper>
+              <PrivateRoute
+                requiredPermissions={['POST_MANAGE', 'POST_VIEW_ALL']}
+              />
             ),
+            children: [
+              {
+                index: true,
+                element: (
+                  <SuspenseWrapper>
+                    <PostManagement />
+                  </SuspenseWrapper>
+                ),
+              },
+            ],
           }, // 文章管理页
           {
             path: 'categories',
-            element: (
-              <SuspenseWrapper>
-                <CategoryManagement />
-              </SuspenseWrapper>
-            ),
+            element: <PrivateRoute requiredPermissions={['CATEGORY_VIEW']} />,
+            children: [
+              {
+                index: true,
+                element: (
+                  <SuspenseWrapper>
+                    <CategoryManagement />
+                  </SuspenseWrapper>
+                ),
+              },
+            ],
           }, // 分类管理页
           {
             path: 'tags',
-            element: (
-              <SuspenseWrapper>
-                <TagManagement />
-              </SuspenseWrapper>
-            ),
+            element: <PrivateRoute requiredPermissions={['TAG_MANAGE']} />,
+            children: [
+              {
+                index: true,
+                element: (
+                  <SuspenseWrapper>
+                    <TagManagement />
+                  </SuspenseWrapper>
+                ),
+              },
+            ],
           }, // 标签管理页
           {
             path: 'comments',
             element: (
-              <SuspenseWrapper>
-                <CommentManagement />
-              </SuspenseWrapper>
+              <PrivateRoute requiredPermissions={['COMMENT_MODERATE']} />
             ),
+            children: [
+              {
+                index: true,
+                element: (
+                  <SuspenseWrapper>
+                    <CommentManagement />
+                  </SuspenseWrapper>
+                ),
+              },
+            ],
           }, // 评论管理页
           {
             path: 'users',
-            element: (
-              <SuspenseWrapper>
-                <UserManagement />
-              </SuspenseWrapper>
-            ),
+            element: <PrivateRoute requiredPermissions={['USER_MANAGE']} />,
+            children: [
+              {
+                index: true,
+                element: (
+                  <SuspenseWrapper>
+                    <UserManagement />
+                  </SuspenseWrapper>
+                ),
+              },
+            ],
           }, // 用户管理页
           {
             path: 'settings',
             element: (
-              <SuspenseWrapper>
-                <SettingsPage />
-              </SuspenseWrapper>
+              <PrivateRoute requiredPermissions={['SYSTEM_CONFIG_MANAGE']} />
             ),
+            children: [
+              {
+                index: true,
+                element: (
+                  <SuspenseWrapper>
+                    <SettingsPage />
+                  </SuspenseWrapper>
+                ),
+              },
+            ],
           }, // 管理员设置页
         ],
       },

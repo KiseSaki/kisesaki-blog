@@ -8,7 +8,7 @@ import {
   Input,
 } from '@/components';
 import AuthLayout from '@/components/common/AuthLayout';
-import { FailedCard } from '@/components/common/FailedCard';
+import { FailedCard } from '@/components/feedback/FailedCard';
 import { usePassword } from '@/hooks';
 import { passwordSchema, type PasswordField } from '@/shcema';
 import { zodResolver } from '@hookform/resolvers/zod';

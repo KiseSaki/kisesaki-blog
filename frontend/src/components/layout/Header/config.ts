@@ -24,9 +24,3 @@ export const headerMenusConfig: IHeaderMenu[] = [
     path: '/blog/aboutMe',
   },
 ];
-
-// Avatar 跳转链接
-export const AVATAR_LINK = '/user/profile';
-
-// Login 跳转链接
-export const LOGIN_LINK = '/auth/login';

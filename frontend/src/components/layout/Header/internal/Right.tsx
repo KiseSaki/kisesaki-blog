@@ -1,8 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage, Button } from '@/components';
 import { ThemeToggle } from '@/components/common';
+import { LOGIN_LINK } from '@/config/routeURL';
 import { useAuth } from '@/hooks';
 import { useNavigate } from 'react-router';
-import { LOGIN_LINK } from '../config';
 
 export const Right = () => {
   const { isAuthenticated } = useAuth();

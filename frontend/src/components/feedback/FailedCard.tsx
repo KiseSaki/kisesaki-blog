@@ -1,4 +1,4 @@
-import AuthLayout from './AuthLayout';
+import AuthLayout from '../common/AuthLayout';
 
 interface FailedCardProps {
   title: string;

@@ -7,6 +7,7 @@
 export {
   ArticleIcon,
   CategoryIcon,
+  FavoritesIcon,
   HomeIcon,
   SearchIcon,
   TagIcon,
@@ -17,6 +18,8 @@ export {
 // 操作类图标
 export {
   AddIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   DeleteIcon,
   EditIcon,
   SettingsIcon,
@@ -30,6 +33,7 @@ export { CloseIcon, MenuIcon, MoonIcon, SunIcon } from './ThemeIcons';
 export {
   CommentIcon,
   DashboardIcon,
+  PostIcon,
   ProfileIcon,
   UsersIcon,
 } from './AdminIcons';

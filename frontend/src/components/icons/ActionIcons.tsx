@@ -151,3 +151,103 @@ export const SettingsIcon: React.FC<IconProps> = ({ size = 24, ...props }) => (
     />
   </svg>
 );
+
+/**
+ * 侧边栏收起图标组件 (汉堡菜单 - 向左箭头)
+ * 用于侧边栏收起操作，中间横线带有向左箭头
+ */
+export const ChevronLeftIcon: React.FC<IconProps> = ({
+  size = 24,
+  ...props
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    xmlns='http://www.w3.org/2000/svg'
+    {...props}
+  >
+    {/* 上横线 */}
+    <path
+      d='M3 6H21'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
+    {/* 中间横线带向左箭头 */}
+    <path
+      d='M3 12H15'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
+    <path
+      d='M18 15L15 12L18 9'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
+    {/* 下横线 */}
+    <path
+      d='M3 18H21'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
+  </svg>
+);
+
+/**
+ * 侧边栏展开图标组件 (汉堡菜单 - 向右箭头)
+ * 用于侧边栏展开操作，中间横线带有向右箭头
+ */
+export const ChevronRightIcon: React.FC<IconProps> = ({
+  size = 24,
+  ...props
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox='0 0 24 24'
+    fill='none'
+    xmlns='http://www.w3.org/2000/svg'
+    {...props}
+  >
+    {/* 上横线 */}
+    <path
+      d='M3 6H21'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
+    {/* 中间横线带向右箭头 */}
+    <path
+      d='M9 12H21'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
+    <path
+      d='M6 9L9 12L6 15'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
+    {/* 下横线 */}
+    <path
+      d='M3 18H21'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
+  </svg>
+);

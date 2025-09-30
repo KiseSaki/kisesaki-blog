@@ -8,13 +8,9 @@ import type { IconProps } from './NavigationIcons';
 
 /**
  * 归档图标组件
- *  </svg>
-);
-
-export const NotificationIcon: React.FC<IconProps> = ({
-  size = 24,
-  ...props
-}) => (
+ * 用于博客归档和分类展示
+ */
+export const ArchiveIcon: React.FC<IconProps> = ({ size = 24, ...props }) => (
   <svg
     width={size}
     height={size}
@@ -24,14 +20,12 @@ export const NotificationIcon: React.FC<IconProps> = ({
     {...props}
   >
     <path
-      d='M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.7 15.3C4.3 15.7 4.6 16.5 5.1 16.5H17M17 13V19C17 19.5304 17.2107 20.0391 17.5858 20.4142C17.9609 20.7893 18.4696 21 19 21H19.5C20.0304 21 20.5391 20.7893 20.9142 20.4142C21.2893 20.0391 21.5 19.5304 21.5 19V13H17Z'
+      d='M3 7V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9L11 5H19C19.5304 5 20.0391 5.21071 20.4142 5.58579C20.7893 5.96086 21 6.46957 21 7V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V7Z'
       stroke='currentColor'
       strokeWidth='2'
       strokeLinecap='round'
       strokeLinejoin='round'
     />
-    <circle cx='9' cy='19.5' r='1.5' stroke='currentColor' strokeWidth='2' />
-    <circle cx='20' cy='19.5' r='1.5' stroke='currentColor' strokeWidth='2' />
   </svg>
 );
 

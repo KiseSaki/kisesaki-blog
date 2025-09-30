@@ -118,7 +118,7 @@ logging:
 app:
   cors:
     # 开发环境额外允许的域名（Vite开发服务器默认端口）
-    additional-origins: http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173
+    additional-origins: http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,http://192.168.105.173:3000
 
 kisesaki:
   blog:

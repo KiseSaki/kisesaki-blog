@@ -1,4 +1,5 @@
 import { useAuth, usePermissions } from '@/hooks';
+import { useUI } from '@/stores';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { adminSidebarConfig } from '../config/adminConfig';
@@ -8,6 +9,13 @@ import type { SidebarConfig, SidebarItemType } from '../types';
 export const useSidebar = () => {
   const { user } = useAuth();
   const { hasPermission } = usePermissions();
+  const {
+    sidebarCollapsed,
+    toggleSidebar,
+    setSidebarCollapsed,
+    sidebarWidth,
+    sidebarCollapsedWidth,
+  } = useUI();
   const location = useLocation(); // 获取当前URL
   const navigate = useNavigate();
 
@@ -132,7 +140,15 @@ export const useSidebar = () => {
     sidebarConfig,
     activeItemId,
 
+    // UI 状态 - 从全局 store 获取
+    collapsed: sidebarCollapsed,
+    width: sidebarWidth,
+    collapsedWidth: sidebarCollapsedWidth,
+
+    // 操作函数
     setActive,
     handleItemClick,
+    toggleCollapsed: toggleSidebar,
+    setSidebarCollapsed,
   };
 };

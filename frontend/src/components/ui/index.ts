@@ -9,3 +9,5 @@ export * from './forms/Form';
 export * from './forms/Input';
 export * from './forms/Label';
 export * from './display/ScrollArea';
+export * from './HoverCard';
+export * from './NavigationMenu';

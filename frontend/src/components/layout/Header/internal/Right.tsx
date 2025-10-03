@@ -1,12 +1,5 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  Button,
-  HoverCard,
-  HoverCardContent,
-} from '@/components';
-import { ThemeToggle } from '@/components/common';
+import { Button, HoverCard, HoverCardContent } from '@/components';
+import { ThemeToggle, UserAvatar } from '@/components/common';
 import { LOGIN_LINK } from '@/config/routeURL';
 import { useAuth } from '@/hooks';
 import { HoverCardTrigger } from '@radix-ui/react-hover-card';
@@ -38,10 +31,12 @@ export const Right = () => {
       {isAuthenticated ? (
         <HoverCard openDelay={200} closeDelay={200}>
           <HoverCardTrigger asChild>
-            <Avatar className='cursor-pointer' onClick={handleProfile}>
-              <AvatarImage src={user?.avatarUrl} alt='User Avatar' />
-              <AvatarFallback identifier={user?.displayName}>U</AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              src={user?.avatarUrl}
+              name={user?.displayName || user?.username || 'User'}
+              className='h-8 w-8'
+              onClick={handleProfile}
+            />
           </HoverCardTrigger>
           <HoverCardContent className='w-auto'>
             <div className='flex flex-col space-y-2'>

@@ -125,23 +125,23 @@ export interface UserFollow {
  */
 export interface UserInfo extends User {
   // UserProfile 字段
-  displayName?: string;
-  firstName?: string;
-  lastName?: string;
-  bio?: string;
-  avatarUrl?: string;
-  coverImageUrl?: string;
-  websiteUrl?: string;
-  location?: string;
-  company?: string;
-  title?: string;
-  socialLinks?: Record<string, string>;
-  birthDate?: string;
-  gender?: string;
-  timezone?: string;
-  language?: string;
-  themePreference?: string;
-  privacyLevel?: string;
+  displayName?: string; // 显示名称
+  firstName?: string; // 名字
+  lastName?: string; // 姓氏
+  bio?: string; // 个人简介
+  avatarUrl?: string; // 头像 URL
+  coverImageUrl?: string; // 封面图 URL
+  websiteUrl?: string; // 个人网站 URL
+  location?: string; // 所在地
+  company?: string; // 公司/组织
+  title?: string; // 职位标题
+  socialLinks?: Record<string, string>; // 社交媒体链接
+  birthDate?: string; // 出生日期
+  gender?: string; // 性别，例如 'male','female','other'
+  timezone?: string; // 时区
+  language?: string; // 首选语言
+  themePreference?: string; // 主题偏好，例如 'light','dark','system'
+  privacyLevel?: string; // 隐私级别，例如 'public','friends','private'
 
   // 权限列表
   roles: string[];

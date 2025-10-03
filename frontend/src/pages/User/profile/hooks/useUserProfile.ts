@@ -12,7 +12,6 @@ export const useUserProfile = () => {
   // 保存用户信息
   const [isLoading, setIsLoading] = useState(false);
   const setUserInfoCallback = async (info: UserInfo) => {
-    console.log(121323);
     try {
       setIsLoading(true);
       await updateUserProfileApi(info);

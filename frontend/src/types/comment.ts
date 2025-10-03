@@ -48,24 +48,47 @@ export interface CommentDetailResponse extends CommentListResponse {
 
 /**
  * 获取评论列表参数
+ * 对应后端 CommentListParams，包含嵌套的 pageable 字段
  */
 export interface CommentListParams {
-  page?: number;
-  size?: number;
-  // 排序方式
-  sortBy?: CommentSortType;
-  // 是否只看作者
-  onlyAuthor?: boolean;
-  // 父评论ID（用于获取回复）
-  parentId?: number;
+  // 分页参数（嵌套对象）
+  pageable?: {
+    currentPage?: number;
+    pageSize?: number;
+    sort?: string;
+    includeTotal?: boolean;
+    startTime?: string;
+    endTime?: string;
+    date?: string;
+  };
+  // 评论用户ID
+  userId?: number;
+  // 回复目标评论ID（@某条评论）
+  replyToId?: number;
+  // 评论状态（PENDING/APPROVED/REJECTED/SPAM）
+  status?: string;
+  // 是否置顶
+  isPinned?: boolean;
+  // 是否为作者回复
+  isAuthorReply?: boolean;
+  // 内容关键字（用于模糊搜索评论内容）
+  keyword?: string;
 }
 
 /**
  * 获取我的评论列表参数
  */
 export interface MyCommentParams {
-  page?: number;
-  size?: number;
+  // 分页参数（嵌套对象）
+  pageable?: {
+    currentPage?: number;
+    pageSize?: number;
+    sort?: string;
+    includeTotal?: boolean;
+    startTime?: string;
+    endTime?: string;
+    date?: string;
+  };
   // 文章ID筛选
   postId?: number;
   // 状态筛选

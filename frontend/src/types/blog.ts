@@ -156,8 +156,15 @@ export interface UpdatePostResponse {
  * 已发布文章列表查询参数
  */
 export interface PublishedPostListParams {
-  page?: number;
-  size?: number;
+  // 分页参数
+  currentPage?: number;
+  pageSize?: number;
+  sort?: string;
+  includeTotal?: boolean;
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  // 业务筛选参数
   categoryId?: number;
   tagId?: number;
   keyword?: string;
@@ -168,8 +175,15 @@ export interface PublishedPostListParams {
  * 获取我的文章列表参数
  */
 export interface GetMyPostsListParams {
-  page?: number;
-  size?: number;
+  // 分页参数
+  currentPage?: number;
+  pageSize?: number;
+  sort?: string;
+  includeTotal?: boolean;
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  // 业务筛选参数
   status?: PostStatus;
   categoryId?: number;
   keyword?: string;
@@ -204,8 +218,14 @@ export interface PostRevisionContentResponse {
  * 文章修订列表查询参数
  */
 export interface PostRevisionListParams {
-  page?: number;
-  size?: number;
+  // 分页参数
+  currentPage?: number;
+  pageSize?: number;
+  sort?: string;
+  includeTotal?: boolean;
+  startTime?: string;
+  endTime?: string;
+  date?: string;
 }
 
 // =================== 分类相关类型 ===================
@@ -267,8 +287,15 @@ export interface PopularCategoryResponse {
  * 分类查询参数
  */
 export interface CategoryQueryParams {
-  page?: number;
-  size?: number;
+  // 分页参数
+  currentPage?: number;
+  pageSize?: number;
+  sort?: string;
+  includeTotal?: boolean;
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  // 业务筛选参数
   parentId?: number;
   level?: number;
   keyword?: string;
@@ -286,8 +313,15 @@ export interface PopularCategoryParams {
  * 分类下文章列表查询参数
  */
 export interface CategoryPostsParams {
-  page?: number;
-  size?: number;
+  // 分页参数
+  currentPage?: number;
+  pageSize?: number;
+  sort?: string;
+  includeTotal?: boolean;
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  // 业务筛选参数
   sortBy?: PostSortType;
 }
 
@@ -383,8 +417,15 @@ export interface MyTagResponse {
  * 标签列表查询参数
  */
 export interface TagListParams {
-  page?: number;
-  size?: number;
+  // 分页参数
+  currentPage?: number;
+  pageSize?: number;
+  sort?: string;
+  includeTotal?: boolean;
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  // 业务筛选参数
   keyword?: string;
   sortBy?: 'NAME' | 'POST_COUNT' | 'CREATED_AT';
 }
@@ -401,8 +442,15 @@ export interface TagSearchParams {
  * 标签下文章列表查询参数
  */
 export interface TagPostsParams {
-  page?: number;
-  size?: number;
+  // 分页参数
+  currentPage?: number;
+  pageSize?: number;
+  sort?: string;
+  includeTotal?: boolean;
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  // 业务筛选参数
   sortBy?: PostSortType;
 }
 

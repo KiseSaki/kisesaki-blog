@@ -38,9 +38,10 @@ export const getCommentDetailApi = (id: number) =>
 
 /**
  * 获取评论的回复列表（用于懒加载更多回复）
+ * 注意：此接口使用简化的分页参数 page 和 size
  * @param id 父评论ID
- * @param page 页码
- * @param size 每页大小
+ * @param page 页码（默认1）
+ * @param size 每页大小（默认10）
  * @returns 回复列表
  */
 export const getCommentRepliesApi = (

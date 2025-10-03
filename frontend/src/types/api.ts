@@ -164,33 +164,8 @@ export const ERROR_MESSAGES: Record<ErrorCodeType, string> = {
   [ErrorCode.SMS_SEND_FAILED]: '短信发送失败',
 };
 
-// 分页数据结构
-// 与后端 PageResponse 保持一致
-export interface PageData<T> {
-  // 当前页码
-  currentPage: number;
-  // 每页大小
-  pageSize: number;
-  // 总记录数
-  totalRecords: number;
-  // 总页数
-  totalPages: number;
-  // 是否为第一页
-  first: boolean;
-  // 是否为最后一页
-  last: boolean;
-  // 是否为空
-  empty: boolean;
-  // 数据列表
-  data: T[];
-  // 下一页页码
-  nextPage: number;
-  // 上一页页码
-  previousPage: number;
-}
-
 // 分页查询参数基础接口
-// 对应后端 PageableParams，用于 GET 请求的 URL 参数
+// 完全对应后端 PageableParams，用于 GET 请求的 URL 参数
 export interface PageableParams {
   // 当前页码（从1开始）
   currentPage?: number;
@@ -206,32 +181,28 @@ export interface PageableParams {
   endTime?: string;
   // 查询指定日期的数据，格式: YYYY-MM-DD
   date?: string;
-  // 索引签名，兼容 Record<string, unknown>
-  [key: string]: unknown;
 }
 
-// 扩展的分页查询参数接口
-// 包含常用的查询条件，可被具体的查询参数接口继承
-export interface ExtendedPageableParams extends PageableParams {
-  // 搜索关键词
-  keyword?: string;
-  // 状态筛选
-  status?: string;
-  // 类型筛选
-  type?: string;
-  // 分类筛选
-  category?: string;
-  // 标签筛选
-  tags?: string | string[];
-  // 作者筛选
-  author?: string;
-  // 创建者ID筛选
-  createdBy?: number;
+// 分页响应数据结构
+// 完全对应后端 PageResponse
+export interface PageResponse<T> {
+  // 当前页码（从1开始）
+  currentPage: number;
+  // 每页大小
+  pageSize: number;
+  // 总记录数
+  totalRecords: number;
+  // 总页数
+  totalPages: number;
+  // 是否为第一页
+  first: boolean;
+  // 是否为最后一页
+  last: boolean;
+  // 是否为空页（无数据）
+  empty: boolean;
+  // 数据列表
+  data: T[];
 }
-
-// 分页响应的统一类型别名
-// 简化使用分页数据的场景
-export type PageResponse<T> = PageData<T>;
 
 // API 请求配置接口
 // 扩展 axios 的请求配置

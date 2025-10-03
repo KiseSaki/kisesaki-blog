@@ -4,8 +4,11 @@
  */
 export * from './display/Avatar';
 export * from './display/Card';
+export * from './display/ScrollArea';
 export * from './forms/Button';
 export * from './forms/Form';
 export * from './forms/Input';
 export * from './forms/Label';
-export * from './display/ScrollArea';
+export * from './HoverCard';
+export * from './NavigationMenu';
+export * from './Select';

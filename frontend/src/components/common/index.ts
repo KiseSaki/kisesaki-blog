@@ -11,3 +11,6 @@ export * from '../theme';
 
 // 本目录的组件
 export { default as AuthLayout } from './AuthLayout';
+export { default as UserAvatar } from './UserAvatar';
+export { default as UserAvatarUploader } from './UserAvatarUploader';
+export { UserLayout } from './UserLayout';

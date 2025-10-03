@@ -28,7 +28,7 @@ const OAuthCallbackPage = React.lazy(
 );
 
 // 用户相关页面
-const UserProfile = React.lazy(() => import('@/pages/User/UserProfile'));
+const UserProfile = React.lazy(() => import('@/pages/User/profile/UserProfile'));
 const UserSettings = React.lazy(() => import('@/pages/User/UserSettings'));
 const FavoritesPage = React.lazy(() => import('@/pages/User/FavoritesPage'));
 

@@ -14,6 +14,7 @@ import {
   UserAvatarUploader,
   UserLayout,
 } from '@/components';
+import { useUser } from '@/hooks';
 import type { UserInfo } from '@/types';
 import { SelectValue } from '@radix-ui/react-select';
 import { useForm } from 'react-hook-form';
@@ -24,7 +25,8 @@ import { useUserProfile } from './hooks/useUserProfile';
  * 显示和编辑用户个人信息、头像、密码修改等
  */
 const UserProfile = () => {
-  const { userInfo, isLoading, setUserInfoCallback } = useUserProfile();
+  const { userInfo } = useUserProfile();
+  const { profile, loading } = useUser();
   const form = useForm<UserInfo>({
     defaultValues: {
       displayName: userInfo?.displayName || '',
@@ -43,7 +45,7 @@ const UserProfile = () => {
             <Form {...form}>
               <form
                 className='space-y-6'
-                onSubmit={form.handleSubmit(setUserInfoCallback)}
+                onSubmit={form.handleSubmit(profile.updateProfile)}
               >
                 <FormField
                   name='displayName'
@@ -105,7 +107,11 @@ const UserProfile = () => {
                   )}
                 />
 
-                <Button type='submit' className='mt-6' loading={isLoading}>
+                <Button
+                  type='submit'
+                  className='mt-6'
+                  loading={loading.updatingProfile}
+                >
                   保存
                 </Button>
               </form>

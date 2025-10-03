@@ -168,7 +168,80 @@ export const useUser = () => {
     },
     [executeApiCall]
   );
-  
+
+  // ============ 用户资料管理 ============
+
+  /**
+   * 更新用户个人资料
+   */
+  const updateProfile = useCallback(
+    async (params: UpdateUserProfileParams): Promise<UserInfo | null> => {
+      return executeApiCall(
+        {
+          execute: () => updateUserProfileApi(params),
+          successMessage: '个人资料更新成功',
+          errorMessage: '个人资料更新失败',
+          updateAuth: true,
+        },
+        'updatingProfile'
+      );
+    },
+    [executeApiCall]
+  );
+
+  /**
+   * 更新用户设置
+   */
+  const updateSettings = useCallback(
+    async (params: UpdateUserSettingsParams): Promise<string | null> => {
+      return executeApiCall(
+        {
+          execute: () => updateUserSettingsApi(params),
+          successMessage: '设置更新成功',
+          errorMessage: '设置更新失败',
+        },
+        'updatingSettings'
+      );
+    },
+    [executeApiCall]
+  );
+
+  /**
+   * 上传头像文件
+   */
+  const uploadAvatar = useCallback(
+    async (file: File): Promise<UserInfo | null> => {
+      return executeApiCall(
+        {
+          execute: () => uploadAvatarApi(file),
+          successMessage: '头像上传成功',
+          errorMessage: '头像上传失败',
+          updateAuth: true,
+        },
+        'uploadingAvatar'
+      );
+    },
+    [executeApiCall]
+  );
+
+  /**
+   * 更新头像URL
+   */
+  const updateAvatarUrl = useCallback(
+    async (avatarUrl: string): Promise<UserInfo | null> => {
+      return executeApiCall(
+        {
+          execute: () => updateAvatarApi(avatarUrl),
+          successMessage: '头像更新成功',
+          errorMessage: '头像更新失败',
+          updateAuth: true,
+        },
+        'updatingProfile'
+      );
+    },
+    [executeApiCall]
+  );
+
   // ============ 关注功能 ============
 
   /**

@@ -6,7 +6,7 @@ import { Upload, X } from 'lucide-react';
 import React, { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { uploadAvatarApi } from '@/api/user';
+import { useUser } from '@/hooks';
 import { cn } from '@/lib';
 import { Button } from '../ui';
 import UserAvatar from './UserAvatar';
@@ -44,12 +44,17 @@ const UserAvatarUploader: React.FC<UserAvatarUploaderProps> = ({
   maxSize = 5 * 1024 * 1024, // 5MB
   accept = 'image/*',
 }) => {
-  const [isUploading, setIsUploading] = useState(false);
+  // 使用 useUser hook
+  const { profile, loading } = useUser();
+
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(
     currentAvatarUrl
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 获取上传状态
+  const isUploading = loading.uploadingAvatar;
 
   // 验证文件是否符合要求
   const validateFile = useCallback(
@@ -85,24 +90,20 @@ const UserAvatarUploader: React.FC<UserAvatarUploaderProps> = ({
       };
       reader.readAsDataURL(file);
 
-      // 上传文件
-      setIsUploading(true);
-      try {
-        const userInfo = await uploadAvatarApi(file);
-        const newAvatarUrl = userInfo.avatarUrl;
+      // 使用 useUser hook 上传文件
+      const userInfo = await profile.uploadAvatar(file);
 
-        toast.success('头像上传成功');
+      if (userInfo) {
+        const newAvatarUrl = userInfo.avatarUrl;
         setPreviewUrl(newAvatarUrl);
         onUploadSuccess?.(newAvatarUrl ?? '');
-      } catch (error) {
-        toast.error('头像上传失败，请重试');
-        setPreviewUrl(currentAvatarUrl); // 恢复到原始头像
-        onUploadError?.(error as Error);
-      } finally {
-        setIsUploading(false);
+      } else {
+        // 上传失败，恢复到原始头像
+        setPreviewUrl(currentAvatarUrl);
+        onUploadError?.(new Error('头像上传失败'));
       }
     },
-    [validateFile, currentAvatarUrl, onUploadSuccess, onUploadError]
+    [validateFile, currentAvatarUrl, onUploadSuccess, onUploadError, profile]
   );
 
   // 处理点击上传

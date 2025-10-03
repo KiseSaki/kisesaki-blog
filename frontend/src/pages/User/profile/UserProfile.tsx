@@ -1,14 +1,21 @@
 import {
   Button,
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
   Input,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
   UserAvatarUploader,
   UserLayout,
 } from '@/components';
 import type { UserInfo } from '@/types';
+import { SelectValue } from '@radix-ui/react-select';
 import { useForm } from 'react-hook-form';
 import { useUserProfile } from './hooks/useUserProfile';
 
@@ -66,7 +73,23 @@ const UserProfile = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>性别</FormLabel>
-                      <Input placeholder='性别' {...field} />
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className='w-[200px]'>
+                            <SelectValue placeholder='选择性别' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value='male'>男</SelectItem>
+                            <SelectItem value='female'>女</SelectItem>
+                            <SelectItem value='other'>其他</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />

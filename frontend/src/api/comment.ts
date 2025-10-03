@@ -1,0 +1,98 @@
+/**
+ * 评论相关 API 接口函数
+ */
+import { httpClient } from '@/lib';
+import type { PageResponse } from '@/types';
+import type {
+  CommentDetailResponse,
+  CommentListParams,
+  CommentListResponse,
+  CreateCommentBody,
+  MyCommentParams,
+  ReportCommentBody,
+  UpdateCommentBody,
+} from '@/types/comment';
+
+/**
+ * 获取文章评论列表
+ * @param postId 文章ID
+ * @param params 查询参数
+ * @returns 评论列表
+ */
+export const getPostCommentsApi = (
+  postId: number,
+  params?: CommentListParams
+) =>
+  httpClient.get<PageResponse<CommentListResponse>>(
+    `/posts/${postId}/comments`,
+    { params }
+  );
+
+/**
+ * 获取单条评论详情
+ * @param id 评论ID
+ * @returns 评论详情
+ */
+export const getCommentDetailApi = (id: number) =>
+  httpClient.get<CommentDetailResponse>(`/comments/${id}`);
+
+/**
+ * 获取评论的回复列表（用于懒加载更多回复）
+ * @param id 父评论ID
+ * @param page 页码
+ * @param size 每页大小
+ * @returns 回复列表
+ */
+export const getCommentRepliesApi = (
+  id: number,
+  page: number = 1,
+  size: number = 10
+) =>
+  httpClient.get<PageResponse<CommentListResponse>>(`/comments/${id}/replies`, {
+    params: { page, size },
+  });
+
+/**
+ * 创建评论
+ * @param postId 文章ID
+ * @param body 评论内容
+ * @returns 创建的评论ID
+ */
+export const createCommentApi = (postId: number, body: CreateCommentBody) =>
+  httpClient.post<number>(`/posts/${postId}/comments`, body);
+
+/**
+ * 更新评论（15分钟内）
+ * @param id 评论ID
+ * @param body 更新内容
+ * @returns 更新的评论ID
+ */
+export const updateCommentApi = (id: number, body: UpdateCommentBody) =>
+  httpClient.post<number>(`/comments/${id}`, body);
+
+/**
+ * 删除评论
+ * @param id 评论ID
+ * @returns 删除结果
+ */
+export const deleteCommentApi = (id: number) =>
+  httpClient.delete<void>(`/comments/${id}`);
+
+/**
+ * 获取我的评论列表
+ * @param params 查询参数
+ * @returns 我的评论列表
+ */
+export const getMyCommentsApi = (params?: MyCommentParams) =>
+  httpClient.get<PageResponse<CommentListResponse>>('/comments/my', {
+    params,
+  });
+
+/**
+ * 举报评论
+ * @param id 评论ID
+ * @param body 举报内容
+ * @returns 举报结果
+ */
+export const reportCommentApi = (id: number, body: ReportCommentBody) =>
+  httpClient.post<void>(`/comments/${id}/report`, body);

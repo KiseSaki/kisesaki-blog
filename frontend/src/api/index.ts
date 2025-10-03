@@ -21,3 +21,12 @@ export { default } from '../lib/client';
 
 // 导出 API 工具函数
 export * from '../lib/api';
+
+// 导出各模块 API 接口
+export * from './admin';
+export * from './analytics';
+export * from './auth';
+export * from './blog';
+export * from './comment';
+export * from './interaction';
+export * from './user';

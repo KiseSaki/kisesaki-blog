@@ -3,8 +3,18 @@
  * 包含文章数据获取、分类筛选等博客相关逻辑
  */
 
-import { getFeaturedPostsApi, getRecentPostsApi } from '@/api';
-import type { PageResponse, PublishedPostListResponse } from '@/types';
+import {
+  getFeaturedPostsApi,
+  getPopularCategoriesApi,
+  getRecentPostsApi,
+  getTagCloudApi,
+} from '@/api';
+import type {
+  PageResponse,
+  PopularCategoryResponse,
+  PublishedPostListResponse,
+  TagCloudItem,
+} from '@/types';
 import { useCallback, useState } from 'react';
 
 export const useBlog = () => {
@@ -36,11 +46,43 @@ export const useBlog = () => {
     }
   }, []);
 
+  // 获取热门分类
+  const [popularCategories, setPopularCategories] = useState<
+    PopularCategoryResponse[]
+  >([]);
+  const fetchPopularCategories = useCallback(async () => {
+    try {
+      const res = await getPopularCategoriesApi({ limit: 10 });
+      setPopularCategories(res);
+      return res;
+    } catch (error) {
+      console.error('获取热门分类失败:', error);
+      return [];
+    }
+  }, []);
+
+  // 获取标签云
+  const [tagCloud, setTagCloud] = useState<TagCloudItem[]>([]);
+  const fetchTagCloud = useCallback(async () => {
+    try {
+      const res = await getTagCloudApi();
+      setTagCloud(res);
+      return res;
+    } catch (error) {
+      console.error('获取标签云失败:', error);
+      return [];
+    }
+  }, []);
+
   return {
     featuredPosts,
     recentPosts,
+    popularCategories,
+    tagCloud,
 
     fetchFeaturedPosts,
     fetchRecentPosts,
+    fetchPopularCategories,
+    fetchTagCloud,
   };
 };

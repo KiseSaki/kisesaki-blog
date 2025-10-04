@@ -171,7 +171,7 @@ const HomePage = () => {
       <section className='space-y-6'>
         <div className='flex items-center justify-between'>
           <h2 className='text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary'>
-            发展历程
+            时间线
           </h2>
           <div className='h-1 flex-1 ml-6 bg-gradient-to-r from-primary/30 to-transparent rounded-full' />
         </div>

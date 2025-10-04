@@ -8,6 +8,7 @@ import {
 } from '@/components';
 import { useBlog } from '@/hooks';
 import { useEffect } from 'react';
+import { BlogStats } from './BlogStats';
 import { CategoryCloud } from './CategoryCloud';
 import { FeaturedPostsCard } from './FeaturedPostsCard';
 import { HeroSection } from './HeroSection';
@@ -151,6 +152,18 @@ const HomePage = () => {
         <div className='p-6 rounded-xl bg-card border border-border'>
           <TechStack />
         </div>
+      </section>
+
+      {/* Blog Statistics Section */}
+      <section className='space-y-6'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary'>
+            博客统计
+          </h2>
+          <div className='h-1 flex-1 ml-6 bg-gradient-to-r from-primary/30 to-transparent rounded-full' />
+        </div>
+
+        <BlogStats />
       </section>
     </BlogLayout>
   );

@@ -1,4 +1,5 @@
 import {
+  BlogLayout,
   Carousel,
   CarouselContent,
   CarouselItem,
@@ -18,7 +19,7 @@ const HomePage = () => {
   }, [fetchFeaturedPosts]);
 
   return (
-    <div className='px-64'>
+    <BlogLayout>
       <HeroSection />
       {featuredPosts && featuredPosts.data.length > 0 ? (
         <Carousel>
@@ -35,7 +36,7 @@ const HomePage = () => {
       ) : (
         <p>No featured posts available.</p>
       )}
-    </div>
+    </BlogLayout>
   );
 };
 

@@ -2,6 +2,7 @@
  * shadcn/ui 组件导出文件
  * 统一导出所有 shadcn/ui 组件的配置和导出
  */
+export * from './Carousel';
 export * from './display/Avatar';
 export * from './display/Card';
 export * from './display/ScrollArea';

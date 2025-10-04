@@ -56,7 +56,7 @@ const HomePage = () => {
         </div>
 
         {featuredPosts && featuredPosts.data.length > 0 ? (
-          <div className='relative px-12'>
+          <div className='relative'>
             <Carousel className='w-full'>
               <CarouselContent>
                 {featuredPosts.data.map(post => (
@@ -65,8 +65,8 @@ const HomePage = () => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className='absolute left-0 top-1/2 -translate-y-1/2 z-10' />
-              <CarouselNext className='absolute right-0 top-1/2 -translate-y-1/2 z-10' />
+              <CarouselPrevious className='absolute left-5 top-1/2 -translate-y-1/2 z-10' />
+              <CarouselNext className='absolute right-5 top-1/2 -translate-y-1/2 z-10' />
             </Carousel>
           </div>
         ) : (

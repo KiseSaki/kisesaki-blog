@@ -15,6 +15,7 @@ import { HeroSection } from './HeroSection';
 import { RecentArticleCard } from './RecentArticleCard';
 import { TagCloud } from './TagCloud';
 import { TechStack } from './TechStack';
+import { Timeline } from './Timeline';
 
 const HomePage = () => {
   const {
@@ -164,6 +165,20 @@ const HomePage = () => {
         </div>
 
         <BlogStats />
+      </section>
+
+      {/* Timeline Section */}
+      <section className='space-y-6'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary'>
+            发展历程
+          </h2>
+          <div className='h-1 flex-1 ml-6 bg-gradient-to-r from-primary/30 to-transparent rounded-full' />
+        </div>
+
+        <div className='py-8'>
+          <Timeline />
+        </div>
       </section>
     </BlogLayout>
   );

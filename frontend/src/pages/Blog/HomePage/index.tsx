@@ -10,13 +10,16 @@ import { useBlog } from '@/hooks';
 import { useEffect } from 'react';
 import { FeaturedPostsCard } from './FeaturedPostsCard';
 import { HeroSection } from './HeroSection';
+import { RecentArticleCard } from './RecentArticleCard';
 
 const HomePage = () => {
-  const { featuredPosts, fetchFeaturedPosts } = useBlog();
+  const { featuredPosts, recentPosts, fetchFeaturedPosts, fetchRecentPosts } =
+    useBlog();
 
   useEffect(() => {
     fetchFeaturedPosts();
-  }, [fetchFeaturedPosts]);
+    fetchRecentPosts();
+  }, [fetchFeaturedPosts, fetchRecentPosts]);
 
   return (
     <BlogLayout>
@@ -49,6 +52,28 @@ const HomePage = () => {
         ) : (
           <div className='flex items-center justify-center h-96 rounded-xl bg-muted/30'>
             <p className='text-muted-foreground'>暂无精选文章</p>
+          </div>
+        )}
+      </section>
+
+      {/* Recent Articles Section */}
+      <section className='space-y-6'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary'>
+            最新文章
+          </h2>
+          <div className='h-1 flex-1 ml-6 bg-gradient-to-r from-primary/30 to-transparent rounded-full' />
+        </div>
+
+        {recentPosts && recentPosts.data.length > 0 ? (
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+            {recentPosts.data.map(post => (
+              <RecentArticleCard key={post.id} {...post} />
+            ))}
+          </div>
+        ) : (
+          <div className='flex items-center justify-center h-64 rounded-xl bg-muted/30'>
+            <p className='text-muted-foreground'>暂无最新文章</p>
           </div>
         )}
       </section>

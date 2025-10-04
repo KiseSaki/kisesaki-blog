@@ -3,7 +3,7 @@
  * 包含文章数据获取、分类筛选等博客相关逻辑
  */
 
-import { getFeaturedPostsApi } from '@/api';
+import { getFeaturedPostsApi, getRecentPostsApi } from '@/api';
 import type { PageResponse, PublishedPostListResponse } from '@/types';
 import { useCallback, useState } from 'react';
 
@@ -22,9 +22,25 @@ export const useBlog = () => {
     }
   }, []);
 
+  // 获取最新文章
+  const [recentPosts, setRecentPosts] =
+    useState<PageResponse<PublishedPostListResponse> | null>(null);
+  const fetchRecentPosts = useCallback(async () => {
+    try {
+      const res = await getRecentPostsApi({ currentPage: 1, pageSize: 6 });
+      setRecentPosts(res);
+      return res;
+    } catch (error) {
+      console.error('获取最新文章失败:', error);
+      return null;
+    }
+  }, []);
+
   return {
     featuredPosts,
+    recentPosts,
 
     fetchFeaturedPosts,
+    fetchRecentPosts,
   };
 };

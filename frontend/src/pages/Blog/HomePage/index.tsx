@@ -13,6 +13,7 @@ import { FeaturedPostsCard } from './FeaturedPostsCard';
 import { HeroSection } from './HeroSection';
 import { RecentArticleCard } from './RecentArticleCard';
 import { TagCloud } from './TagCloud';
+import { TechStack } from './TechStack';
 
 const HomePage = () => {
   const {
@@ -135,6 +136,20 @@ const HomePage = () => {
               <p className='text-muted-foreground'>暂无标签</p>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Tech Stack Section */}
+      <section className='space-y-6'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary'>
+            技术栈
+          </h2>
+          <div className='h-1 flex-1 ml-6 bg-gradient-to-r from-primary/30 to-transparent rounded-full' />
+        </div>
+
+        <div className='p-6 rounded-xl bg-card border border-border'>
+          <TechStack />
         </div>
       </section>
     </BlogLayout>

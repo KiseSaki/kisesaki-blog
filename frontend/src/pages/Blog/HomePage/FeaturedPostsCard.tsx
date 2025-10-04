@@ -13,7 +13,7 @@ export const FeaturedPostsCard = ({
     <article
       role='article'
       aria-label={title}
-      className='group relative w-full h-90 rounded-xl overflow-hidden bg-card border border-border shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer'
+      className='group relative w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] rounded-xl overflow-hidden bg-card border border-border shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer'
     >
       {/* 图片或占位（放到最底层） */}
       {coverImage ? (

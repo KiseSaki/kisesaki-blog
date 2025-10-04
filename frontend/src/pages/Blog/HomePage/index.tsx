@@ -20,22 +20,38 @@ const HomePage = () => {
 
   return (
     <BlogLayout>
+      {/* Hero Section */}
       <HeroSection />
-      {featuredPosts && featuredPosts.data.length > 0 ? (
-        <Carousel>
-          <CarouselContent>
-            {featuredPosts.data.map(post => (
-              <CarouselItem key={post.id}>
-                <FeaturedPostsCard {...post} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className='absolute left-4 top-1/2 transform -translate-y-1/2' />
-          <CarouselNext className='absolute right-4 top-1/2 transform -translate-y-1/2' />
-        </Carousel>
-      ) : (
-        <p>No featured posts available.</p>
-      )}
+
+      {/* Featured Posts Section */}
+      <section className='space-y-6'>
+        <div className='flex items-center justify-between'>
+          <h2 className='text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary'>
+            精选文章
+          </h2>
+          <div className='h-1 flex-1 ml-6 bg-gradient-to-r from-primary/30 to-transparent rounded-full' />
+        </div>
+
+        {featuredPosts && featuredPosts.data.length > 0 ? (
+          <div className='relative px-12'>
+            <Carousel className='w-full'>
+              <CarouselContent>
+                {featuredPosts.data.map(post => (
+                  <CarouselItem key={post.id}>
+                    <FeaturedPostsCard {...post} />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className='absolute left-0 top-1/2 -translate-y-1/2 z-10' />
+              <CarouselNext className='absolute right-0 top-1/2 -translate-y-1/2 z-10' />
+            </Carousel>
+          </div>
+        ) : (
+          <div className='flex items-center justify-center h-96 rounded-xl bg-muted/30'>
+            <p className='text-muted-foreground'>暂无精选文章</p>
+          </div>
+        )}
+      </section>
     </BlogLayout>
   );
 };

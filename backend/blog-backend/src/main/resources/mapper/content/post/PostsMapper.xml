@@ -132,6 +132,7 @@
         p.is_featured AS post_is_featured,
         p.is_top AS post_is_top,
         p.published_at AS post_published_at,
+        p.created_at,
 
         -- 作者信息
         u.id AS author_id,

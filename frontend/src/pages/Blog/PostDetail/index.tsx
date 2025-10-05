@@ -2,6 +2,7 @@ import { BlogLayout, Loading } from '@/components';
 import { usePost } from '@/hooks';
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
+import { PostContent } from './PostContent';
 import { PostMeta } from './PostMeta';
 
 /**
@@ -32,6 +33,7 @@ const PostDetailPage = () => {
         tags={postDetail.tags}
         isFeatured={postDetail.isFeatured}
       />
+      <PostContent htmlContent={postDetail.htmlContent} />
     </BlogLayout>
   );
 };

@@ -1,0 +1,131 @@
+/* 代码块复制按钮样式 */
+.copy-button-container {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+}
+
+.copy-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.375rem;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.copy-button:active {
+  transform: scale(0.95);
+}
+
+.copy-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 表格响应式容器 */
+.table-wrapper {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  border: 1px solid var(--theme-border);
+}
+
+.table-wrapper table {
+  margin: 0;
+  width: 100%;
+  min-width: 600px;
+}
+
+/* 代码块样式优化 */
+pre {
+  position: relative;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+pre code {
+  display: block;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+/* 行内代码样式 */
+:not(pre) > code {
+  padding: 0.125rem 0.25rem;
+  background-color: var(--muted);
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* 图片样式增强 */
+article img {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+article img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 暗色模式下的样式调整 */
+.dark .copy-button {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+
+.dark .copy-button:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 标题锚点样式 */
+article h1,
+article h2,
+article h3,
+article h4,
+article h5,
+article h6 {
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+article h1:hover,
+article h2:hover,
+article h3:hover,
+article h4:hover,
+article h5:hover,
+article h6:hover {
+  color: var(--theme-primary);
+}
+
+article h1:hover::before,
+article h2:hover::before,
+article h3:hover::before,
+article h4:hover::before,
+article h5:hover::before,
+article h6:hover::before {
+  content: '#';
+  position: absolute;
+  left: -1.5rem;
+  color: var(--theme-primary);
+  opacity: 0.5;
+}

@@ -24,7 +24,7 @@ public class FileMetadata {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 文件访问URL */
+    /** 文件相对访问路径 (如 /files/hash/uuid.jpg) */
     private String url;
 
     /** 原始文件名 */

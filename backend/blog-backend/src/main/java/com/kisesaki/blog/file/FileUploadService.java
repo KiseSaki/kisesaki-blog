@@ -53,7 +53,7 @@ public class FileUploadService {
      * 
      * @param file   上传的文件
      * @param userId 上传用户ID
-     * @return 文件访问URL
+     * @return 文件相对访问路径 (如 /files/hash/uuid.jpg),前端需拼接API基础URL
      * @throws IOException 如果上传或保存文件时发生错误
      */
     @Transactional(rollbackOn = Exception.class)
@@ -75,11 +75,9 @@ public class FileUploadService {
         // 创建目录
         Files.createDirectories(uploadDir);
 
-        // 构造相对路径（用于URL）
-        String relativePath = Paths.get(hashPath, uniqueFilename).toString().replace("\\", "/");
-
-        // 构造完整的访问URL
-        String accessUrl = fileUploadProperties.getBaseUrl() + "/" + relativePath;
+        // 构造相对路径（用于存储和前端拼接）
+        // 格式: /files/hash/uuid.jpg
+        String relativePath = "/files/" + Paths.get(hashPath, uniqueFilename).toString().replace("\\", "/");
 
         try (InputStream inputStream = file.getInputStream()) {
             // 保存文件
@@ -92,7 +90,7 @@ public class FileUploadService {
         }
 
         try {
-            FileMetadata metadata = buildMetadata(file, userId, filePath.toString(), accessUrl);
+            FileMetadata metadata = buildMetadata(file, userId, filePath.toString(), relativePath);
             fileMetadataMapper.insert(metadata);
         } catch (DataAccessException e) {
             // 如果数据库操作失败，删除已上传的文件
@@ -105,19 +103,19 @@ public class FileUploadService {
             throw new IOException("保存文件元数据失败", e);
         }
 
-        return accessUrl;
+        return relativePath;
     }
 
     /**
      * 构建文件元数据
      *
-     * @param file     上传的文件
-     * @param userId   用户ID
-     * @param filePath 文件路径
-     * @param url      文件URL
+     * @param file         上传的文件
+     * @param userId       用户ID
+     * @param filePath     文件系统存储路径
+     * @param relativePath 相对访问路径 (如 /files/hash/uuid.jpg)
      * @return 文件元数据
      */
-    private FileMetadata buildMetadata(MultipartFile file, Long userId, String filePath, String url)
+    private FileMetadata buildMetadata(MultipartFile file, Long userId, String filePath, String relativePath)
             throws IOException {
         String filename = file.getOriginalFilename();
         String fileType = tika.detect(file.getInputStream());
@@ -139,7 +137,7 @@ public class FileUploadService {
         }
 
         return FileMetadata.builder()
-                .url(url)
+                .url(relativePath)
                 .filename(filename)
                 .filePath(filePath)
                 .fileType(fileType)

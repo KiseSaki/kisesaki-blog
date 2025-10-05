@@ -1,4 +1,4 @@
-import { Tag } from '@/components';
+import { Image, Tag } from '@/components';
 import type { TagSimple } from '@/types';
 
 interface PostMetaProps {
@@ -39,10 +39,12 @@ export const PostMeta = ({
       <div className='flex items-center gap-4 text-theme-secondary-text text-sm'>
         <div className='flex items-center gap-2'>
           {authorAvatarUrl && (
-            <img
+            <Image
               className='h-10 w-10 rounded-full ring-2 ring-theme-border/50 transition-transform hover:scale-110'
               src={authorAvatarUrl}
               alt={authorDisplayName}
+              width={40}
+              height={40}
             />
           )}
           <span className='font-medium text-theme-primary-text'>

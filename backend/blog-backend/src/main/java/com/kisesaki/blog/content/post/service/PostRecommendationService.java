@@ -110,9 +110,7 @@ public class PostRecommendationService {
      */
     public Map<String, String> getPostMeta(Long postId) {
         try {
-            Map<String, String> metaMap = postsMapper.getPostMeta(postId);
-            log.debug("获取文章 {} 的元数据: {}", postId, metaMap.size());
-            return metaMap;
+            return postsMapper.getPostMeta(postId);
         } catch (Exception e) {
             log.error("获取文章元数据失败，文章ID: {}", postId, e);
             return Map.of(); // 返回空的 Map

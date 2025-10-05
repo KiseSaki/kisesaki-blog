@@ -124,7 +124,7 @@ public class PublishedPostDetailResponse {
 
     /*
      * -----------------------------
-     * 
+     *
      * -----------------------------
      */
     @Data
@@ -139,6 +139,12 @@ public class PublishedPostDetailResponse {
 
         @Schema(description = "文章别名（slug）")
         private String slug;
+
+        @Schema(description = "封面图")
+        private String coverImageUrl;
+
+        @Schema(description = "摘要")
+        private String excerpt;
     }
 
     @Data
@@ -156,5 +162,8 @@ public class PublishedPostDetailResponse {
 
         @Schema(description = "封面图")
         private String coverImageUrl;
+
+        @Schema(description = "摘要")
+        private String excerpt;
     }
 }

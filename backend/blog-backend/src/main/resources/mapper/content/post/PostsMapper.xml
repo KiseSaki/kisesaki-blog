@@ -455,10 +455,12 @@
 
     <!-- 获取上一篇文章（按发布时间降序，取比当前文章发布时间更早的第一篇） -->
     <select id="getPrevPost" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$AdjacentPost">
-        SELECT 
+        SELECT
             p.id,
             p.title,
-            p.slug
+            p.slug,
+            p.cover_image_url,
+            p.excerpt
         FROM posts p
         LEFT JOIN "user" u ON p.author_id = u.id
         WHERE p.status = 'published'
@@ -474,7 +476,9 @@
     <select id="getNextPost" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$AdjacentPost">
         SELECT p.id,
                p.title,
-               p.slug
+               p.slug,
+               p.cover_image_url,
+               p.excerpt
         FROM posts p
                  LEFT JOIN "user" u ON p.author_id = u.id
         WHERE p.status = 'published'
@@ -493,8 +497,9 @@
             p.title,
             p.slug,
             p.cover_image_url AS coverImageUrl,
+            p.excerpt,
             p.view_count AS viewCount,
-            p.published_at AS publishedAt,   
+            p.published_at AS publishedAt,
             -- 计算相关度分数：相同分类+3分，共同标签每个+1分，浏览量权重
             (
                 CASE WHEN p.category_id = #{categoryId} THEN 3 ELSE 0 END +
@@ -503,7 +508,7 @@
                     SELECT COUNT(*)
                     FROM post_tags pt1
                     WHERE pt1.post_id = p.id
-                    AND pt1.tag_id IN 
+                    AND pt1.tag_id IN
             <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
                         #{tagId}
             </foreach>
@@ -535,7 +540,7 @@
             EXISTS (
                 SELECT 1 FROM post_tags pt
                 WHERE pt.post_id = p.id
-                AND pt.tag_id IN 
+                AND pt.tag_id IN
                 <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
                     #{tagId}
                 </foreach>
@@ -549,7 +554,7 @@
 
     <!-- 获取文章元数据 -->
     <select id="getPostMeta" resultType="map">
-        SELECT 
+        SELECT
             meta_key AS "key",
             meta_value AS "value"
         FROM post_meta
@@ -558,7 +563,7 @@
 
     <!-- 获取热门文章（降级推荐策略） -->
     <select id="getPopularPosts" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$RelatedPost">
-        SELECT 
+        SELECT
             p.id,
             p.title,
             p.slug,
@@ -569,7 +574,7 @@
           AND p.visibility = 'public'
           AND u.status = 'active'
           AND p.id != #{currentPostId}
-        ORDER BY 
+        ORDER BY
             -- 综合热度排序：浏览量 * 0.4 + 点赞数 * 0.3 + 评论数 * 0.2 + 分享数 * 0.1
             (p.view_count * 0.4 + p.like_count * 0.3 + p.comment_count * 0.2 + p.share_count * 0.1) DESC,
             p.published_at DESC
@@ -1168,7 +1173,7 @@
 
     <!-- 获取文章统计数据 -->
     <select id="getPostStats" resultType="com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostStatsDto$PostStatsResponse">
-        SELECT 
+        SELECT
             -- 基础统计
             COUNT(*) AS totalPosts,
             COUNT(CASE WHEN p.status = 'published' THEN 1 END) AS publishedPosts,
@@ -1176,13 +1181,13 @@
             COUNT(CASE WHEN p.status = 'archived' THEN 1 END) AS archivedPosts,
             COUNT(CASE WHEN p.is_featured = true THEN 1 END) AS featuredPosts,
             COUNT(CASE WHEN p.is_top = true THEN 1 END) AS topPosts,
-            
+
             -- 互动统计
             COALESCE(SUM(p.view_count), 0) AS totalViews,
             COALESCE(SUM(p.like_count), 0) AS totalLikes,
             COALESCE(SUM(p.comment_count), 0) AS totalComments,
             COALESCE(SUM(p.share_count), 0) AS totalShares,
-            
+
             -- 时间段统计
             COUNT(CASE WHEN p.created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) AS monthlyNewPosts,
             COUNT(CASE WHEN p.created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) AS weeklyNewPosts,
@@ -1242,7 +1247,7 @@
               AND p.is_featured = true
         </if>
 
-        ORDER BY 
+        ORDER BY
         <choose>
             <when test="params.pageable.sort != null and params.pageable.sort != ''">
                 <if test="params.pageable.sort.contains('publishedAt')">
@@ -1336,7 +1341,7 @@
                           SELECT id FROM categories WHERE id = #{categoryId}
                           UNION ALL
                           -- 递归查询：子分类
-                          SELECT c.id 
+                          SELECT c.id
                           FROM categories c
                           INNER JOIN category_tree ct ON c.parent_id = ct.id
                       )
@@ -1349,7 +1354,7 @@
             </otherwise>
         </choose>
 
-        ORDER BY 
+        ORDER BY
         <choose>
             <when test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('publishedAt')">
                 p.published_at <if test="params.pageable.sortDirection == 'desc'">DESC</if>
@@ -1391,7 +1396,7 @@
                           SELECT id FROM categories WHERE id = #{categoryId}
                           UNION ALL
                           -- 递归查询：子分类
-                          SELECT c.id 
+                          SELECT c.id
                           FROM categories c
                           INNER JOIN category_tree ct ON c.parent_id = ct.id
                       )

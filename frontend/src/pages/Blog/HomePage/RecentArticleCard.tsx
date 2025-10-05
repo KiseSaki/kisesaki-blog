@@ -1,17 +1,25 @@
 import { Card, CardContent, CardFooter, CardHeader } from '@/components';
 import type { PublishedPostListResponse } from '@/types';
 import { Calendar, Eye, Tag } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 export const RecentArticleCard = ({
   title,
+  slug,
   coverImage,
   excerpt,
   publishedAt,
   tags,
   viewCount,
 }: PublishedPostListResponse) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/post/${slug}`);
+  };
+
   return (
-    <Card className='group overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer h-full flex flex-col'>
+    <Card onClick={handleClick} className='group overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer h-full flex flex-col'>
       {/* 封面图片 */}
       <div className='relative h-48 overflow-hidden bg-muted'>
         {coverImage ? (

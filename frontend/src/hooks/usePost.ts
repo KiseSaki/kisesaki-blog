@@ -16,22 +16,6 @@ import type {
 import { useCallback, useState } from 'react';
 
 export const usePost = () => {
-  // 根据slug获取文章详情
-  const [postDetail, setPostDetail] =
-    useState<PublishedPostDetailResponse | null>(null);
-  const [isFetchingPost, setIsFetchingPost] = useState(false);
-  const fetchPostBySlug = useCallback(async (slug: string) => {
-    setIsFetchingPost(true);
-    try {
-      const res = await getPublishedPostBySlugApi(slug);
-      setPostDetail(res);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsFetchingPost(false);
-    }
-  }, []);
-
   // 精选文章
   const [featuredPosts, setFeaturedPosts] =
     useState<PageResponse<PublishedPostListResponse> | null>(null);
@@ -78,12 +62,30 @@ export const usePost = () => {
     }
   }, []);
 
-  return {
-    // 文章详情
-    postDetail,
-    isFetchingPost,
-    fetchPostBySlug,
+  // 文章详情（根据 slug）
+  const [postDetail, setPostDetail] =
+    useState<PublishedPostDetailResponse | null>(null);
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
 
+  const fetchPostDetailBySlug = useCallback(async (slug: string) => {
+    setIsFetchingDetail(prev => {
+      if (prev) return prev;
+      return true;
+    });
+
+    try {
+      const res = await getPublishedPostBySlugApi(slug);
+      setPostDetail(res);
+      return res;
+    } catch (error) {
+      console.error('获取文章详情失败:', error);
+      return null;
+    } finally {
+      setIsFetchingDetail(false);
+    }
+  }, []);
+
+  return {
     // 精选文章
     featuredPosts,
     isFetchingFeatured,
@@ -93,5 +95,10 @@ export const usePost = () => {
     recentPosts,
     isFetchingRecent,
     fetchRecentPosts,
+
+    // 文章详情
+    postDetail,
+    isFetchingDetail,
+    fetchPostDetailBySlug,
   };
 };

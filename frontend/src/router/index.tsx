@@ -5,7 +5,7 @@ import { PrivateRoute } from './PrivateRoute';
 
 // Blog相关页面
 const HomePage = React.lazy(() => import('@/pages/Blog/HomePage'));
-const PostDetailPage = React.lazy(() => import('@/pages/Blog/PostDetailPage'));
+const PostDetailPage = React.lazy(() => import('@/pages/Blog/PostDetail'));
 const CategoryPage = React.lazy(() => import('@/pages/Blog/CategoryPage'));
 const TagPage = React.lazy(() => import('@/pages/Blog/TagPage'));
 const ArchivePage = React.lazy(() => import('@/pages/Blog/ArchivePage'));

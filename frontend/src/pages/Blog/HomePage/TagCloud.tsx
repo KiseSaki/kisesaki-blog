@@ -1,11 +1,18 @@
 import type { TagCloudItem } from '@/types';
 import { Hash } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 interface TagCloudProps {
   tags: TagCloudItem[];
 }
 
 export const TagCloud = ({ tags }: TagCloudProps) => {
+  const navigate = useNavigate();
+
+  const handleTagClick = (slug: string) => {
+    navigate(`/tag/${slug}`);
+  };
+
   // 计算字体大小和权重基于文章数量
   const getTagStyle = (count: number, maxCount: number) => {
     const ratio = count / maxCount;
@@ -31,14 +38,11 @@ export const TagCloud = ({ tags }: TagCloudProps) => {
         return (
           <button
             key={tag.id}
+            onClick={() => handleTagClick(tag.slug)}
             className='group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50 hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-all duration-300 cursor-pointer overflow-hidden'
             style={{
               fontSize: `${fontSize}rem`,
               opacity,
-            }}
-            onClick={() => {
-              // TODO: 导航到标签页面
-              console.log('Navigate to tag:', tag.slug);
             }}
           >
             {/* 背景渐变效果 */}

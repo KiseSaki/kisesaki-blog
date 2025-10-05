@@ -14,9 +14,11 @@ export const usePost = () => {
   const [isFetchingFeatured, setIsFetchingFeatured] = useState(false);
 
   const fetchFeaturedPosts = useCallback(async () => {
-    if (isFetchingFeatured) return null;
+    setIsFetchingFeatured(prev => {
+      if (prev) return prev;
+      return true;
+    });
 
-    setIsFetchingFeatured(true);
     try {
       const res = await getFeaturedPostsApi({ currentPage: 1, pageSize: 5 });
       setFeaturedPosts(res);
@@ -27,7 +29,7 @@ export const usePost = () => {
     } finally {
       setIsFetchingFeatured(false);
     }
-  }, [isFetchingFeatured]);
+  }, []);
 
   // 最新文章
   const [recentPosts, setRecentPosts] =
@@ -35,9 +37,11 @@ export const usePost = () => {
   const [isFetchingRecent, setIsFetchingRecent] = useState(false);
 
   const fetchRecentPosts = useCallback(async () => {
-    if (isFetchingRecent) return null;
+    setIsFetchingRecent(prev => {
+      if (prev) return prev;
+      return true;
+    });
 
-    setIsFetchingRecent(true);
     try {
       const res = await getRecentPostsApi({ currentPage: 1, pageSize: 6 });
       setRecentPosts(res);
@@ -48,7 +52,7 @@ export const usePost = () => {
     } finally {
       setIsFetchingRecent(false);
     }
-  }, [isFetchingRecent]);
+  }, []);
 
   return {
     // 精选文章

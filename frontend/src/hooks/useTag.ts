@@ -13,9 +13,11 @@ export const useTag = () => {
   const [isFetchingTags, setIsFetchingTags] = useState(false);
 
   const fetchTagCloud = useCallback(async () => {
-    if (isFetchingTags) return [];
+    setIsFetchingTags(prev => {
+      if (prev) return prev;
+      return true;
+    });
 
-    setIsFetchingTags(true);
     try {
       const res = await getTagCloudApi();
       setTagCloud(res);
@@ -26,7 +28,7 @@ export const useTag = () => {
     } finally {
       setIsFetchingTags(false);
     }
-  }, [isFetchingTags]);
+  }, []);
 
   return {
     tagCloud,

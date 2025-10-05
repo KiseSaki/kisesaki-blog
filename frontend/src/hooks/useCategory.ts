@@ -14,24 +14,23 @@ export const useCategory = () => {
   >([]);
   const [isFetchingCategories, setIsFetchingCategories] = useState(false);
 
-  const fetchPopularCategories = useCallback(
-    async (limit = 10) => {
-      if (isFetchingCategories) return [];
+  const fetchPopularCategories = useCallback(async (limit = 10) => {
+    setIsFetchingCategories(prev => {
+      if (prev) return prev;
+      return true;
+    });
 
-      setIsFetchingCategories(true);
-      try {
-        const res = await getPopularCategoriesApi({ limit });
-        setPopularCategories(res);
-        return res;
-      } catch (error) {
-        console.error('获取热门分类失败:', error);
-        return [];
-      } finally {
-        setIsFetchingCategories(false);
-      }
-    },
-    [isFetchingCategories]
-  );
+    try {
+      const res = await getPopularCategoriesApi({ limit });
+      setPopularCategories(res);
+      return res;
+    } catch (error) {
+      console.error('获取热门分类失败:', error);
+      return [];
+    } finally {
+      setIsFetchingCategories(false);
+    }
+  }, []);
 
   return {
     popularCategories,

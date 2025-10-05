@@ -3,11 +3,35 @@
  * 包含文章数据获取、筛选等逻辑
  */
 
-import { getFeaturedPostsApi, getRecentPostsApi } from '@/api';
-import type { PageResponse, PublishedPostListResponse } from '@/types';
+import {
+  getFeaturedPostsApi,
+  getPublishedPostBySlugApi,
+  getRecentPostsApi,
+} from '@/api';
+import type {
+  PageResponse,
+  PublishedPostDetailResponse,
+  PublishedPostListResponse,
+} from '@/types';
 import { useCallback, useState } from 'react';
 
 export const usePost = () => {
+  // 根据slug获取文章详情
+  const [postDetail, setPostDetail] =
+    useState<PublishedPostDetailResponse | null>(null);
+  const [isFetchingPost, setIsFetchingPost] = useState(false);
+  const fetchPostBySlug = useCallback(async (slug: string) => {
+    setIsFetchingPost(true);
+    try {
+      const res = await getPublishedPostBySlugApi(slug);
+      setPostDetail(res);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsFetchingPost(false);
+    }
+  }, []);
+
   // 精选文章
   const [featuredPosts, setFeaturedPosts] =
     useState<PageResponse<PublishedPostListResponse> | null>(null);
@@ -55,6 +79,11 @@ export const usePost = () => {
   }, []);
 
   return {
+    // 文章详情
+    postDetail,
+    isFetchingPost,
+    fetchPostBySlug,
+
     // 精选文章
     featuredPosts,
     isFetchingFeatured,

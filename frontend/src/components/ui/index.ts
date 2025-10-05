@@ -13,3 +13,4 @@ export * from './forms/Label';
 export * from './HoverCard';
 export * from './NavigationMenu';
 export * from './Select';
+export * from './Tag';

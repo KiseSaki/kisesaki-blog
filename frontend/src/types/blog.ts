@@ -25,49 +25,132 @@ export interface PublishedPostListResponse {
   title: string;
   slug: string;
   excerpt: string;
-  coverImage: string | null;
-  author: UserInfo;
+  coverImageUrl: string | null;
+
+  // 作者信息
+  authorId: number;
+  authorUsername: string;
+  authorDisplayName: string;
+  authorAvatarUrl: string | null;
+
+  // 分类信息
   categoryId: number;
   categoryName: string;
   categorySlug: string;
+
+  // 标签列表
   tags: TagSimple[];
+
+  // 统计数据
   viewCount: number;
   likeCount: number;
   commentCount: number;
-  favoriteCount: number;
+  shareCount: number;
+
+  // 时间与标记
   publishedAt: string;
   updatedAt: string;
   isFeatured: boolean;
+  isTop: boolean;
   readingTime: number;
+}
+
+/**
+ * 相邻文章简要信息
+ */
+export interface AdjacentPost {
+  id: number;
+  title: string;
+  slug: string;
+}
+
+/**
+ * 相关推荐文章
+ */
+export interface RelatedPost {
+  id: number;
+  title: string;
+  slug: string;
+  coverImageUrl: string | null;
+}
+
+/**
+ * 分类信息
+ */
+export interface CategoryInfo {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+}
+
+/**
+ * 作者信息
+ */
+export interface AuthorInfo {
+  id: number;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  bio: string | null;
+}
+
+/**
+ * 权限信息
+ */
+export interface Permissions {
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
 /**
  * 已发布文章详情
  */
 export interface PublishedPostDetailResponse {
+  // ========== 基本信息 ==========
   id: number;
   title: string;
   slug: string;
-  content: string;
   excerpt: string;
-  coverImage: string | null;
-  author: UserInfo;
-  categoryId: number;
-  categoryName: string;
-  categorySlug: string;
-  tags: TagSimple[];
+  htmlContent: string; // 后端返回渲染后的 HTML
+  readingTime: number;
+
+  // ========== 媒体资源 ==========
+  coverImageUrl: string | null;
+  featuredImageUrl: string | null;
+  isFeatured: boolean;
+  isTop: boolean;
+
+  // ========== 统计数据 ==========
   viewCount: number;
   likeCount: number;
-  dislikeCount: number;
   commentCount: number;
-  favoriteCount: number;
+  shareCount: number;
+
+  // ========== SEO 元数据 ==========
+  seoTitle: string | null;
+  seoDescription: string | null;
+  seoKeywords: string | null;
+
+  // ========== 时间信息 ==========
   publishedAt: string;
-  updatedAt: string;
-  isFeatured: boolean;
-  readingTime: number;
-  // 用户交互状态
+  lastModifiedAt: string;
+
+  // ========== 关联数据 ==========
+  author: AuthorInfo;
+  category: CategoryInfo;
+  tags: TagSimple[];
+  revisions?: RevisionInfo[]; // 版本历史（可选）
+
+  // ========== 智能推荐 ==========
+  prevPost: AdjacentPost | null;
+  nextPost: AdjacentPost | null;
+  relatedPosts: RelatedPost[];
+  meta?: Record<string, string>; // 自定义元数据
+
+  // ========== 权限与交互状态 ==========
+  permissions: Permissions;
   isLiked?: boolean;
-  isDisliked?: boolean;
   isFavorited?: boolean;
 }
 

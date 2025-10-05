@@ -62,6 +62,8 @@ export interface AdjacentPost {
   id: number;
   title: string;
   slug: string;
+  coverImageUrl: string | null;
+  excerpt: string;
 }
 
 /**
@@ -72,6 +74,7 @@ export interface RelatedPost {
   title: string;
   slug: string;
   coverImageUrl: string | null;
+  excerpt: string;
 }
 
 /**

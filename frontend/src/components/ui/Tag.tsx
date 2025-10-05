@@ -1,7 +1,43 @@
 import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
-import React from 'react';
+import React, { useMemo } from 'react';
+
+/**
+ * 预定义的颜色列表，用于随机选择
+ */
+const PRESET_COLORS = [
+  'primary',
+  'success',
+  'warning',
+  'error',
+  'info',
+  'purple',
+  'pink',
+  'orange',
+  'cyan',
+  'teal',
+  'indigo',
+  'violet',
+  'rose',
+] as const;
+
+/**
+ * 根据字符串生成一致的随机颜色
+ * 确保相同的输入总是返回相同的颜色
+ */
+const getRandomColor = (seed?: string): (typeof PRESET_COLORS)[number] => {
+  if (!seed) {
+    return PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)];
+  }
+  // 使用简单的哈希函数确保相同的 seed 总是得到相同的颜色
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % PRESET_COLORS.length;
+  return PRESET_COLORS[index];
+};
 
 /**
  * Tag 组件样式变体定义
@@ -336,16 +372,35 @@ const tagVariants = cva(
   }
 );
 
+type PresetColor = VariantProps<typeof tagVariants>['color'];
+
 /**
  * Tag 组件属性接口
  */
 export interface TagProps
-  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'color'>,
-    VariantProps<typeof tagVariants> {
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'color'> {
   /**
    * Tag 的内容
    */
   children: React.ReactNode;
+
+  /**
+   * 标签颜色
+   * - 预定义颜色：'default' | 'primary' | 'success' | 'warning' | 'error' 等
+   * - 自定义颜色：任意 CSS 颜色值（如 '#ff0000', 'rgb(255, 0, 0)'）
+   * - 'default' 时会随机选择一个预定义颜色
+   */
+  color?: PresetColor | string;
+
+  /**
+   * 标签变体
+   */
+  variant?: VariantProps<typeof tagVariants>['variant'];
+
+  /**
+   * 标签大小
+   */
+  size?: VariantProps<typeof tagVariants>['size'];
 
   /**
    * 是否可关闭
@@ -366,6 +421,12 @@ export interface TagProps
    * 左侧图标
    */
   icon?: React.ReactNode;
+
+  /**
+   * 随机颜色的种子值（用于确保相同内容的标签颜色一致）
+   * 当 color 为 'default' 时有效
+   */
+  colorSeed?: string;
 }
 
 /**
@@ -380,6 +441,21 @@ export interface TagProps
  * <Tag color="primary">Primary</Tag>
  * <Tag color="success">Success</Tag>
  * <Tag color="warning">Warning</Tag>
+ *
+ * // 自定义颜色
+ * <Tag color="#ff0000">Custom Red</Tag>
+ * <Tag color="rgb(0, 255, 0)">Custom Green</Tag>
+ * <Tag color="#8b5cf6" variant="solid">Custom Purple</Tag>
+ *
+ * // 随机颜色（color='default' 时自动随机）
+ * <Tag>Random Tag 1</Tag>
+ * <Tag>Random Tag 2</Tag>
+ * // 使用相同文本会得到相同颜色
+ * <Tag>React</Tag>
+ * <Tag>React</Tag>
+ * // 使用 colorSeed 确保颜色一致性
+ * <Tag colorSeed="unique-id-123">Tag A</Tag>
+ * <Tag colorSeed="unique-id-123">Tag B</Tag>
  *
  * // 不同变体
  * <Tag variant="solid" color="primary">Solid</Tag>
@@ -406,18 +482,92 @@ export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(
   (
     {
       className,
-      variant,
-      color,
+      variant = 'soft',
+      color = 'default',
       size,
       children,
       closable,
       onClose,
       dot,
       icon,
+      colorSeed,
+      style,
       ...props
     },
     ref
   ) => {
+    // 处理颜色逻辑
+    const { computedColor, isCustomColor, customColorValue } = useMemo(() => {
+      // 如果是 default，随机选择颜色
+      if (color === 'default') {
+        // 使用 colorSeed 或 children 的字符串值作为种子
+        const seed =
+          colorSeed || (typeof children === 'string' ? children : undefined);
+        return {
+          computedColor: getRandomColor(seed),
+          isCustomColor: false,
+          customColorValue: undefined,
+        };
+      }
+
+      // 检查是否是预定义颜色
+      const presetColors: string[] = [
+        'default',
+        'primary',
+        'success',
+        'warning',
+        'error',
+        'info',
+        'purple',
+        'pink',
+        'orange',
+        'cyan',
+        'teal',
+        'indigo',
+        'violet',
+        'rose',
+      ];
+
+      if (color && presetColors.includes(color)) {
+        return {
+          computedColor: color as PresetColor,
+          isCustomColor: false,
+          customColorValue: undefined,
+        };
+      }
+
+      // 自定义颜色
+      return {
+        computedColor: 'default' as PresetColor,
+        isCustomColor: true,
+        customColorValue: color,
+      };
+    }, [color, children, colorSeed]);
+
+    // 自定义颜色的内联样式
+    const customStyle = useMemo(() => {
+      if (!isCustomColor || !customColorValue) return style;
+
+      const baseStyle: React.CSSProperties = { ...style };
+
+      if (variant === 'solid') {
+        baseStyle.backgroundColor = customColorValue;
+        baseStyle.color = '#ffffff';
+      } else if (variant === 'outlined') {
+        baseStyle.borderColor = customColorValue;
+        baseStyle.color = customColorValue;
+      } else if (variant === 'soft') {
+        // 使用自定义颜色的浅色版本
+        baseStyle.backgroundColor = `${customColorValue}20`; // 20% 透明度
+        baseStyle.color = customColorValue;
+      } else if (variant === 'light') {
+        baseStyle.backgroundColor = `${customColorValue}10`; // 10% 透明度
+        baseStyle.color = customColorValue;
+      }
+
+      return baseStyle;
+    }, [isCustomColor, customColorValue, variant, style]);
+
     const handleClose = (e: React.MouseEvent<HTMLElement>) => {
       e.stopPropagation();
       onClose?.(e);
@@ -426,7 +576,16 @@ export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(
     return (
       <span
         ref={ref}
-        className={cn(tagVariants({ variant, color, size }), className)}
+        className={cn(
+          tagVariants({
+            variant,
+            color: computedColor,
+            size,
+          }),
+          isCustomColor && variant === 'outlined' && 'border-2',
+          className
+        )}
+        style={customStyle}
         {...props}
       >
         {/* 左侧圆点 */}
@@ -434,22 +593,29 @@ export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(
           <span
             className={cn(
               'inline-block w-1.5 h-1.5 rounded-full',
-              // 根据当前颜色自动匹配圆点颜色
-              color === 'primary' && 'bg-blue-500',
-              color === 'success' && 'bg-green-500',
-              color === 'warning' && 'bg-yellow-500',
-              color === 'error' && 'bg-red-500',
-              color === 'info' && 'bg-cyan-500',
-              color === 'purple' && 'bg-purple-500',
-              color === 'pink' && 'bg-pink-500',
-              color === 'orange' && 'bg-orange-500',
-              color === 'cyan' && 'bg-cyan-500',
-              color === 'teal' && 'bg-teal-500',
-              color === 'indigo' && 'bg-indigo-500',
-              color === 'violet' && 'bg-violet-500',
-              color === 'rose' && 'bg-rose-500',
-              color === 'default' && 'bg-gray-500'
+              !isCustomColor && [
+                // 根据当前颜色自动匹配圆点颜色
+                computedColor === 'primary' && 'bg-blue-500',
+                computedColor === 'success' && 'bg-green-500',
+                computedColor === 'warning' && 'bg-yellow-500',
+                computedColor === 'error' && 'bg-red-500',
+                computedColor === 'info' && 'bg-cyan-500',
+                computedColor === 'purple' && 'bg-purple-500',
+                computedColor === 'pink' && 'bg-pink-500',
+                computedColor === 'orange' && 'bg-orange-500',
+                computedColor === 'cyan' && 'bg-cyan-500',
+                computedColor === 'teal' && 'bg-teal-500',
+                computedColor === 'indigo' && 'bg-indigo-500',
+                computedColor === 'violet' && 'bg-violet-500',
+                computedColor === 'rose' && 'bg-rose-500',
+                computedColor === 'default' && 'bg-gray-500',
+              ]
             )}
+            style={
+              isCustomColor && customColorValue
+                ? { backgroundColor: customColorValue }
+                : undefined
+            }
           />
         )}
 

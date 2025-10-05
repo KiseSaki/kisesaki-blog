@@ -28,7 +28,9 @@ const OAuthCallbackPage = React.lazy(
 );
 
 // 用户相关页面
-const UserProfile = React.lazy(() => import('@/pages/User/profile/UserProfile'));
+const UserProfile = React.lazy(
+  () => import('@/pages/User/profile/UserProfile')
+);
 const UserSettings = React.lazy(() => import('@/pages/User/UserSettings'));
 const FavoritesPage = React.lazy(() => import('@/pages/User/FavoritesPage'));
 
@@ -82,7 +84,7 @@ export const router = createBrowserRouter([
 
       // Blog相关路由
       {
-        path: 'blog',
+        path: '',
         children: [
           {
             index: true,
@@ -93,7 +95,7 @@ export const router = createBrowserRouter([
             ),
           }, // 博客首页
           {
-            path: 'post/:id',
+            path: 'post/:slug',
             element: (
               <SuspenseWrapper>
                 <PostDetailPage />

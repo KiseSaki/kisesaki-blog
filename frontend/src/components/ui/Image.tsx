@@ -1,3 +1,4 @@
+import { API_UTILS } from '@/config';
 import { cn } from '@/lib';
 import { useState } from 'react';
 
@@ -23,6 +24,7 @@ interface ImageProps
 /**
  * 图片组件
  * 支持自定义大小、占位符、加载状态和错误处理
+ * 自动处理后端返回的相对路径，拼接完整URL
  */
 const Image = ({
   alt,
@@ -37,8 +39,11 @@ const Image = ({
   const [isLoading, setIsLoading] = useState(showLoading);
   const [hasError, setHasError] = useState(false);
 
+  // 构建完整的图片 URL
+  const imageUrl = src ? API_UTILS.buildFileUrl(src) : '';
+
   // 如果没有提供 src 或 src 为空/null，显示占位符
-  if (!src) {
+  if (!imageUrl) {
     return (
       <div
         className={cn(
@@ -82,7 +87,7 @@ const Image = ({
       )}
       <img
         alt={alt}
-        src={src}
+        src={imageUrl}
         width={width}
         height={height}
         className={cn(isLoading ? 'hidden' : '', className)}

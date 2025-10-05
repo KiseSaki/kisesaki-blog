@@ -6,7 +6,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components';
-import { useBlog } from '@/hooks';
+import { useCategory, usePost, useTag } from '@/hooks';
 import { useEffect } from 'react';
 import { BlogStats } from './BlogStats';
 import { CategoryCloud } from './CategoryCloud';
@@ -18,16 +18,15 @@ import { TechStack } from './TechStack';
 import { Timeline } from './Timeline';
 
 const HomePage = () => {
-  const {
-    featuredPosts,
-    recentPosts,
-    popularCategories,
-    tagCloud,
-    fetchFeaturedPosts,
-    fetchRecentPosts,
-    fetchPopularCategories,
-    fetchTagCloud,
-  } = useBlog();
+  // 文章相关
+  const { featuredPosts, recentPosts, fetchFeaturedPosts, fetchRecentPosts } =
+    usePost();
+
+  // 分类相关
+  const { popularCategories, fetchPopularCategories } = useCategory();
+
+  // 标签相关
+  const { tagCloud, fetchTagCloud } = useTag();
 
   useEffect(() => {
     fetchFeaturedPosts();

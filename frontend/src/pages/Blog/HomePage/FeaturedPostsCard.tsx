@@ -1,18 +1,27 @@
 import type { PublishedPostListResponse } from '@/types';
 import { Calendar, Tag, User } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 export const FeaturedPostsCard = ({
   title,
+  slug,
   coverImage,
   author,
   excerpt,
   publishedAt,
   tags,
 }: PublishedPostListResponse) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/post/${slug}`);
+  };
+
   return (
     <article
       role='article'
       aria-label={title}
+      onClick={handleClick}
       className='group relative w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] rounded-xl overflow-hidden bg-card border border-border shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer'
     >
       {/* 图片或占位（放到最底层） */}

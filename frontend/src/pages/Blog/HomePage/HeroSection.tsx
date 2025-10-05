@@ -1,8 +1,24 @@
 import { Button } from '@/components';
+import { BLOG_ARCHIVE_LINK } from '@/config';
 import { ArrowRight, Github, Mail } from 'lucide-react';
 import { ReactTyped } from 'react-typed';
+import { useNavigate } from 'react-router';
 
 export const HeroSection = () => {
+  const navigate = useNavigate();
+
+  const handleExploreClick = () => {
+    navigate(BLOG_ARCHIVE_LINK);
+  };
+
+  const handleGithubClick = () => {
+    window.open('https://github.com/KiseSaki', '_blank');
+  };
+
+  const handleContactClick = () => {
+    navigate('/contact');
+  };
+
   return (
     <section className='relative h-[500px] md:h-[600px] lg:h-[700px] flex items-center justify-center overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-primary/10 via-background to-secondary/10'>
       {/* 背景装饰 */}
@@ -40,15 +56,15 @@ export const HeroSection = () => {
 
         {/* 行动按钮 */}
         <div className='flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-700'>
-          <Button size='lg' className='group gap-2 w-full sm:w-auto'>
+          <Button onClick={handleExploreClick} size='lg' className='group gap-2 w-full sm:w-auto'>
             探索文章
             <ArrowRight className='w-4 h-4 group-hover:translate-x-1 transition-transform' />
           </Button>
-          <Button size='lg' variant='outline' className='gap-2 w-full sm:w-auto'>
+          <Button onClick={handleGithubClick} size='lg' variant='outline' className='gap-2 w-full sm:w-auto'>
             <Github className='w-4 h-4' />
             GitHub
           </Button>
-          <Button size='lg' variant='outline' className='gap-2 w-full sm:w-auto'>
+          <Button onClick={handleContactClick} size='lg' variant='outline' className='gap-2 w-full sm:w-auto'>
             <Mail className='w-4 h-4' />
             联系我
           </Button>

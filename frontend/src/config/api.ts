@@ -591,24 +591,20 @@ export const API_UTILS = {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   },
-} as const;
 
-/**
- * 使用示例：
- *
- * // 检查接口权限
- * const userRoles: UserRole[] = ['AUTHOR'];
- * const canCreatePost = API_PERMISSIONS.hasPermission('/posts', userRoles); // true
- * const canManageUsers = API_PERMISSIONS.hasPermission('/admin/users/123', userRoles); // false
- *
- * // 检查文件上传
- * const file = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
- * const isValidType = API_UTILS.validateFileType(file, UPLOAD_CONFIG.ALLOWED_IMAGE_TYPES);
- * const isValidSize = API_UTILS.validateFileSize(file);
- *
- * // 构建 API URL
- * const apiUrl = API_UTILS.buildApiUrl('/posts/123');
- *
- * // 获取所需角色
- * const requiredRoles = API_PERMISSIONS.getRequiredRoles('/admin/posts/123');
- */
+  /**
+   * 构建完整的文件 URL
+   * 将后端返回的相对路径拼接成完整的访问 URL
+   * @param relativePath 相对路径（如 /files/hash/uuid.jpg）
+   * @returns 完整的文件访问 URL
+   */
+  buildFileUrl: (relativePath: string | null | undefined): string => {
+    if (!relativePath) return '';
+
+    const baseUrl = ENV_CONFIG.API_BASE_URL.replace(/\/$/, '');
+    const cleanPath = relativePath.startsWith('/')
+      ? relativePath
+      : `/${relativePath}`;
+    return `${baseUrl}${cleanPath}`;
+  },
+} as const;

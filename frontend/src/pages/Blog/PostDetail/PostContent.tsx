@@ -96,8 +96,23 @@ export const PostContent = ({ htmlContent }: PostContentProps) => {
         const code = pre.querySelector('code');
         if (!code) return;
 
+        const text = code.textContent || '';
         try {
-          await navigator.clipboard.writeText(code.textContent || '');
+          // 优先使用 Clipboard API；若不可用则回退到 textarea + execCommand
+          if (navigator?.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            // 防止页面跳动，放到视窗外
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textarea);
+            if (!successful) throw new Error('execCommand copy failed');
+          }
 
           // 切换图标和文字
           const copyIcon = copyButton.querySelector('.copy-icon');
@@ -118,7 +133,8 @@ export const PostContent = ({ htmlContent }: PostContentProps) => {
             if (copyText) copyText.textContent = '复制代码';
             copyButton.classList.remove('copied');
           }, 2000);
-        } catch {
+        } catch (error) {
+          console.error('复制失败', error);
           toast.error('复制失败，请手动复制');
         }
       });

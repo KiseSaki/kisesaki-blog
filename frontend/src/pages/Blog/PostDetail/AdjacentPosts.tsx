@@ -58,9 +58,14 @@ export const AdjacentPosts = ({
   nextPost: AdjacentPost | null;
 }) => {
   return (
-    <div className='flex justify-between cursor-pointer'>
-      {prevPost ? <AdjacentPostItem post={prevPost} type='prev' /> : null}
-      {nextPost ? <AdjacentPostItem post={nextPost} type='next' /> : null}
+    <div>
+      <h3 className='font-semibold text-lg text-[color:var(--theme-primary-text)] mb-4'>
+        相邻文章
+      </h3>
+      <div className='flex justify-between'>
+        {prevPost ? <AdjacentPostItem post={prevPost} type='prev' /> : null}
+        {nextPost ? <AdjacentPostItem post={nextPost} type='next' /> : null}
+      </div>
     </div>
   );
 };

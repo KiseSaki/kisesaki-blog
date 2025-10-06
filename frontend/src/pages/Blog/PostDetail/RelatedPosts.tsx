@@ -36,7 +36,7 @@ const RelatedPostCard = ({ post }: { post: RelatedPost }) => {
 
 export const RelatedPosts = ({ posts }: { posts: RelatedPost[] }) => {
   return (
-    <div className='mt-6'>
+    <div>
       <h3 className='font-semibold text-lg text-[color:var(--theme-primary-text)] mb-4'>
         相关文章
       </h3>

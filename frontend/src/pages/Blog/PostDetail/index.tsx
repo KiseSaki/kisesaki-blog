@@ -2,8 +2,10 @@ import { BlogLayout, Loading } from '@/components';
 import { usePost } from '@/hooks';
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
+import { AdjacentPosts } from './AdjacentPosts';
 import { PostContent } from './PostContent';
 import { PostMeta } from './PostMeta';
+import { RelatedPosts } from './RelatedPosts';
 
 /**
  * 博客文章详情页面
@@ -34,6 +36,13 @@ const PostDetailPage = () => {
         isFeatured={postDetail.isFeatured}
       />
       <PostContent htmlContent={postDetail.htmlContent} />
+
+      <AdjacentPosts
+        prevPost={postDetail.prevPost}
+        nextPost={postDetail.nextPost}
+      />
+
+      <RelatedPosts />
     </BlogLayout>
   );
 };

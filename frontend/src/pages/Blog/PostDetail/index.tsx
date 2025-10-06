@@ -42,7 +42,7 @@ const PostDetailPage = () => {
         nextPost={postDetail.nextPost}
       />
 
-      <RelatedPosts />
+      <RelatedPosts posts={postDetail.relatedPosts} />
     </BlogLayout>
   );
 };

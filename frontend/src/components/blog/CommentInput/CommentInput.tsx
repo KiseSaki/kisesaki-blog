@@ -35,7 +35,6 @@ export const CommentInput = ({
   onCancelReply,
   placeholder = '写下你的评论，支持 Markdown 语法...',
   minHeight = 150,
-  autoFocus = false,
   postId,
   enableImageUpload = true,
   onImageUpload,

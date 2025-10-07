@@ -1,12 +1,9 @@
+import type { UserInfo } from '@/types';
+
 // 评论输入组件属性
 export interface CommentInputProps {
   // 当前登录用户信息
-  user?: {
-    id: number;
-    avatarUrl?: string;
-    displayName: string;
-    email?: string;
-  };
+  user?: UserInfo;
   // 回复的评论信息
   replyTo?: {
     id: number;
@@ -20,8 +17,6 @@ export interface CommentInputProps {
   placeholder?: string;
   // 最小高度
   minHeight?: number;
-  // 是否自动聚焦
-  autoFocus?: boolean;
   // 自定义类名
   className?: string;
   // 文章 ID（用于草稿保存）

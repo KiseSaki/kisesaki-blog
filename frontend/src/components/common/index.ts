@@ -11,6 +11,7 @@ export * from '../theme';
 
 // 本目录的组件
 export { default as AuthLayout } from './AuthLayout';
+export { BlogCard } from './BlogCard';
 export { BlogLayout } from './BlogLayout';
 export * from './MarkdownEditor';
 export { default as UserAvatar } from './UserAvatar';

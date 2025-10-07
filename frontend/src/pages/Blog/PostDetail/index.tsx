@@ -1,4 +1,4 @@
-import { BlogLayout, Loading } from '@/components';
+import { BlogCard, BlogLayout, Loading } from '@/components';
 import { usePost } from '@/hooks';
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
@@ -27,26 +27,32 @@ const PostDetailPage = () => {
 
   return (
     <BlogLayout>
-      <PostMeta
-        title={postDetail.title}
-        authorDisplayName={postDetail.author.displayName}
-        authorAvatarUrl={postDetail.author.avatarUrl}
-        publishedAt={postDetail.publishedAt}
-        readingTime={postDetail.readingTime}
-        categoryName={postDetail.category.name}
-        tags={postDetail.tags}
-        isFeatured={postDetail.isFeatured}
-      />
-      <PostContent htmlContent={postDetail.htmlContent} />
+      <BlogCard>
+        <PostMeta
+          title={postDetail.title}
+          authorDisplayName={postDetail.author.displayName}
+          authorAvatarUrl={postDetail.author.avatarUrl}
+          publishedAt={postDetail.publishedAt}
+          readingTime={postDetail.readingTime}
+          categoryName={postDetail.category.name}
+          tags={postDetail.tags}
+          isFeatured={postDetail.isFeatured}
+        />
+        <PostContent htmlContent={postDetail.htmlContent} />
+      </BlogCard>
 
-      <AdjacentPosts
-        prevPost={postDetail.prevPost}
-        nextPost={postDetail.nextPost}
-      />
+      <BlogCard className='space-y-6'>
+        <AdjacentPosts
+          prevPost={postDetail.prevPost}
+          nextPost={postDetail.nextPost}
+        />
 
-      <RelatedPosts posts={postDetail.relatedPosts} />
+        <RelatedPosts posts={postDetail.relatedPosts} />
+      </BlogCard>
 
-      <CommentsSection postId={postDetail.id} />
+      <BlogCard>
+        <CommentsSection postId={postDetail.id} />
+      </BlogCard>
     </BlogLayout>
   );
 };

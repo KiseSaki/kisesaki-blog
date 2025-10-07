@@ -1,4 +1,5 @@
 import { CommentInput, DotIcon, Loading } from '@/components';
+import { MessageOutlined } from '@ant-design/icons';
 import { CommentCard } from './CommentCard';
 import type { CommentsSectionProps } from './types';
 import { useComments } from './useComments';
@@ -19,8 +20,18 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
   }
 
   return (
-    <div className='comments-section mt-12 flex flex-col gap-5'>
-      <h2 className='text-2xl font-bold'>评论</h2>
+    <div className='comments-section mt-12 flex flex-col gap-6'>
+      <div className='flex items-center justify-between'>
+        <h2 className='text-2xl font-bold flex items-center gap-2'>
+          <MessageOutlined className='text-theme-primary' />
+          评论
+          {comments && comments.length > 0 && (
+            <span className='text-sm font-normal text-muted-foreground'>
+              ({comments.length})
+            </span>
+          )}
+        </h2>
+      </div>
 
       {/* 评论输入框 */}
       <CommentInput
@@ -34,33 +45,39 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
       />
 
       {/* 排序选项 */}
-      <div className='flex items-center gap-2'>
-        <span className='cursor-pointer hover:text-theme-primary-hover'>
+      <div className='flex items-center gap-2 text-sm'>
+        <span className='text-muted-foreground'>排序方式：</span>
+        <button className='px-3 py-1 rounded-full bg-theme-primary text-primary-foreground hover:bg-theme-primary-hover transition-colors cursor-pointer'>
           最热
-        </span>
+        </button>
         <DotIcon className='text-muted-foreground' />
-        <span className='cursor-pointer hover:text-theme-primary-hover'>
+        <button className='px-3 py-1 rounded-full hover:bg-muted transition-colors cursor-pointer'>
           最新
-        </span>
+        </button>
       </div>
 
       {/* 评论列表 */}
-      <div className='comments-list space-y-6'>
+      <div className='comments-list space-y-6 divide-y divide-border/50'>
         {comments && comments.length > 0 ? (
-          comments.map(comment => (
-            <CommentCard
-              key={comment.id}
-              comment={comment}
-              user={user}
-              postId={postId}
-              handleSubmitComment={handleSubmitComment}
-              handleImageUpload={handleImageUpload}
-              onLike={handleLike}
-            />
+          comments.map((comment, index) => (
+            <div key={comment.id} className={index > 0 ? 'pt-6' : ''}>
+              <CommentCard
+                comment={comment}
+                user={user}
+                postId={postId}
+                handleSubmitComment={handleSubmitComment}
+                handleImageUpload={handleImageUpload}
+                onLike={handleLike}
+              />
+            </div>
           ))
         ) : (
-          <div className='text-center text-muted-foreground py-8'>
-            暂无评论,快来发表第一条评论吧!
+          <div className='text-center py-12 rounded-lg border-2 border-dashed border-border bg-muted/30'>
+            <MessageOutlined className='text-4xl text-muted-foreground mb-3' />
+            <p className='text-muted-foreground text-lg'>暂无评论</p>
+            <p className='text-muted-foreground text-sm mt-2'>
+              快来发表第一条评论吧！
+            </p>
           </div>
         )}
       </div>

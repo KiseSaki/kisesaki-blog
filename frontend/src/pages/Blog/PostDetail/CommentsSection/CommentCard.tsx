@@ -40,7 +40,7 @@ export const CommentCard = ({
   };
 
   return (
-    <div className='flex items-start gap-3'>
+    <div className='flex items-start gap-4 p-1'>
       <UserAvatar
         src={comment.user?.avatarUrl}
         name={comment.user?.displayName || '匿名用户'}
@@ -48,47 +48,55 @@ export const CommentCard = ({
 
       <div className='flex-1 flex flex-col gap-2'>
         {/* 用户信息 */}
-        <div className='font-medium'>
-          <span>{comment.user?.displayName || '匿名用户'}</span>
+        <div className='font-medium flex items-center gap-2 flex-wrap'>
+          <span className='text-foreground'>
+            {comment.user?.displayName || '匿名用户'}
+          </span>
           {replyComment && (
-            <>
-              <span className='mx-1'>回复</span>
-              <span>{replyComment?.user?.displayName || '匿名用户'} : </span>
-            </>
+            <div className='inline-flex items-center gap-1.5 text-sm'>
+              <MessageOutlined className='text-muted-foreground text-xs' />
+              <span className='text-muted-foreground'>回复</span>
+              <span className='px-2 py-0.5 rounded-md bg-muted text-foreground font-medium'>
+                {replyComment?.user?.displayName || '匿名用户'}
+              </span>
+            </div>
           )}
         </div>
 
         {/* 评论内容 */}
-        <div>{comment.content}</div>
+        <div className='text-foreground leading-relaxed'>{comment.content}</div>
 
         {/* 日期和操作按钮 */}
-        <div className='text-muted-foreground text-sm flex gap-2'>
-          <span>{formatTimeAgo(comment.createdAt)}</span>
+        <div className='text-muted-foreground text-sm flex items-center gap-1 flex-wrap'>
+          <span className='mr-2'>{formatTimeAgo(comment.createdAt)}</span>
 
           {/* 点赞 */}
-          <div
-            className='ml-2 cursor-pointer hover:underline items-center'
+          <button
+            className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full hover:bg-muted transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed group'
             onClick={handleLikeClick}
+            disabled={isLiking}
           >
-            <LikeOutlined />
-            <span className='ml-1'>{comment.likeCount || 0}</span>
-            {isLiking && <span className='ml-1'>...</span>}
-          </div>
+            <LikeOutlined className='group-hover:text-theme-primary transition-colors' />
+            <span className='group-hover:text-foreground transition-colors'>
+              {comment.likeCount || 0}
+            </span>
+            {isLiking && <span className='ml-0.5'>...</span>}
+          </button>
 
           {/* 回复 */}
-          <div
-            className='inline-block ml-2 cursor-pointer hover:underline'
+          <button
+            className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full hover:bg-muted transition-colors cursor-pointer group'
             onClick={handleReplyClick}
           >
-            <MessageOutlined />
-            <span className='ml-1'>
+            <MessageOutlined className='group-hover:text-theme-primary transition-colors' />
+            <span className='group-hover:text-foreground transition-colors'>
               {comment.replyCount > 0
                 ? comment.replyCount
                 : isShowReplyInput
                   ? '取消回复'
                   : '回复'}
             </span>
-          </div>
+          </button>
         </div>
 
         {/* 回复输入框 */}
@@ -108,7 +116,7 @@ export const CommentCard = ({
 
         {/* 子评论（递归渲染） */}
         {comment.replies && comment.replies.length > 0 && (
-          <div className='mt-4 border-l-2 border-muted pl-4 space-y-4'>
+          <div className='mt-4 border-l-2 border-theme-primary/20 pl-4 space-y-4 relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b before:from-theme-primary/40 before:to-transparent'>
             {comment.replies.map(reply => (
               <CommentCard
                 key={reply.id}

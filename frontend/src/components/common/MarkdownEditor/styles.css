@@ -2,22 +2,38 @@
 .markdown-editor-wrapper {
   position: relative;
   width: 100%;
+  /* ScrollArea 需要固定高度 */
+  height: 100%;
 }
 
-/* 主题：亮色模式 */
+/* 主题：亮色模式 - 使用 CSS 变量跟随主题 */
 .markdown-editor-wrapper[data-color-mode='light'] {
-  --md-editor-border-color: #e5e7eb;
-  --md-editor-bg-color: #ffffff;
-  --md-editor-toolbar-bg: #f9fafb;
-  --md-editor-text-color: #1f2937;
+  --md-editor-border-color: var(--border);
+  --md-editor-bg-color: var(--card);
+  --md-editor-toolbar-bg: var(--secondary);
+  --md-editor-text-color: var(--foreground);
+  --md-editor-muted-color: var(--muted-foreground);
+  --md-editor-code-bg: var(--muted);
+  --md-editor-code-color: var(--foreground);
+  --md-editor-link-color: var(--primary);
+  --md-editor-link-hover: var(--primary);
+  --md-editor-blockquote-border: var(--primary);
+  --md-editor-blockquote-color: var(--muted-foreground);
 }
 
-/* 主题：暗色模式 */
+/* 主题：暗色模式 - 使用 CSS 变量跟随主题 */
 .markdown-editor-wrapper[data-color-mode='dark'] {
-  --md-editor-border-color: #374151;
-  --md-editor-bg-color: #1f2937;
-  --md-editor-toolbar-bg: #111827;
-  --md-editor-text-color: #f9fafb;
+  --md-editor-border-color: var(--border);
+  --md-editor-bg-color: var(--card);
+  --md-editor-toolbar-bg: var(--background);
+  --md-editor-text-color: var(--foreground);
+  --md-editor-muted-color: var(--muted-foreground);
+  --md-editor-code-bg: var(--muted);
+  --md-editor-code-color: var(--foreground);
+  --md-editor-link-color: var(--primary);
+  --md-editor-link-hover: var(--primary);
+  --md-editor-blockquote-border: var(--primary);
+  --md-editor-blockquote-color: var(--muted-foreground);
 }
 
 /* 全屏模式 */
@@ -51,51 +67,47 @@
 }
 
 .markdown-editor-wrapper .w-md-editor-toolbar button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--accent);
+  color: var(--accent-foreground);
 }
 
 /* 编辑区域 */
 .markdown-editor-wrapper .w-md-editor-text-pre,
 .markdown-editor-wrapper .w-md-editor-text-input {
   background-color: var(--md-editor-bg-color);
-  color: var(--md-editor-text-color);
+  color: var(--md-editor-text-color) !important;
   font-size: 14px;
   line-height: 1.6;
+  caret-color: var(--md-editor-text-color);
+}
+
+/* 确保输入框文字可见 */
+.markdown-editor-wrapper .w-md-editor-text-input {
+  -webkit-text-fill-color: var(--md-editor-text-color) !important;
 }
 
 /* 预览区域 */
 .markdown-editor-wrapper .w-md-editor-preview {
   background-color: var(--md-editor-bg-color);
   padding: 1rem;
+  color: var(--md-editor-text-color);
 }
 
-/* 滚动条美化（可选） */
-.markdown-editor-wrapper .w-md-editor-text::-webkit-scrollbar,
-.markdown-editor-wrapper .w-md-editor-preview::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.markdown-editor-wrapper .w-md-editor-text::-webkit-scrollbar-thumb,
-.markdown-editor-wrapper .w-md-editor-preview::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-}
-
-.markdown-editor-wrapper .w-md-editor-text::-webkit-scrollbar-thumb:hover,
-.markdown-editor-wrapper .w-md-editor-preview::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.3);
+/* 编辑器内部区域使用默认滚动条（由 ScrollArea 统一处理） */
+.markdown-editor-wrapper .w-md-editor-text,
+.markdown-editor-wrapper .w-md-editor-preview {
+  overflow: auto;
 }
 
 /* 占位符样式 */
 .markdown-editor-wrapper .w-md-editor-text-input::placeholder {
-  color: #9ca3af;
-  opacity: 1;
+  color: var(--muted-foreground);
+  opacity: 0.6;
 }
 
 /* 禁用状态 */
 .markdown-editor-wrapper .w-md-editor-text-input:disabled {
-  background-color: #f3f4f6;
+  background-color: var(--muted);
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -104,6 +116,16 @@
 .markdown-editor-wrapper .wmde-markdown {
   font-size: 14px;
   line-height: 1.8;
+  color: var(--md-editor-text-color);
+}
+
+.markdown-editor-wrapper .wmde-markdown h1,
+.markdown-editor-wrapper .wmde-markdown h2,
+.markdown-editor-wrapper .wmde-markdown h3,
+.markdown-editor-wrapper .wmde-markdown h4,
+.markdown-editor-wrapper .wmde-markdown h5,
+.markdown-editor-wrapper .wmde-markdown h6 {
+  color: var(--md-editor-text-color);
 }
 
 .markdown-editor-wrapper .wmde-markdown h1 {
@@ -131,10 +153,12 @@
 
 .markdown-editor-wrapper .wmde-markdown p {
   margin-bottom: 1rem;
+  color: var(--md-editor-text-color);
 }
 
 .markdown-editor-wrapper .wmde-markdown code {
-  background-color: #f3f4f6;
+  background-color: var(--md-editor-code-bg);
+  color: var(--md-editor-code-color);
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   font-size: 0.875rem;
@@ -142,19 +166,26 @@
 }
 
 .markdown-editor-wrapper .wmde-markdown pre {
-  background-color: #1f2937;
-  color: #f9fafb;
+  background-color: var(--md-editor-code-bg);
+  color: var(--md-editor-text-color);
   padding: 1rem;
   border-radius: 0.5rem;
   overflow-x: auto;
   margin-bottom: 1rem;
+  border: 1px solid var(--md-editor-border-color);
+}
+
+.markdown-editor-wrapper .wmde-markdown pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
 }
 
 .markdown-editor-wrapper .wmde-markdown blockquote {
-  border-left: 4px solid #3b82f6;
+  border-left: 4px solid var(--md-editor-blockquote-border);
   padding-left: 1rem;
   margin-left: 0;
-  color: #6b7280;
+  color: var(--md-editor-blockquote-color);
   font-style: italic;
 }
 
@@ -194,14 +225,15 @@
 }
 
 .markdown-editor-wrapper .wmde-markdown a {
-  color: #3b82f6;
+  color: var(--md-editor-link-color);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .markdown-editor-wrapper .wmde-markdown a:hover {
-  color: #2563eb;
+  color: var(--md-editor-link-hover);
   text-decoration: underline;
+  opacity: 0.8;
 }
 
 /* 移动端适配 */

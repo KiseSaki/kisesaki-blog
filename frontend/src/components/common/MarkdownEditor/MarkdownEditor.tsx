@@ -1,3 +1,5 @@
+import { ScrollArea } from '@/components/ui';
+import { useTheme } from '@/stores/themeStore';
 import MDEditor, { commands as Commands } from '@uiw/react-md-editor';
 import { useEffect, useState } from 'react';
 import rehypeSanitize from 'rehype-sanitize';
@@ -51,6 +53,7 @@ export const MarkdownEditor = ({
   enableEmoji = false,
   className = '',
 }: MarkdownEditorProps) => {
+  const { mode: theme } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(fullscreen);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [editorValue, setEditorValue] = useState(value);
@@ -140,18 +143,18 @@ export const MarkdownEditor = ({
   }, [isFullscreen]);
 
   return (
-    <div
+    <ScrollArea
       className={`markdown-editor-wrapper ${className} ${
         isFullscreen ? 'markdown-editor-fullscreen' : ''
       }`}
-      data-color-mode='light'
+      data-color-mode={theme === 'dark' ? 'dark' : 'light'}
       style={
         isFullscreen
           ? {
               position: 'fixed',
               inset: 0,
               zIndex: 9999,
-              background: 'var(--md-editor-bg, #fff)',
+              background: 'var(--md-editor-bg-color, var(--card))',
               padding: 12,
             }
           : undefined
@@ -197,6 +200,6 @@ export const MarkdownEditor = ({
           onClose={() => setShowEmojiPicker(false)}
         />
       )}
-    </div>
+    </ScrollArea>
   );
 };

@@ -29,4 +29,5 @@ export * from './auth';
 export * from './blog';
 export * from './comment';
 export * from './interaction';
+export * from './upload';
 export * from './user';

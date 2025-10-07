@@ -21,19 +21,20 @@ export type CommentSortType = 'LATEST' | 'OLDEST' | 'HOT';
 export interface CommentListResponse {
   id: number;
   postId: number;
-  parentId: number | null;
-  rootId: number | null;
+  userId: number;
   content: string;
-  author: UserInfo;
-  status: CommentStatus;
   likeCount: number;
   dislikeCount: number;
   replyCount: number;
+  level: number;
+  path: string;
+  status: string;
+  isPinned: boolean;
+  isAuthorReply: boolean;
+  user: UserInfo;
   createdAt: string;
   updatedAt: string;
-  isEdited: boolean;
-  isLiked?: boolean;
-  isDisliked?: boolean;
+  hasMoreReplies: boolean;
   // 嵌套回复列表（仅展示部分，完整列表需要懒加载）
   replies?: CommentListResponse[];
 }

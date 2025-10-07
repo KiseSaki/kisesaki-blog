@@ -4,11 +4,15 @@
  */
 
 import {
+  createCommentApi,
   getFeaturedPostsApi,
+  getPostCommentsApi,
   getPublishedPostBySlugApi,
   getRecentPostsApi,
 } from '@/api';
 import type {
+  CommentListResponse,
+  CreateCommentBody,
   PageResponse,
   PublishedPostDetailResponse,
   PublishedPostListResponse,
@@ -28,7 +32,9 @@ export const usePost = () => {
     });
 
     try {
-      const res = await getFeaturedPostsApi({ currentPage: 1, pageSize: 5 });
+      const res = await getFeaturedPostsApi({
+        pageable: { currentPage: 1, pageSize: 5 },
+      });
       setFeaturedPosts(res);
       return res;
     } catch (error) {
@@ -51,7 +57,9 @@ export const usePost = () => {
     });
 
     try {
-      const res = await getRecentPostsApi({ currentPage: 1, pageSize: 6 });
+      const res = await getRecentPostsApi({
+        pageable: { currentPage: 1, pageSize: 6 },
+      });
       setRecentPosts(res);
       return res;
     } catch (error) {
@@ -85,6 +93,56 @@ export const usePost = () => {
     }
   }, []);
 
+  // 获取文章对应评论
+  const [postComments, setPostComments] = useState<CommentListResponse[]>([]);
+  const [isFetchingComments, setIsFetchingComments] = useState(false);
+
+  const fetchPostComments = useCallback(
+    async (postId: number, currentPage: number = 1, pageSize: number = 10) => {
+      setIsFetchingComments(prev => {
+        if (prev) return prev;
+        return true;
+      });
+
+      try {
+        const res = await getPostCommentsApi(postId, {
+          pageable: { currentPage, pageSize },
+        });
+        setPostComments(res.data);
+        return res;
+      } catch (error) {
+        console.error('获取文章评论失败:', error);
+        return null;
+      } finally {
+        setIsFetchingComments(false);
+      }
+    },
+    []
+  );
+
+  // 创建评论
+  const [isCreatingComment, setIsCreatingComment] = useState(false);
+
+  const createComment = useCallback(
+    async (body: CreateCommentBody & { postId: number }) => {
+      setIsCreatingComment(true);
+
+      try {
+        const commentId = await createCommentApi(body.postId, {
+          content: body.content,
+          parentId: body.parentId,
+        });
+        return commentId;
+      } catch (error) {
+        console.error('创建评论失败:', error);
+        throw error;
+      } finally {
+        setIsCreatingComment(false);
+      }
+    },
+    []
+  );
+
   return {
     // 精选文章
     featuredPosts,
@@ -100,5 +158,12 @@ export const usePost = () => {
     postDetail,
     isFetchingDetail,
     fetchPostDetailBySlug,
+
+    // 文章评论
+    postComments,
+    isFetchingComments,
+    fetchPostComments,
+    isCreatingComment,
+    createComment,
   };
 };

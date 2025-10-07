@@ -3,6 +3,7 @@ import { usePost } from '@/hooks';
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
 import { AdjacentPosts } from './AdjacentPosts';
+import { CommentsSection } from './CommentsSection';
 import { PostContent } from './PostContent';
 import { PostMeta } from './PostMeta';
 import { RelatedPosts } from './RelatedPosts';
@@ -14,6 +15,7 @@ import { RelatedPosts } from './RelatedPosts';
 const PostDetailPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { fetchPostDetailBySlug, postDetail, isFetchingDetail } = usePost();
+
   useEffect(() => {
     if (!slug) return;
     fetchPostDetailBySlug(slug);
@@ -43,6 +45,8 @@ const PostDetailPage = () => {
       />
 
       <RelatedPosts posts={postDetail.relatedPosts} />
+
+      <CommentsSection postId={postDetail.id} />
     </BlogLayout>
   );
 };

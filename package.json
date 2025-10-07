@@ -1,8 +1,9 @@
 {
 	"dependencies": {
 		"@uiw/react-md-editor": "^4.0.8",
-		"remark-gfm": "^4.0.1",
 		"rehype-prism-plus": "^2.0.1",
-		"remark-emoji": "^5.0.2"
+		"rehype-sanitize": "^6.0.0",
+		"remark-emoji": "^5.0.2",
+		"remark-gfm": "^4.0.1"
 	}
 }

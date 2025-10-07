@@ -1,8 +1,37 @@
 import MDEditor, { commands as Commands } from '@uiw/react-md-editor';
 import { useEffect, useState } from 'react';
 import rehypeSanitize from 'rehype-sanitize';
+import { createEmojiCommand, createImageUploadCommand } from './commands';
+import { EmojiPickerComponent } from './EmojiPicker';
 import './styles.css';
 import type { MarkdownEditorProps } from './types';
+
+/**
+ * Markdown 编辑器组件
+ *
+ * @description
+ * 功能丰富的 Markdown 编辑器，支持：
+ * - 实时预览
+ * - 工具栏快捷操作
+ * - 图片上传
+ * - 表情选择器
+ * - 代码高亮
+ * - 全屏模式
+ *
+ * @example
+ * ```tsx
+ * const [content, setContent] = useState('');
+ *
+ * <MarkdownEditor
+ *   value={content}
+ *   onChange={setContent}
+ *   placeholder="请输入内容..."
+ *   minHeight={300}
+ *   enableImageUpload
+ *   enableEmoji
+ * />
+ * ```
+ */
 
 export const MarkdownEditor = ({
   value,
@@ -17,14 +46,49 @@ export const MarkdownEditor = ({
   commands,
   extraCommands = [],
   enableSyntaxHighlight = true,
+  enableImageUpload = false,
+  onImageUpload,
+  enableEmoji = false,
   className = '',
 }: MarkdownEditorProps) => {
   const [isFullscreen, setIsFullscreen] = useState(fullscreen);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [editorValue, setEditorValue] = useState(value);
 
   // 处理内容变化
   const handleChange = (val?: string) => {
-    onChange(val || '');
+    const newValue = val || '';
+    setEditorValue(newValue);
+    onChange(newValue);
   };
+
+  // 同步外部 value 变化
+  useEffect(() => {
+    setEditorValue(value);
+  }, [value]);
+
+  // 处理表情选择
+  const handleEmojiClick = (emoji: string) => {
+    const newValue = editorValue + emoji;
+    setEditorValue(newValue);
+    onChange(newValue);
+    setShowEmojiPicker(false);
+  };
+
+  // 构建自定义命令列表
+  const customCommands = [];
+
+  // 添加图片上传命令
+  if (enableImageUpload) {
+    customCommands.push(createImageUploadCommand(onImageUpload));
+  }
+
+  // 添加表情选择器命令
+  if (enableEmoji) {
+    customCommands.push(
+      createEmojiCommand(() => setShowEmojiPicker(!showEmojiPicker))
+    );
+  }
 
   // 默认工具栏命令配置（使用导入的 Commands，而非 props.commands）
   const defaultCommands = [
@@ -49,6 +113,8 @@ export const MarkdownEditor = ({
     Commands.divider,
     Commands.image,
     Commands.table,
+    Commands.divider,
+    ...customCommands,
     Commands.divider,
     Commands.help,
   ];
@@ -92,7 +158,7 @@ export const MarkdownEditor = ({
       }
     >
       <MDEditor
-        value={value}
+        value={editorValue}
         onChange={handleChange}
         preview={preview}
         height={isFullscreen ? '100%' : maxHeight || minHeight}
@@ -123,6 +189,14 @@ export const MarkdownEditor = ({
           Commands.fullscreen,
         ]}
       />
+
+      {/* 表情选择器 */}
+      {enableEmoji && showEmojiPicker && (
+        <EmojiPickerComponent
+          onEmojiClick={handleEmojiClick}
+          onClose={() => setShowEmojiPicker(false)}
+        />
+      )}
     </div>
   );
 };

@@ -27,4 +27,18 @@ export interface MarkdownEditorProps {
   enableSyntaxHighlight?: boolean;
   // 自定义类名
   className?: string;
+  // 是否启用图片上传
+  enableImageUpload?: boolean;
+  // 图片上传回调
+  onImageUpload?: (file: File) => Promise<string>;
+  // 是否启用表情选择器
+  enableEmoji?: boolean;
+}
+
+/**
+ * Emoji 选择器属性
+ */
+export interface EmojiPickerProps {
+  onEmojiClick: (emoji: string) => void;
+  onClose: () => void;
 }

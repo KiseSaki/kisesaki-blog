@@ -50,6 +50,7 @@ export {
 // 功能辅助图标
 export {
   ArchiveIcon,
+  DotIcon,
   MonitorIcon,
   NotificationIcon,
   ServerIcon,

@@ -22,7 +22,10 @@ export interface CommentListResponse {
   id: number;
   postId: number;
   userId: number;
+  parentId?: number;
+  replyToId?: number;
   content: string;
+  htmlContent?: string;
   likeCount: number;
   dislikeCount: number;
   replyCount: number;
@@ -31,7 +34,10 @@ export interface CommentListResponse {
   status: string;
   isPinned: boolean;
   isAuthorReply: boolean;
+  editedAt?: string;
   user: UserInfo;
+  // 当前用户对该评论的交互状态（仅在用户已登录时返回）
+  currentUserInteraction?: CommentUserInteraction;
   createdAt: string;
   updatedAt: string;
   hasMoreReplies: boolean;
@@ -46,6 +52,18 @@ export interface CommentDetailResponse extends CommentListResponse {
   // 可以包含更多详细信息
   parentComment?: CommentListResponse;
   rootComment?: CommentListResponse;
+}
+
+/**
+ * 当前用户对评论的交互状态
+ */
+export interface CommentUserInteraction {
+  isLiked?: boolean;
+  isDisliked?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  canReply?: boolean;
+  canPin?: boolean;
 }
 
 /**
@@ -87,10 +105,7 @@ export interface MyCommentParams {
 export interface CreateCommentBody {
   // 评论内容
   content: string;
-  // 父评论ID（回复时使用）
-  parentId?: number;
-  // 根评论ID（回复时使用）
-  rootId?: number;
+  replyToId?: number; // 回复目标评论ID
 }
 
 /**

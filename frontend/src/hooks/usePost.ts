@@ -9,6 +9,7 @@ import {
   getPostCommentsApi,
   getPublishedPostBySlugApi,
   getRecentPostsApi,
+  likeCommentApi,
 } from '@/api';
 import type {
   CommentListResponse,
@@ -130,7 +131,7 @@ export const usePost = () => {
       try {
         const commentId = await createCommentApi(body.postId, {
           content: body.content,
-          parentId: body.parentId,
+          replyToId: body.replyToId,
         });
         return commentId;
       } catch (error) {
@@ -142,6 +143,12 @@ export const usePost = () => {
     },
     []
   );
+
+  // 点赞评论
+  const likeComment = useCallback(async (commentId: number) => {
+    await likeCommentApi(commentId);
+    console.log(`点赞评论 ID: ${commentId}`);
+  }, []);
 
   return {
     // 精选文章
@@ -165,5 +172,6 @@ export const usePost = () => {
     fetchPostComments,
     isCreatingComment,
     createComment,
+    likeComment,
   };
 };

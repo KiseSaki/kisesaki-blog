@@ -58,6 +58,12 @@ class HttpClient {
       headers: {
         'Content-Type': 'application/json',
       },
+      // 自定义参数序列化器，支持对象展开为点分隔格式
+      paramsSerializer: {
+        serialize: (params: Record<string, unknown>) => {
+          return this.serializeParams(params).toString();
+        },
+      },
     });
 
     this.initInterceptors();
@@ -265,9 +271,16 @@ class HttpClient {
             searchParams.append(key, String(item));
           }
         });
-      } else if (typeof value === 'object') {
-        // 对象参数：转为 JSON 字符串
-        searchParams.append(key, JSON.stringify(value));
+      } else if (typeof value === 'object' && !Array.isArray(value)) {
+        // 对象参数：展开为点分隔的参数
+        // 例如：pageable: { currentPage: 1, pageSize: 10 } -> pageable.currentPage=1&pageable.pageSize=10
+        Object.entries(value as Record<string, unknown>).forEach(
+          ([subKey, subValue]) => {
+            if (subValue != null && subValue !== '') {
+              searchParams.append(`${key}.${subKey}`, String(subValue));
+            }
+          }
+        );
       } else {
         // 普通参数
         searchParams.append(key, String(value));

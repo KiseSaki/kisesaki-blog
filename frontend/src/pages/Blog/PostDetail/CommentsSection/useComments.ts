@@ -3,6 +3,9 @@ import { useAuth, usePost } from '@/hooks';
 import type { CommentListResponse } from '@/types';
 import { useEffect, useState } from 'react';
 
+// 定义排序类型
+export type CommentSortType = 'hot' | 'latest';
+
 // 评论管理 Hook
 export const useComments = (postId: number) => {
   const {
@@ -14,12 +17,14 @@ export const useComments = (postId: number) => {
   } = usePost();
   const { user } = useAuth();
   const [localComments, setLocalComments] = useState<CommentListResponse[]>([]);
+  const [sortType, setSortType] = useState<CommentSortType>('hot');
 
-  // 初始加载评论
+  // 初始加载评论（默认按最热排序）
   useEffect(() => {
     if (!postId) return;
-    fetchPostComments(postId, 1, 10);
-  }, [postId, fetchPostComments]);
+    const sort = sortType === 'hot' ? 'likeCount,desc' : 'createdAt,desc';
+    fetchPostComments(postId, 1, 10, sort);
+  }, [postId, sortType, fetchPostComments]);
 
   // 同步服务器数据到本地状态
   useEffect(() => {
@@ -27,6 +32,10 @@ export const useComments = (postId: number) => {
       setLocalComments(postComments);
     }
   }, [postComments]);
+
+  /**
+   *
+   */
 
   /**
    * 递归更新评论点赞数（乐观更新辅助函数）
@@ -172,10 +181,19 @@ export const useComments = (postId: number) => {
     }
   };
 
+  /**
+   * 切换排序方式
+   */
+  const handleSortChange = (newSortType: CommentSortType) => {
+    setSortType(newSortType);
+  };
+
   return {
     user,
     comments: localComments.length > 0 ? localComments : postComments,
     isFetchingComments,
+    sortType,
+    handleSortChange,
     handleSubmitComment,
     handleImageUpload,
     handleLike,

@@ -99,7 +99,12 @@ export const usePost = () => {
   const [isFetchingComments, setIsFetchingComments] = useState(false);
 
   const fetchPostComments = useCallback(
-    async (postId: number, currentPage: number = 1, pageSize: number = 10) => {
+    async (
+      postId: number,
+      currentPage: number = 1,
+      pageSize: number = 10,
+      sort: 'createdAt,desc' | 'likeCount,desc' = 'likeCount,desc'
+    ) => {
       setIsFetchingComments(prev => {
         if (prev) return prev;
         return true;
@@ -107,7 +112,7 @@ export const usePost = () => {
 
       try {
         const res = await getPostCommentsApi(postId, {
-          pageable: { currentPage, pageSize },
+          pageable: { currentPage, pageSize, sort },
         });
         setPostComments(res.data);
         return res;

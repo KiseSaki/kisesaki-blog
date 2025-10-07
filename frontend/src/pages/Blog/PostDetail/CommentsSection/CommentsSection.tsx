@@ -10,6 +10,8 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
     user,
     comments,
     isFetchingComments,
+    sortType,
+    handleSortChange,
     handleSubmitComment,
     handleImageUpload,
     handleLike,
@@ -47,11 +49,25 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
       {/* 排序选项 */}
       <div className='flex items-center gap-2 text-sm'>
         <span className='text-muted-foreground'>排序方式：</span>
-        <button className='px-3 py-1 rounded-full bg-theme-primary text-primary-foreground hover:bg-theme-primary-hover transition-colors cursor-pointer'>
+        <button
+          onClick={() => handleSortChange('hot')}
+          className={
+            sortType === 'hot'
+              ? 'px-3 py-1 rounded-full bg-theme-primary text-primary-foreground hover:bg-theme-primary-hover transition-colors cursor-pointer'
+              : 'px-3 py-1 rounded-full hover:bg-muted transition-colors cursor-pointer'
+          }
+        >
           最热
         </button>
         <DotIcon className='text-muted-foreground' />
-        <button className='px-3 py-1 rounded-full hover:bg-muted transition-colors cursor-pointer'>
+        <button
+          onClick={() => handleSortChange('latest')}
+          className={
+            sortType === 'latest'
+              ? 'px-3 py-1 rounded-full bg-theme-primary text-primary-foreground hover:bg-theme-primary-hover transition-colors cursor-pointer'
+              : 'px-3 py-1 rounded-full hover:bg-muted transition-colors cursor-pointer'
+          }
+        >
           最新
         </button>
       </div>

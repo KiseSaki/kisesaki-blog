@@ -3,6 +3,7 @@
  * 包含文章、分类、标签等博客相关的数据类型
  */
 
+import type { PageableParams } from './api';
 import type { UserInfo } from './user';
 
 // =================== 文章相关类型 ===================
@@ -242,14 +243,8 @@ export interface UpdatePostResponse {
  * 已发布文章列表查询参数
  */
 export interface PublishedPostListParams {
-  // 分页参数
-  currentPage?: number;
-  pageSize?: number;
-  sort?: string;
-  includeTotal?: boolean;
-  startTime?: string;
-  endTime?: string;
-  date?: string;
+  // 分页参数（嵌套对象）
+  pageable?: PageableParams;
   // 业务筛选参数
   categoryId?: number;
   tagId?: number;
@@ -261,14 +256,8 @@ export interface PublishedPostListParams {
  * 获取我的文章列表参数
  */
 export interface GetMyPostsListParams {
-  // 分页参数
-  currentPage?: number;
-  pageSize?: number;
-  sort?: string;
-  includeTotal?: boolean;
-  startTime?: string;
-  endTime?: string;
-  date?: string;
+  // 分页参数（嵌套对象）
+  pageable?: PageableParams;
   // 业务筛选参数
   status?: PostStatus;
   categoryId?: number;
@@ -301,17 +290,11 @@ export interface PostRevisionContentResponse {
 }
 
 /**
- * 文章修订列表查询参数
+ * 文章修订列表查询参数 直接用 PageableParams
  */
 export interface PostRevisionListParams {
-  // 分页参数
-  currentPage?: number;
-  pageSize?: number;
-  sort?: string;
-  includeTotal?: boolean;
-  startTime?: string;
-  endTime?: string;
-  date?: string;
+  // 分页参数（嵌套对象）
+  pageable?: PageableParams;
 }
 
 // =================== 分类相关类型 ===================
@@ -373,14 +356,8 @@ export interface PopularCategoryResponse {
  * 分类查询参数
  */
 export interface CategoryQueryParams {
-  // 分页参数
-  currentPage?: number;
-  pageSize?: number;
-  sort?: string;
-  includeTotal?: boolean;
-  startTime?: string;
-  endTime?: string;
-  date?: string;
+  // 分页参数（嵌套对象）
+  pageable?: PageableParams;
   // 业务筛选参数
   parentId?: number;
   level?: number;
@@ -399,14 +376,8 @@ export interface PopularCategoryParams {
  * 分类下文章列表查询参数
  */
 export interface CategoryPostsParams {
-  // 分页参数
-  currentPage?: number;
-  pageSize?: number;
-  sort?: string;
-  includeTotal?: boolean;
-  startTime?: string;
-  endTime?: string;
-  date?: string;
+  // 分页参数（嵌套对象）
+  pageable?: PageableParams;
   // 业务筛选参数
   sortBy?: PostSortType;
 }
@@ -503,14 +474,8 @@ export interface MyTagResponse {
  * 标签列表查询参数
  */
 export interface TagListParams {
-  // 分页参数
-  currentPage?: number;
-  pageSize?: number;
-  sort?: string;
-  includeTotal?: boolean;
-  startTime?: string;
-  endTime?: string;
-  date?: string;
+  // 分页参数（嵌套对象）
+  pageable?: PageableParams;
   // 业务筛选参数
   keyword?: string;
   sortBy?: 'NAME' | 'POST_COUNT' | 'CREATED_AT';
@@ -528,14 +493,8 @@ export interface TagSearchParams {
  * 标签下文章列表查询参数
  */
 export interface TagPostsParams {
-  // 分页参数
-  currentPage?: number;
-  pageSize?: number;
-  sort?: string;
-  includeTotal?: boolean;
-  startTime?: string;
-  endTime?: string;
-  date?: string;
+  // 分页参数（嵌套对象）
+  pageable?: PageableParams;
   // 业务筛选参数
   sortBy?: PostSortType;
 }

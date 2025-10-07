@@ -2,6 +2,7 @@
  * 评论相关类型定义
  */
 
+import type { PageableParams } from './api';
 import type { UserInfo } from './user';
 
 /**
@@ -52,15 +53,7 @@ export interface CommentDetailResponse extends CommentListResponse {
  */
 export interface CommentListParams {
   // 分页参数（嵌套对象）
-  pageable?: {
-    currentPage?: number;
-    pageSize?: number;
-    sort?: string;
-    includeTotal?: boolean;
-    startTime?: string;
-    endTime?: string;
-    date?: string;
-  };
+  pageable?: PageableParams;
   // 评论用户ID
   userId?: number;
   // 回复目标评论ID（@某条评论）
@@ -80,15 +73,7 @@ export interface CommentListParams {
  */
 export interface MyCommentParams {
   // 分页参数（嵌套对象）
-  pageable?: {
-    currentPage?: number;
-    pageSize?: number;
-    sort?: string;
-    includeTotal?: boolean;
-    startTime?: string;
-    endTime?: string;
-    date?: string;
-  };
+  pageable?: PageableParams;
   // 文章ID筛选
   postId?: number;
   // 状态筛选

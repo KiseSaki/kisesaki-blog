@@ -177,25 +177,9 @@ class HttpClient {
       toast.error(errorMessage);
     }
 
-    // HTTP 状态码处理
-    switch (error.response?.status) {
-      case 403:
-        if (this.config.enableAuthRedirect) {
-          window.location.href = '/403';
-        }
-        break;
-      case 404:
-        // 404 处理
-        if (this.config.enableAuthRedirect) {
-          window.location.href = '/404';
-        }
-        break;
-      case 500:
-        if (this.config.enableAuthRedirect) {
-          window.location.href = '/500';
-        }
-        break;
-    }
+    // 注意：不在此处处理页面跳转
+    // 页面级别的错误（如访问被禁止的页面）应该由路由层面处理
+    // API 请求的错误（如提交评论失败）应该由业务逻辑处理，不应跳转页面
   }
 
   /**

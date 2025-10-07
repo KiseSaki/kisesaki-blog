@@ -18,16 +18,16 @@ const AdjacentPostItem = ({
       role='button'
       tabIndex={0}
       aria-label={`${type === 'prev' ? '上一篇' : '下一篇'}: ${post.title}`}
-      className={`group flex items-center gap-x-3 p-3 h-24 w-full max-w-[48%] rounded-lg transition transform
+      className={`group flex items-center gap-x-3 p-3 w-full max-w-[48%] rounded-lg transition transform
          bg-[var(--theme-card-background)] hover:shadow-lg hover:-translate-y-0.5
          border border-transparent hover:border-[color:var(--theme-border)] cursor-pointer`}
       onClick={() => navigate(`/post/${post.slug}`)}
     >
-      <div className='w-24 h-full flex-shrink-0 overflow-hidden rounded-md'>
+      <div className='w-28 h-20 md:w-32 md:h-24 flex-shrink-0 overflow-hidden rounded-md bg-[color:var(--border)]'>
         <Image
           src={post.coverImageUrl}
           alt={post.title}
-          className='w-full h-full object-cover rounded-md'
+          className='w-full h-full object-cover transition-opacity duration-200'
         />
       </div>
 

@@ -11,7 +11,7 @@ const RelatedPostCard = ({ post }: { post: RelatedPost }) => {
       aria-label={`阅读推荐文章：${post.title}`}
       onClick={() => navigate(`/post/${post.slug}`)}
       className={`group flex items-start gap-3 p-3 rounded-lg transition transform bg-[var(--theme-card-background)] 
-        border border-transparent hover:shadow-lg hover:-translate-y-0.5 cursor-pointer`}
+        border border-transparent hover:border-[color:var(--theme-border)] hover:shadow-lg hover:-translate-y-0.5 cursor-pointer`}
     >
       <div className='w-28 h-20 md:w-32 md:h-24 flex-shrink-0 overflow-hidden rounded-md bg-[color:var(--border)]'>
         <Image

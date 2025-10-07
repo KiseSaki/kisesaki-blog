@@ -35,7 +35,13 @@ public class CommentInteractionService {
     private final PostsMapper postsMapper;
 
     /**
-     * 创建评论
+     * 创建评论（两层结构：顶级评论 + 二级回复）
+     * <p>
+     * 场景1：创建顶级评论 - replyToId=null
+     * 场景2：回复顶级评论 - replyToId=顶级评论ID (level=0)
+     * 场景3：回复二级评论（@功能） - replyToId=二级评论ID (level=1)
+     * <p>
+     * 后端会根据 replyToId 指向的评论层级自动判断并设置正确的 parentId 和 replyToId
      *
      * @param postId         文章ID
      * @param body           创建评论请求体
@@ -65,34 +71,51 @@ public class CommentInteractionService {
             throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户认证失败");
         }
 
-        Comments parentComment = null;
-        Comments replyToComment = null;
+        // 初始化评论属性
+        Long parentId = null;
+        Long actualReplyToId = null;
         int level = 0;
         String path = "0";
 
-        // 处理父评论
-        if (body.getParentId() != null) {
-            parentComment = commentMapper.selectById(body.getParentId());
-            if (parentComment == null) {
-                throw BusinessException.paramError("父评论不存在");
-            }
-            // 验证父评论是否属于同一篇文章
-            if (!parentComment.getPostId().equals(postId)) {
-                throw BusinessException.paramError("父评论与当前文章不匹配");
-            }
-            level = parentComment.getLevel() + 1;
-            path = parentComment.getPath() + "." + parentComment.getId();
+        // 场景1：创建顶级评论
+        if (body.getReplyToId() == null) {
+            // parentId = null, actualReplyToId = null, level = 0, path = "0"
+            log.debug("创建顶级评论，postId={}", postId);
         }
-
-        // 处理回复目标评论
-        if (body.getReplyToId() != null) {
-            replyToComment = commentMapper.selectById(body.getReplyToId());
-            if (replyToComment == null) {
+        // 场景2和3：创建二级回复（需要根据目标评论的层级自动判断）
+        else {
+            Comments targetComment = commentMapper.selectById(body.getReplyToId());
+            if (targetComment == null) {
                 throw BusinessException.paramError("回复目标评论不存在");
             }
-            // 验证回复目标评论是否属于同一篇文章
-            if (!replyToComment.getPostId().equals(postId)) {
+            
+            // 验证目标评论是否属于同一篇文章
+            if (!targetComment.getPostId().equals(postId)) {
                 throw BusinessException.paramError("回复目标评论与当前文章不匹配");
+            }
+            
+            // 场景2：目标是顶级评论 → 创建该顶级评论的二级回复
+            if (targetComment.getLevel() == 0) {
+                parentId = targetComment.getId();
+                actualReplyToId = null; // 直接回复顶级评论，不需要@
+                level = 1;
+                path = "0." + targetComment.getId();
+                log.debug("回复顶级评论 {}，创建二级回复", targetComment.getId());
+            }
+            // 场景3：目标是二级回复 → 创建同一父评论下的二级回复（@功能）
+            else if (targetComment.getLevel() == 1) {
+                if (targetComment.getParentId() == null) {
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "二级评论缺少父评论ID");
+                }
+                parentId = targetComment.getParentId();
+                actualReplyToId = targetComment.getId(); // 设置@目标
+                level = 1;
+                path = "0." + targetComment.getParentId();
+                log.debug("回复二级评论 {}，创建同级回复并@该用户", targetComment.getId());
+            }
+            // 不支持的层级
+            else {
+                throw BusinessException.paramError("不支持回复三层及以上的评论");
             }
         }
 
@@ -100,8 +123,8 @@ public class CommentInteractionService {
         Comments comment = new Comments();
         comment.setPostId(postId);
         comment.setUserId(userId);
-        comment.setParentId(body.getParentId());
-        comment.setReplyToId(body.getReplyToId());
+        comment.setParentId(parentId);
+        comment.setReplyToId(actualReplyToId);
         comment.setContent(body.getContent());
         comment.setLevel(level);
         comment.setPath(path);

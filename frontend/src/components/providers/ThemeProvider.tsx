@@ -6,7 +6,7 @@
 import { getAntdTheme } from '@/config/theme';
 import { useThemeStore } from '@/stores/themeStore';
 import { ConfigProvider, theme } from 'antd';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -18,8 +18,8 @@ interface ThemeProviderProps {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const { mode, applyTheme } = useThemeStore();
 
-  // 初始化时应用主题
-  useEffect(() => {
+  // 初始化时应用主题 - 使用 useLayoutEffect 确保在渲染前同步执行
+  React.useLayoutEffect(() => {
     applyTheme();
   }, [applyTheme]);
 

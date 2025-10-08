@@ -52,7 +52,7 @@ export const usePermissions = () => {
    * @returns 是否为管理员
    */
   const isAdmin = useCallback((): boolean => {
-    return hasRole('admin') || hasRole('super_admin');
+    return hasRole('ADMIN');
   }, [hasRole]);
 
   /**
@@ -60,7 +60,7 @@ export const usePermissions = () => {
    * @returns 是否为作者
    */
   const isAuthor = useCallback((): boolean => {
-    return hasRole('author') || isAdmin();
+    return hasRole('AUTHOR') || isAdmin();
   }, [hasRole, isAdmin]);
 
   /**

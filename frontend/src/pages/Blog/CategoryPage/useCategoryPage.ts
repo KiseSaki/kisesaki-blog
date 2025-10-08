@@ -1,4 +1,5 @@
 import { getCategoryPostsApi } from '@/api';
+import { BLOG_CATEGORY_BASE } from '@/config';
 import { useCategory as useCategoryData, useInfiniteScroll } from '@/hooks';
 import { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
@@ -37,11 +38,16 @@ export const useCategoryPage = (slug?: string) => {
   );
 
   // 使用无限滚动 Hook
-  const { data: posts, isLoading, hasMore, reset, loadMoreRef } =
-    useInfiniteScroll({
-      fetchData: fetchCategoryPosts,
-      pageSize: 12,
-    });
+  const {
+    data: posts,
+    isLoading,
+    hasMore,
+    reset,
+    loadMoreRef,
+  } = useInfiniteScroll({
+    fetchData: fetchCategoryPosts,
+    pageSize: 12,
+  });
 
   // 初始化：加载分类数据
   useEffect(() => {
@@ -59,7 +65,7 @@ export const useCategoryPage = (slug?: string) => {
   // 处理分类点击
   const handleCategoryClick = useCallback(
     (categorySlug: string) => {
-      navigate(`/category/${categorySlug}`);
+      navigate(`${BLOG_CATEGORY_BASE}/${categorySlug}`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
     [navigate]

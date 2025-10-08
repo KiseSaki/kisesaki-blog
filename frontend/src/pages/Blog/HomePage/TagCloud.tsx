@@ -1,3 +1,4 @@
+import { BLOG_TAG_BASE } from '@/config';
 import type { TagCloudItem } from '@/types';
 import { Hash } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -10,7 +11,7 @@ export const TagCloud = ({ tags }: TagCloudProps) => {
   const navigate = useNavigate();
 
   const handleTagClick = (slug: string) => {
-    navigate(`/tag/${slug}`);
+    navigate(`${BLOG_TAG_BASE}/${slug}`);
   };
 
   // 计算字体大小和权重基于文章数量
@@ -19,10 +20,10 @@ export const TagCloud = ({ tags }: TagCloudProps) => {
     const minSize = 0.875; // 14px
     const maxSize = 1.25; // 20px
     const fontSize = minSize + ratio * (maxSize - minSize);
-    
+
     // 根据权重设置透明度
     const opacity = 0.7 + ratio * 0.3;
-    
+
     return { fontSize, opacity };
   };
 
@@ -34,7 +35,7 @@ export const TagCloud = ({ tags }: TagCloudProps) => {
         const { fontSize, opacity } = getTagStyle(tag.postCount, maxCount);
         const hasColor = tag.color && tag.color !== '';
         const tagColor = hasColor ? tag.color : undefined;
-        
+
         return (
           <button
             key={tag.id}
@@ -54,7 +55,7 @@ export const TagCloud = ({ tags }: TagCloudProps) => {
                 }}
               />
             )}
-            
+
             {/* 图标 */}
             <Hash
               className='transition-all duration-300 group-hover:rotate-12'
@@ -64,22 +65,22 @@ export const TagCloud = ({ tags }: TagCloudProps) => {
                 color: tagColor || undefined,
               }}
             />
-            
+
             {/* 标签名 */}
             <span
               className='font-medium transition-all duration-300 group-hover:translate-x-0.5 relative z-10'
-              style={{ 
+              style={{
                 color: tagColor || undefined,
               }}
             >
               {tag.name}
             </span>
-            
+
             {/* 文章数量徽章 */}
             <span
               className={`ml-1 px-1.5 py-0.5 text-xs rounded-full font-semibold transition-all duration-300 ${
-                hasColor 
-                  ? 'bg-white/80 group-hover:bg-white' 
+                hasColor
+                  ? 'bg-white/80 group-hover:bg-white'
                   : 'bg-primary/10 group-hover:bg-primary/20'
               }`}
               style={{
@@ -89,7 +90,7 @@ export const TagCloud = ({ tags }: TagCloudProps) => {
             >
               {tag.postCount}
             </span>
-            
+
             {/* 悬浮光效 */}
             <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none' />
           </button>

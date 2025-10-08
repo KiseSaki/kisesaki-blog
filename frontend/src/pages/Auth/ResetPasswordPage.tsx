@@ -9,6 +9,7 @@ import {
 } from '@/components';
 import AuthLayout from '@/components/common/AuthLayout';
 import { FailedCard } from '@/components/feedback/FailedCard';
+import { LOGIN_LINK, FORGOT_PASSWORD_LINK } from '@/config';
 import { usePassword } from '@/hooks';
 import { passwordSchema, type PasswordField } from '@/shcema';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -53,14 +54,14 @@ const ResetPasswordPage = () => {
         toast.success('密码重置成功！请使用新密码登录。');
 
         setTimeout(() => {
-          navigate('/auth/login');
+          navigate(LOGIN_LINK);
         }, 5000);
       } else {
         setVerificationFailed(true);
         toast.error('密码重置失败，即将跳转重置页面。');
 
         setTimeout(() => {
-          navigate('/auth/forgot-password');
+          navigate(FORGOT_PASSWORD_LINK);
         }, 5000);
       }
     };
@@ -106,7 +107,7 @@ const ResetPasswordPage = () => {
           <p className='text-theme-success'>
             密码重置成功！您的新密码已生效，可以正常登录使用。
           </p>
-          <Button onClick={() => navigate('/auth/login')} className='w-full'>
+          <Button onClick={() => navigate(LOGIN_LINK)} className='w-full'>
             前往登录
           </Button>
         </div>
@@ -128,7 +129,7 @@ const ResetPasswordPage = () => {
             密码重置失败！请检查您的链接是否有效。
           </p>
           <Button
-            onClick={() => navigate('/auth/forgot-password')}
+            onClick={() => navigate(FORGOT_PASSWORD_LINK)}
             className='w-full'
           >
             重新发送验证邮件

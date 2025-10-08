@@ -1,4 +1,5 @@
 import { Image } from '@/components';
+import { BLOG_POST_DETAIL_BASE } from '@/config';
 import type { AdjacentPost } from '@/types';
 import { useNavigate } from 'react-router';
 
@@ -21,7 +22,7 @@ const AdjacentPostItem = ({
       className={`group flex items-center gap-x-3 p-3 w-full max-w-[48%] rounded-lg transition transform
          bg-[var(--theme-card-background)] hover:shadow-lg hover:-translate-y-0.5
          border border-transparent hover:border-[color:var(--theme-border)] cursor-pointer`}
-      onClick={() => navigate(`/post/${post.slug}`)}
+      onClick={() => navigate(`${BLOG_POST_DETAIL_BASE}/${post.slug}`)}
     >
       <div className='w-28 h-20 md:w-32 md:h-24 flex-shrink-0 overflow-hidden rounded-md bg-[color:var(--border)]'>
         <Image

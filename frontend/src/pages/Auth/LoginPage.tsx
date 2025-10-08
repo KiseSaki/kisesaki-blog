@@ -9,6 +9,7 @@ import {
   Input,
 } from '@/components';
 import AuthLayout from '@/components/common/AuthLayout';
+import { REGISTER_LINK, FORGOT_PASSWORD_LINK } from '@/config';
 import { useAuth } from '@/hooks';
 import { loginSchema, type LoginFormData } from '@/shcema';
 import { GithubOutlined, GitlabOutlined } from '@ant-design/icons';
@@ -51,7 +52,7 @@ const LoginPage = () => {
       description={
         <>
           没有账户？
-          <a href='/auth/register' className='text-primary'>
+          <a href={REGISTER_LINK} className='text-primary'>
             {' '}
             注册一个
           </a>
@@ -138,7 +139,7 @@ const LoginPage = () => {
                 </FormItem>
               )}
             />
-            <a href='/auth/forgot-password' className='text-primary'>
+            <a href={FORGOT_PASSWORD_LINK} className='text-primary'>
               忘记密码？
             </a>
           </div>

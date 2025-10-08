@@ -1,3 +1,4 @@
+import { REGISTER_LINK } from '@/config';
 import AuthLayout from '../common/AuthLayout';
 
 interface FailedCardProps {
@@ -26,7 +27,7 @@ export const FailedCard = ({
         <div className='w-full text-center space-y-2'>
           <div className='text-sm'>
             还没有账户？{' '}
-            <a href='/auth/register' className='text-primary hover:underline'>
+            <a href={REGISTER_LINK} className='text-primary hover:underline'>
               立即注册
             </a>
           </div>

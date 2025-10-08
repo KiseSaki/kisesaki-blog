@@ -1,3 +1,4 @@
+import { BLOG_TAG_BASE } from '@/config';
 import type { TagCloudItem } from '@/types';
 import { Hash } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -14,7 +15,7 @@ export const TagCloud = ({ tags }: TagCloudProps) => {
   const navigate = useNavigate();
 
   const handleTagClick = (slug: string) => {
-    navigate(`/tag/${slug}`);
+    navigate(`${BLOG_TAG_BASE}/${slug}`);
   };
 
   // 计算字体大小和权重基于文章数量

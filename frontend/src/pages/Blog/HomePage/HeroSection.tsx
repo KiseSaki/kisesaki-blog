@@ -1,5 +1,5 @@
 import { Button } from '@/components';
-import { BLOG_ARCHIVE_LINK } from '@/config';
+import { BLOG_ARCHIVE_LINK, CONTACT_LINK } from '@/config';
 import { ArrowRight, Github, Mail } from 'lucide-react';
 import { ReactTyped } from 'react-typed';
 import { useNavigate } from 'react-router';
@@ -16,7 +16,7 @@ export const HeroSection = () => {
   };
 
   const handleContactClick = () => {
-    navigate('/contact');
+    navigate(CONTACT_LINK);
   };
 
   return (

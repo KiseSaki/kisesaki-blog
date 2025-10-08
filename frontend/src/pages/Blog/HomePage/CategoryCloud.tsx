@@ -1,3 +1,4 @@
+import { BLOG_CATEGORY_BASE } from '@/config';
 import type { PopularCategoryResponse } from '@/types';
 import { Folder } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -10,7 +11,7 @@ export const CategoryCloud = ({ categories }: CategoryCloudProps) => {
   const navigate = useNavigate();
 
   const handleCategoryClick = (slug: string) => {
-    navigate(`/category/${slug}`);
+    navigate(`${BLOG_CATEGORY_BASE}/${slug}`);
   };
 
   return (

@@ -1,3 +1,4 @@
+import { PRIVACY_LINK, TERMS_LINK } from '@/config';
 import { ArrowUp, Github, Heart, Mail, Twitter } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui';
@@ -134,14 +135,14 @@ export const Footer = () => {
             <div className='space-y-2'>
               <p className='text-sm text-theme-muted-foreground'>
                 <a
-                  href='/privacy'
+                  href={PRIVACY_LINK}
                   className='hover:text-theme-foreground transition-colors duration-200'
                 >
                   隐私政策
                 </a>
                 {' · '}
                 <a
-                  href='/terms'
+                  href={TERMS_LINK}
                   className='hover:text-theme-foreground transition-colors duration-200'
                 >
                   使用条款

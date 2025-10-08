@@ -1,3 +1,4 @@
+import { LOGIN_LINK, ERROR_403_LINK } from '@/config';
 import { useAuthStore } from '@/stores/authStore';
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
@@ -19,7 +20,7 @@ interface PrivateRouteProps {
  */
 export const PrivateRoute: React.FC<PrivateRouteProps> = ({
   requiredPermissions = [],
-  redirectTo = '/auth/login',
+  redirectTo = LOGIN_LINK,
 }) => {
   const location = useLocation();
   const { user, token } = useAuthStore();
@@ -50,7 +51,7 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({
 
   // 如果用户已登录但没有所需权限，重定向到 403 页面
   if (!hasRequiredPermission()) {
-    return <Navigate to='/error/403' replace />;
+    return <Navigate to={ERROR_403_LINK} replace />;
   }
 
   // 用户已登录且具有所需权限，渲染子路由

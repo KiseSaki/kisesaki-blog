@@ -1,6 +1,6 @@
 import { Button, HoverCard, HoverCardContent } from '@/components';
 import { ThemeToggle, UserAvatar } from '@/components/common';
-import { LOGIN_LINK } from '@/config/routeURL';
+import { LOGIN_LINK, PROFILE_LINK, ADMIN_BASE_LINK, HOME_LINK } from '@/config';
 import { useAuth, usePermissions } from '@/hooks';
 import { HoverCardTrigger } from '@radix-ui/react-hover-card';
 import { useNavigate } from 'react-router';
@@ -17,18 +17,18 @@ export const Right = () => {
 
   // 个人主页跳转
   const handleProfile = () => {
-    navigate('/user/profile');
+    navigate(PROFILE_LINK);
   };
 
   // 管理后台跳转
   const handleAdmin = () => {
-    navigate('/manage');
+    navigate(ADMIN_BASE_LINK);
   };
 
   // 退出登录
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate(HOME_LINK);
   };
 
   return (

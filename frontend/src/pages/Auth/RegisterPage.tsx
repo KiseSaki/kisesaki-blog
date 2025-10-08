@@ -9,6 +9,7 @@ import {
   Input,
 } from '@/components';
 import AuthLayout from '@/components/common/AuthLayout';
+import { LOGIN_LINK } from '@/config';
 import { useRegister } from '@/hooks';
 import { type RegisterFormData, registerSchema } from '@/shcema';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,7 +46,7 @@ const RegisterPage = () => {
       description={
         <>
           已有账户？{' '}
-          <a href='/auth/login' className='text-primary'>
+          <a href={LOGIN_LINK} className='text-primary'>
             去登录
           </a>
         </>

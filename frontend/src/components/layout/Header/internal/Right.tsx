@@ -1,12 +1,13 @@
 import { Button, HoverCard, HoverCardContent } from '@/components';
 import { ThemeToggle, UserAvatar } from '@/components/common';
 import { LOGIN_LINK } from '@/config/routeURL';
-import { useAuth } from '@/hooks';
+import { useAuth, usePermissions } from '@/hooks';
 import { HoverCardTrigger } from '@radix-ui/react-hover-card';
 import { useNavigate } from 'react-router';
 
 export const Right = () => {
   const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthor } = usePermissions();
 
   // 登录跳转
   const navigate = useNavigate();
@@ -17,6 +18,11 @@ export const Right = () => {
   // 个人主页跳转
   const handleProfile = () => {
     navigate('/user/profile');
+  };
+
+  // 管理后台跳转
+  const handleAdmin = () => {
+    navigate('/manage');
   };
 
   // 退出登录
@@ -43,6 +49,11 @@ export const Right = () => {
               <Button variant='ghost' onClick={handleProfile}>
                 个人主页
               </Button>
+              {isAuthor() && (
+                <Button variant='ghost' onClick={handleAdmin}>
+                  管理后台
+                </Button>
+              )}
               <Button variant='ghost' onClick={handleLogout}>
                 退出登录
               </Button>

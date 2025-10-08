@@ -5,15 +5,15 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  CategoryCloud,
+  TagCloud,
 } from '@/components';
 import { useCategory, usePost, useTag } from '@/hooks';
 import { useEffect } from 'react';
 import { BlogStats } from './BlogStats';
-import { CategoryCloud } from './CategoryCloud';
 import { FeaturedPostsCard } from './FeaturedPostsCard';
 import { HeroSection } from './HeroSection';
 import { RecentArticleCard } from './RecentArticleCard';
-import { TagCloud } from './TagCloud';
 import { TechStack } from './TechStack';
 import { Timeline } from './Timeline';
 

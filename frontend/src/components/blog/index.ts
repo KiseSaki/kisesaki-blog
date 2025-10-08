@@ -5,4 +5,5 @@
 
 export * from './CategoryCloud';
 export * from './CommentInput';
+export * from './PostCard';
 export * from './TagCloud';

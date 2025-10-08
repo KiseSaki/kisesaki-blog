@@ -103,7 +103,7 @@ export const router = createBrowserRouter([
             ),
           }, // 文章详情页
           {
-            path: 'category',
+            path: 'category/:slug',
             element: (
               <SuspenseWrapper>
                 <CategoryPage />
@@ -111,7 +111,7 @@ export const router = createBrowserRouter([
             ),
           }, // 分类页
           {
-            path: 'tag',
+            path: 'tag/:slug',
             element: (
               <SuspenseWrapper>
                 <TagPage />

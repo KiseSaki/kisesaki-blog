@@ -28,7 +28,7 @@ export const Header: React.FC = () => {
       onMouseEnter={handleHeaderMouseEnter}
       onMouseLeave={handleHeaderMouseLeave}
     >
-      <div className='max-w-7xl mx-auto flex justify-between items-center h-full'>
+      <div className='w-full px-16 flex justify-between items-center h-full'>
         <Left />
         <Center frosted={frosted} isHeaderHovered={isHeaderHovered} />
         <Right />

@@ -242,7 +242,7 @@ export const router = createBrowserRouter([
 
       // 管理员相关路由（需要管理员权限）
       {
-        path: 'admin',
+        path: 'manage',
         element: (
           <PrivateRoute requiredPermissions={['DASHBOARD_ADMIN_ACCESS']} />
         ),

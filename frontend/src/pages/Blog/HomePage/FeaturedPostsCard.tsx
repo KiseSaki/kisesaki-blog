@@ -1,3 +1,4 @@
+import { Image } from '@/components';
 import type { PublishedPostListResponse } from '@/types';
 import { Calendar, Tag, User } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -5,8 +6,8 @@ import { useNavigate } from 'react-router';
 export const FeaturedPostsCard = ({
   title,
   slug,
-  coverImage,
-  author,
+  coverImageUrl,
+  authorDisplayName,
   excerpt,
   publishedAt,
   tags,
@@ -24,21 +25,14 @@ export const FeaturedPostsCard = ({
       onClick={handleClick}
       className='group relative w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] rounded-xl overflow-hidden bg-card border border-border shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer'
     >
-      {/* 图片或占位（放到最底层） */}
-      {coverImage ? (
-        <img
-          className='absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110'
-          src={coverImage}
-          alt={title}
-          loading='lazy'
-        />
-      ) : (
-        <div className='absolute inset-0 bg-gradient-to-br from-muted via-muted/80 to-secondary/20 flex items-center justify-center'>
-          <span className='text-muted-foreground text-lg font-medium'>
-            暂无封面
-          </span>
-        </div>
-      )}
+      {/* 图片或占位(放到最底层) */}
+      <Image
+        className='absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110'
+        src={coverImageUrl}
+        alt={title}
+        loading='lazy'
+        placeholder='暂无封面'
+      />
 
       {/* 渐变遮罩，提升文字可读性 */}
       <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent opacity-90 group-hover:opacity-95 transition-opacity duration-500 pointer-events-none' />
@@ -76,7 +70,7 @@ export const FeaturedPostsCard = ({
           {/* 作者信息 */}
           <div className='flex items-center gap-1.5'>
             <User className='w-3.5 h-3.5' />
-            <span>{author?.displayName || 'Unknown Author'}</span>
+            <span>{authorDisplayName || 'Unknown Author'}</span>
           </div>
 
           {/* 发布时间 */}

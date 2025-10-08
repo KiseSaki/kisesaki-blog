@@ -7,15 +7,15 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.ext.gfm.issues.GfmIssuesExtension;
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension;
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension;
-import com.vladsch.flexmark.ext.gfm.issues.GfmIssuesExtension;
 import com.vladsch.flexmark.ext.gfm.users.GfmUsersExtension;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.ext.toc.TocExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.data.MutableDataSet;
 
 import lombok.extern.slf4j.Slf4j;
@@ -307,16 +307,11 @@ public class MarkdownService {
 
     /**
      * 构建增强的代码块 HTML 结构
+     * 注意：不添加 hljs 类，由前端 highlight.js 自动处理
      */
     private String buildEnhancedCodeBlock(String language, String code) {
         return String.format(
-                "<div class=\"code-block-wrapper\">" +
-                        "<div class=\"code-block-header\">" +
-                        "<span class=\"code-language\">%s</span>" +
-                        "<button class=\"copy-code-btn\" onclick=\"copyCode(this)\">复制</button>" +
-                        "</div>" +
-                        "<pre><code class=\"language-%s hljs\">%s</code></pre>" +
-                        "</div>",
-                language, language, code);
+                "<pre><code class=\"language-%s\">%s</code></pre>",
+                language, code);
     }
 }

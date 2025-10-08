@@ -23,7 +23,7 @@ public interface LikeMapper extends BaseMapper<Likes> {
      * @param reactionType 反应类型
      * @return 反应数量
      */
-    @Select("SELECT COUNT(*) FROM likes WHERE target_type = #{targetType}::target_type_enum AND target_id = #{targetId} AND reaction_type = #{reactionType}::reaction_type_enum")
+    @Select("SELECT COUNT(*) FROM likes WHERE target_type = #{targetType}::target_type AND target_id = #{targetId} AND reaction_type = #{reactionType}::reaction_type")
     int countReactionsByTarget(@Param("targetType") Likes.TargetType targetType,
             @Param("targetId") Long targetId,
             @Param("reactionType") Likes.ReactionType reactionType);
@@ -36,7 +36,7 @@ public interface LikeMapper extends BaseMapper<Likes> {
      * @param targetId   目标ID
      * @return 反应记录，如果不存在则返回null
      */
-    @Select("SELECT * FROM likes WHERE user_id = #{userId} AND target_type = #{targetType}::target_type_enum AND target_id = #{targetId}")
+    @Select("SELECT * FROM likes WHERE user_id = #{userId} AND target_type = #{targetType}::target_type AND target_id = #{targetId}")
     Likes findUserReaction(@Param("userId") Long userId,
             @Param("targetType") Likes.TargetType targetType,
             @Param("targetId") Long targetId);
@@ -50,7 +50,7 @@ public interface LikeMapper extends BaseMapper<Likes> {
      * @return 反应记录列表
      */
     @Select("<script>" +
-            "SELECT * FROM likes WHERE user_id = #{userId} AND target_type = #{targetType}::target_type_enum" +
+            "SELECT * FROM likes WHERE user_id = #{userId} AND target_type = #{targetType}::target_type" +
             " AND target_id IN " +
             "<foreach collection='targetIds' item='targetId' open='(' separator=',' close=')'>" +
             "#{targetId}" +
@@ -66,7 +66,7 @@ public interface LikeMapper extends BaseMapper<Likes> {
      * @param userId 用户ID
      * @return 点赞总数
      */
-    @Select("SELECT COUNT(*) FROM likes WHERE user_id = #{userId} AND reaction_type = 'LIKE'::reaction_type_enum")
+    @Select("SELECT COUNT(*) FROM likes WHERE user_id = #{userId} AND reaction_type = 'LIKE'::reaction_type")
     int countUserLikes(@Param("userId") Long userId);
 
     /**
@@ -76,7 +76,7 @@ public interface LikeMapper extends BaseMapper<Likes> {
      * @param targetId   目标ID
      * @return 总反应数量
      */
-    @Select("SELECT COUNT(*) FROM likes WHERE target_type = #{targetType}::target_type_enum AND target_id = #{targetId}")
+    @Select("SELECT COUNT(*) FROM likes WHERE target_type = #{targetType}::target_type AND target_id = #{targetId}")
     int countAllReactionsByTarget(@Param("targetType") Likes.TargetType targetType,
             @Param("targetId") Long targetId);
 }

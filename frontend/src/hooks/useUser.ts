@@ -13,7 +13,7 @@ import {
   updateAvatarApi,
   updateUserProfileApi,
   updateUserSettingsApi,
-  uploadAvatarApi,
+  uploadAvatarFileApi,
 } from '@/api/user';
 import type {
   UpdateUserProfileParams,
@@ -207,21 +207,43 @@ export const useUser = () => {
   );
 
   /**
-   * 上传头像文件
+   * 上传头像文件（两步流程）
+   * 1. 上传文件到服务器，获取相对路径
+   * 2. 更新用户头像URL
    */
   const uploadAvatar = useCallback(
     async (file: File): Promise<UserInfo | null> => {
-      return executeApiCall(
-        {
-          execute: () => uploadAvatarApi(file),
-          successMessage: '头像上传成功',
-          errorMessage: '头像上传失败',
-          updateAuth: true,
-        },
-        'uploadingAvatar'
-      );
+      try {
+        setOperationStates(prev => ({ ...prev, uploadingAvatar: true }));
+
+        // 第一步：上传文件，获取相对路径
+        const relativePath = await uploadAvatarFileApi(file);
+
+        if (!relativePath) {
+          toast.error('文件上传失败');
+          return null;
+        }
+
+        // 第二步：更新用户头像URL
+        const result = await updateAvatarApi(relativePath);
+
+        if (result) {
+          toast.success('头像更新成功');
+          updateCurrentUser(result);
+        } else {
+          toast.error('头像更新失败');
+        }
+
+        return result;
+      } catch (error) {
+        toast.error('头像上传失败');
+        console.error('头像上传错误:', error);
+        return null;
+      } finally {
+        setOperationStates(prev => ({ ...prev, uploadingAvatar: false }));
+      }
     },
-    [executeApiCall]
+    [updateCurrentUser]
   );
 
   /**

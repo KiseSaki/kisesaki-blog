@@ -95,11 +95,11 @@ public class PostQueryService {
         }
 
         // 获取自定义元数据
-        result.setMeta(recommendationService.getPostMeta(postId));
+        result.setMeta(recommendationService.getPostMeta(result.getId()));
 
         // 获取上一篇和下一篇文章
-        result.setPrevPost(recommendationService.getPrevPost(result.getPublishedAt(), postId));
-        result.setNextPost(recommendationService.getNextPost(result.getPublishedAt(), postId));
+        result.setPrevPost(recommendationService.getPrevPost(result.getPublishedAt(), result.getId()));
+        result.setNextPost(recommendationService.getNextPost(result.getPublishedAt(), result.getId()));
 
         // 获取相关推荐文章
         List<Long> tagIds = result.getTags() != null ? result.getTags().stream().map(TagInfo::getId).toList()
@@ -108,7 +108,7 @@ public class PostQueryService {
         result.setRelatedPosts(recommendationService.getRelatedPosts(
                 result.getCategory() != null ? result.getCategory().getId() : null,
                 tagIds,
-                postId,
+                result.getId(),
                 5 // 默认推荐5篇相关文章
         ));
 

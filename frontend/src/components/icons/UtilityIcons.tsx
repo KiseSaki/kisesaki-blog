@@ -198,3 +198,19 @@ export const MonitorIcon: React.FC<IconProps> = ({ size = 24, ...props }) => (
     />
   </svg>
 );
+
+/**
+ * 小圆点图标（用于分隔符等小型指示）
+ */
+export const DotIcon: React.FC<IconProps> = ({ size = 8, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox='0 0 8 8'
+    fill='none'
+    xmlns='http://www.w3.org/2000/svg'
+    {...props}
+  >
+    <circle cx='4' cy='4' r='3' fill='currentColor' />
+  </svg>
+);

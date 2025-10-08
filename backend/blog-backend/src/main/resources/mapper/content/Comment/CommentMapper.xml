@@ -104,9 +104,21 @@
             </if>
         </if>
 
+        -- 动态排序：置顶评论始终优先，然后按指定规则排序
         ORDER BY 
             c.is_pinned DESC,
-            c.created_at ASC
+        <choose>
+            <when test="params.pageable != null and params.pageable.sort != null and params.pageable.sort != ''">
+                <choose>
+                    <when test="params.pageable.sort == 'createdAt:desc' or params.pageable.sort == 'createdAt,desc'">c.created_at DESC</when>
+                    <when test="params.pageable.sort == 'createdAt:asc' or params.pageable.sort == 'createdAt,asc'">c.created_at ASC</when>
+                    <when test="params.pageable.sort == 'likeCount:desc' or params.pageable.sort == 'likeCount,desc'">c.like_count DESC, c.created_at DESC</when>
+                    <when test="params.pageable.sort == 'likeCount:asc' or params.pageable.sort == 'likeCount,asc'">c.like_count ASC, c.created_at ASC</when>
+                    <otherwise>c.created_at ASC</otherwise>
+                </choose>
+            </when>
+            <otherwise>c.created_at ASC</otherwise>
+        </choose>
     </select>
 
     <!-- 获取指定评论的回复列表（限制前3条） -->

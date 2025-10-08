@@ -1,4 +1,4 @@
-import { Card, CardContent, CardFooter, CardHeader } from '@/components';
+import { Card, CardContent, CardFooter, CardHeader, Image } from '@/components';
 import type { PublishedPostListResponse } from '@/types';
 import { Calendar, Eye, Tag } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 export const RecentArticleCard = ({
   title,
   slug,
-  coverImage,
+  coverImageUrl,
   excerpt,
   publishedAt,
   tags,
@@ -19,21 +19,19 @@ export const RecentArticleCard = ({
   };
 
   return (
-    <Card onClick={handleClick} className='group overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer h-full flex flex-col'>
+    <Card
+      onClick={handleClick}
+      className='group overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer h-full flex flex-col'
+    >
       {/* 封面图片 */}
       <div className='relative h-48 overflow-hidden bg-muted'>
-        {coverImage ? (
-          <img
-            src={coverImage}
-            alt={title}
-            loading='lazy'
-            className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-110'
-          />
-        ) : (
-          <div className='w-full h-full bg-gradient-to-br from-muted via-muted/80 to-secondary/20 flex items-center justify-center'>
-            <span className='text-muted-foreground text-sm'>暂无封面</span>
-          </div>
-        )}
+        <Image
+          src={coverImageUrl}
+          alt={title}
+          loading='lazy'
+          className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-110'
+          placeholder='暂无封面'
+        />
         {/* 渐变遮罩 */}
         <div className='absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
       </div>
@@ -59,9 +57,7 @@ export const RecentArticleCard = ({
                 key={tag.id}
                 className='inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors'
                 style={{
-                  backgroundColor: tag.color
-                    ? `${tag.color}20`
-                    : undefined,
+                  backgroundColor: tag.color ? `${tag.color}20` : undefined,
                   color: tag.color || undefined,
                 }}
               >

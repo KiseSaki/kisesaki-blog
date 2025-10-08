@@ -2,6 +2,7 @@
  * 评论相关类型定义
  */
 
+import type { PageableParams } from './api';
 import type { UserInfo } from './user';
 
 /**
@@ -20,19 +21,26 @@ export type CommentSortType = 'LATEST' | 'OLDEST' | 'HOT';
 export interface CommentListResponse {
   id: number;
   postId: number;
-  parentId: number | null;
-  rootId: number | null;
+  userId: number;
+  parentId?: number;
+  replyToId?: number;
   content: string;
-  author: UserInfo;
-  status: CommentStatus;
+  htmlContent?: string;
   likeCount: number;
   dislikeCount: number;
   replyCount: number;
+  level: number;
+  path: string;
+  status: string;
+  isPinned: boolean;
+  isAuthorReply: boolean;
+  editedAt?: string;
+  user: UserInfo;
+  // 当前用户对该评论的交互状态（仅在用户已登录时返回）
+  currentUserInteraction?: CommentUserInteraction;
   createdAt: string;
   updatedAt: string;
-  isEdited: boolean;
-  isLiked?: boolean;
-  isDisliked?: boolean;
+  hasMoreReplies: boolean;
   // 嵌套回复列表（仅展示部分，完整列表需要懒加载）
   replies?: CommentListResponse[];
 }
@@ -47,20 +55,24 @@ export interface CommentDetailResponse extends CommentListResponse {
 }
 
 /**
+ * 当前用户对评论的交互状态
+ */
+export interface CommentUserInteraction {
+  isLiked?: boolean;
+  isDisliked?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
+  canReply?: boolean;
+  canPin?: boolean;
+}
+
+/**
  * 获取评论列表参数
  * 对应后端 CommentListParams，包含嵌套的 pageable 字段
  */
 export interface CommentListParams {
   // 分页参数（嵌套对象）
-  pageable?: {
-    currentPage?: number;
-    pageSize?: number;
-    sort?: string;
-    includeTotal?: boolean;
-    startTime?: string;
-    endTime?: string;
-    date?: string;
-  };
+  pageable?: PageableParams;
   // 评论用户ID
   userId?: number;
   // 回复目标评论ID（@某条评论）
@@ -80,15 +92,7 @@ export interface CommentListParams {
  */
 export interface MyCommentParams {
   // 分页参数（嵌套对象）
-  pageable?: {
-    currentPage?: number;
-    pageSize?: number;
-    sort?: string;
-    includeTotal?: boolean;
-    startTime?: string;
-    endTime?: string;
-    date?: string;
-  };
+  pageable?: PageableParams;
   // 文章ID筛选
   postId?: number;
   // 状态筛选
@@ -101,10 +105,7 @@ export interface MyCommentParams {
 export interface CreateCommentBody {
   // 评论内容
   content: string;
-  // 父评论ID（回复时使用）
-  parentId?: number;
-  // 根评论ID（回复时使用）
-  rootId?: number;
+  replyToId?: number; // 回复目标评论ID
 }
 
 /**

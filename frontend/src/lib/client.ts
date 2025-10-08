@@ -58,6 +58,12 @@ class HttpClient {
       headers: {
         'Content-Type': 'application/json',
       },
+      // 自定义参数序列化器，支持对象展开为点分隔格式
+      paramsSerializer: {
+        serialize: (params: Record<string, unknown>) => {
+          return this.serializeParams(params).toString();
+        },
+      },
     });
 
     this.initInterceptors();
@@ -171,25 +177,9 @@ class HttpClient {
       toast.error(errorMessage);
     }
 
-    // HTTP 状态码处理
-    switch (error.response?.status) {
-      case 403:
-        if (this.config.enableAuthRedirect) {
-          window.location.href = '/403';
-        }
-        break;
-      case 404:
-        // 404 处理
-        if (this.config.enableAuthRedirect) {
-          window.location.href = '/404';
-        }
-        break;
-      case 500:
-        if (this.config.enableAuthRedirect) {
-          window.location.href = '/500';
-        }
-        break;
-    }
+    // 注意：不在此处处理页面跳转
+    // 页面级别的错误（如访问被禁止的页面）应该由路由层面处理
+    // API 请求的错误（如提交评论失败）应该由业务逻辑处理，不应跳转页面
   }
 
   /**
@@ -265,9 +255,16 @@ class HttpClient {
             searchParams.append(key, String(item));
           }
         });
-      } else if (typeof value === 'object') {
-        // 对象参数：转为 JSON 字符串
-        searchParams.append(key, JSON.stringify(value));
+      } else if (typeof value === 'object' && !Array.isArray(value)) {
+        // 对象参数：展开为点分隔的参数
+        // 例如：pageable: { currentPage: 1, pageSize: 10 } -> pageable.currentPage=1&pageable.pageSize=10
+        Object.entries(value as Record<string, unknown>).forEach(
+          ([subKey, subValue]) => {
+            if (subValue != null && subValue !== '') {
+              searchParams.append(`${key}.${subKey}`, String(subValue));
+            }
+          }
+        );
       } else {
         // 普通参数
         searchParams.append(key, String(value));

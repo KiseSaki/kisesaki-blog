@@ -49,13 +49,31 @@ export const updateUserProfileApi = (params: UpdateUserProfileParams) => {
 
 /**
  * 更新用户头像URL
+ * @param avatarUrl 头像相对路径（如 /files/hash/uuid.jpg）
  */
 export const updateAvatarApi = (avatarUrl: string) => {
   return httpClient.post<UserInfo>('/users/avatar', { avatarUrl });
 };
 
 /**
- * 上传用户头像
+ * 上传用户头像文件
+ * @param file 头像文件
+ * @returns 返回文件相对路径（如 /files/hash/uuid.jpg）
+ */
+export const uploadAvatarFileApi = (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return httpClient.post<string>('/file/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+/**
+ * 上传用户头像（旧版本，保留向后兼容）
+ * @deprecated 请使用 uploadAvatarFileApi + updateAvatarApi 两步操作
  */
 export const uploadAvatarApi = (file: File) => {
   return httpClient.post<UserInfo>(

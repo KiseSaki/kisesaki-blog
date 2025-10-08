@@ -11,5 +11,7 @@ export * from './forms/Form';
 export * from './forms/Input';
 export * from './forms/Label';
 export * from './HoverCard';
+export { default as Image } from './Image';
 export * from './NavigationMenu';
 export * from './Select';
+export * from './Tag';

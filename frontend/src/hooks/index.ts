@@ -7,6 +7,7 @@ export * from './useApi';
 export * from './useAuth';
 export * from './useAuthManager';
 export * from './useCategory';
+export * from './useInfiniteScroll';
 export * from './useLocalStorage';
 export * from './usePassword';
 export * from './usePermissions';

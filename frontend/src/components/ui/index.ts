@@ -14,4 +14,5 @@ export * from './HoverCard';
 export { default as Image } from './Image';
 export * from './NavigationMenu';
 export * from './Select';
+export * from './Separator';
 export * from './Tag';

@@ -103,13 +103,29 @@ export const router = createBrowserRouter([
             ),
           }, // 文章详情页
           {
+            path: 'category',
+            element: (
+              <SuspenseWrapper>
+                <CategoryPage />
+              </SuspenseWrapper>
+            ),
+          }, // 分类列表页
+          {
             path: 'category/:slug',
             element: (
               <SuspenseWrapper>
                 <CategoryPage />
               </SuspenseWrapper>
             ),
-          }, // 分类页
+          }, // 分类详情页
+          {
+            path: 'tag',
+            element: (
+              <SuspenseWrapper>
+                <TagPage />
+              </SuspenseWrapper>
+            ),
+          }, // 标签列表页
           {
             path: 'tag/:slug',
             element: (
@@ -117,7 +133,7 @@ export const router = createBrowserRouter([
                 <TagPage />
               </SuspenseWrapper>
             ),
-          }, // 标签页
+          }, // 标签详情页
           {
             path: 'archive',
             element: (

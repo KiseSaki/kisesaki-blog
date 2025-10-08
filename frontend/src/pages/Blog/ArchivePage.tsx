@@ -5,10 +5,10 @@ import {
   CardHeader,
   Separator,
 } from '@/components';
-import { usePost } from '@/hooks';
-import type { PublishedPostListResponse } from '@/types';
+import { getPublishedPostsApi } from '@/api';
+import type { PageResponse, PublishedPostListResponse } from '@/types';
 import { Calendar, ChevronRight, Clock, Eye, FileText } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 /**
@@ -17,26 +17,45 @@ import { useNavigate } from 'react-router';
  */
 const ArchivePage = () => {
   const navigate = useNavigate();
-  const { recentPosts, fetchRecentPosts, isFetchingRecent } = usePost();
 
+  const [allPosts, setAllPosts] = useState<PageResponse<PublishedPostListResponse> | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
 
+  // 获取所有已发布的文章
+  const fetchAllPosts = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await getPublishedPostsApi({
+        pageable: {
+          currentPage: 1,
+          pageSize: 1000, // 获取大量文章用于归档
+          sort: 'publishedAt,desc',
+        },
+      });
+      setAllPosts(res);
+    } catch (error) {
+      console.error('获取归档文章失败:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    // 获取所有已发布的文章（这里先用 recentPosts，实际应该调用获取所有文章的API）
-    fetchRecentPosts();
-  }, [fetchRecentPosts]);
+    fetchAllPosts();
+  }, [fetchAllPosts]);
 
   // 按年月分组文章
   const groupedPosts = useMemo(() => {
-    if (!recentPosts?.data) return {};
+    if (!allPosts?.data) return {};
 
     const groups: Record<
       number,
       Record<number, PublishedPostListResponse[]>
     > = {};
 
-    recentPosts.data.forEach(post => {
+    allPosts.data.forEach(post => {
       const date = new Date(post.publishedAt);
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
@@ -53,7 +72,7 @@ const ArchivePage = () => {
     });
 
     return groups;
-  }, [recentPosts]);
+  }, [allPosts]);
 
   // 获取所有年份（降序）
   const years = useMemo(
@@ -77,11 +96,11 @@ const ArchivePage = () => {
     if (selectedYear && groupedPosts[selectedYear]) {
       return Object.values(groupedPosts[selectedYear]).flat();
     }
-    return recentPosts?.data || [];
-  }, [selectedYear, selectedMonth, groupedPosts, recentPosts]);
+    return allPosts?.data || [];
+  }, [selectedYear, selectedMonth, groupedPosts, allPosts]);
 
   // 统计信息
-  const totalPosts = recentPosts?.data.length || 0;
+  const totalPosts = allPosts?.data.length || 0;
   const totalYears = years.length;
 
   const handlePostClick = (slug: string) => {
@@ -107,7 +126,7 @@ const ArchivePage = () => {
     '七月', '八月', '九月', '十月', '十一月', '十二月',
   ];
 
-  if (isFetchingRecent) {
+  if (isLoading) {
     return (
       <BlogLayout>
         <div className='flex items-center justify-center min-h-[60vh]'>

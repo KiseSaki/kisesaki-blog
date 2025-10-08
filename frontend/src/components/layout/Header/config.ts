@@ -13,11 +13,15 @@ export const headerMenusConfig: IHeaderMenu[] = [
   },
   {
     label: '归档',
-    path: '/blog/archive',
+    path: '/archive',
+  },
+  {
+    label: '分类',
+    path: '/category',
   },
   {
     label: '标签',
-    path: '/blog/tag/[tag]',
+    path: '/tag',
   },
   {
     label: '关于我',

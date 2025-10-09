@@ -45,9 +45,9 @@ export const UserLayout = ({
   onBack,
 }: UserLayoutProps) => {
   return (
-    <div className={cn('min-h-screen', className)}>
+    <div className={cn('flex flex-col min-h-[calc(100vh-3.5rem)]', className)}>
       {/* 页面头部 */}
-      <div>
+      <div className='flex-shrink-0'>
         <div className='container mx-auto px-4 py-6 sm:px-6 lg:px-8'>
           <div className='flex items-center justify-between'>
             <div className='flex-1 min-w-0'>
@@ -93,8 +93,8 @@ export const UserLayout = ({
       </div>
 
       {/* 页面内容 */}
-      <div className='container mx-auto px-4 py-6 sm:px-6 lg:px-8'>
-        <div className='space-y-6'>{children}</div>
+      <div className='flex-1 flex flex-col container mx-auto px-4 py-6 sm:px-6 lg:px-8 gap-6'>
+        {children}
       </div>
     </div>
   );

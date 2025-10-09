@@ -125,6 +125,7 @@ const PostManagement = () => {
             className='w-32'
             placeholder='分类'
             showSearch
+            allowClear
             options={
               pageCategories?.data.map(cat => ({
                 label: cat.name,
@@ -144,6 +145,7 @@ const PostManagement = () => {
             className='w-20'
             placeholder='状态'
             showSearch
+            allowClear
             options={statusOptions}
             onChange={value => {
               setParams(draft => {

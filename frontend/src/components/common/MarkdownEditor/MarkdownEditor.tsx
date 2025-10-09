@@ -37,7 +37,7 @@ import type { MarkdownEditorProps } from './types';
 
 export const MarkdownEditor = ({
   value,
-  onChange,
+  onChange = () => {},
   placeholder = '请输入内容，支持 Markdown 语法...',
   minHeight = 200,
   maxHeight,

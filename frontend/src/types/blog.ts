@@ -4,7 +4,6 @@
  */
 
 import type { PageableParams } from './api';
-import type { UserInfo } from './user';
 
 // =================== 文章相关类型 ===================
 
@@ -20,6 +19,7 @@ export type PostSortType = 'LATEST' | 'POPULAR' | 'RECOMMENDED';
 
 /**
  * 已发布文章列表项
+ * 对应后端：PublishedPostListResponse
  */
 export interface PublishedPostListResponse {
   id: number;
@@ -28,36 +28,29 @@ export interface PublishedPostListResponse {
   excerpt: string;
   coverImageUrl: string | null;
 
-  // 作者信息
-  authorId: number;
-  authorUsername: string;
-  authorDisplayName: string;
-  authorAvatarUrl: string | null;
-
-  // 分类信息
-  categoryId: number;
-  categoryName: string;
-  categorySlug: string;
-
-  // 标签列表
-  tags: TagSimple[];
-
   // 统计数据
   viewCount: number;
   likeCount: number;
   commentCount: number;
   shareCount: number;
+  readingTime: number;
 
-  // 时间与标记
-  publishedAt: string;
-  updatedAt: string;
+  // 标记
   isFeatured: boolean;
   isTop: boolean;
-  readingTime: number;
+
+  // 时间
+  publishedAt: string;
+
+  // 关联数据（嵌套对象）
+  author: AuthorInfo;
+  category: CategoryInfo;
+  tags: TagInfo[];
 }
 
 /**
  * 相邻文章简要信息
+ * 对应后端：PublishedPostDetailResponse.AdjacentPost
  */
 export interface AdjacentPost {
   id: number;
@@ -69,6 +62,7 @@ export interface AdjacentPost {
 
 /**
  * 相关推荐文章
+ * 对应后端：PublishedPostDetailResponse.RelatedPost
  */
 export interface RelatedPost {
   id: number;
@@ -80,6 +74,7 @@ export interface RelatedPost {
 
 /**
  * 分类信息
+ * 对应后端：CategoryInfo
  */
 export interface CategoryInfo {
   id: number;
@@ -90,6 +85,7 @@ export interface CategoryInfo {
 
 /**
  * 作者信息
+ * 对应后端：AuthorInfo
  */
 export interface AuthorInfo {
   id: number;
@@ -101,14 +97,17 @@ export interface AuthorInfo {
 
 /**
  * 权限信息
+ * 对应后端：Permissions
  */
 export interface Permissions {
   canEdit: boolean;
   canDelete: boolean;
+  canComment: boolean;
 }
 
 /**
  * 已发布文章详情
+ * 对应后端：PublishedPostDetailResponse
  */
 export interface PublishedPostDetailResponse {
   // ========== 基本信息 ==========
@@ -143,7 +142,7 @@ export interface PublishedPostDetailResponse {
   // ========== 关联数据 ==========
   author: AuthorInfo;
   category: CategoryInfo;
-  tags: TagSimple[];
+  tags: TagInfo[];
   revisions?: RevisionInfo[]; // 版本历史（可选）
 
   // ========== 智能推荐 ==========
@@ -152,33 +151,46 @@ export interface PublishedPostDetailResponse {
   relatedPosts: RelatedPost[];
   meta?: Record<string, string>; // 自定义元数据
 
-  // ========== 权限与交互状态 ==========
+  // ========== 权限 ==========
   permissions: Permissions;
-  isLiked?: boolean;
-  isFavorited?: boolean;
 }
 
 /**
  * 我的文章列表项
+ * 对应后端：MyPostsListResponse
  */
 export interface MyPostsListResponse {
   id: number;
   title: string;
   slug: string;
   excerpt: string;
-  coverImage: string | null;
-  status: PostStatus;
-  categoryId: number;
-  categoryName: string;
-  tags: TagSimple[];
+  coverImageUrl: string | null;
+  status: string; // draft, published, archived
+  visibility: string; // public, private, password_protected
+
+  // 统计数据
   viewCount: number;
   likeCount: number;
   commentCount: number;
-  favoriteCount: number;
-  publishedAt: string | null;
+  shareCount: number;
+  readingTime: number;
+  wordCount: number;
+
+  // 标记
+  isFeatured: boolean;
+  isTop: boolean;
+  allowComments: boolean;
+
+  // 时间信息
   createdAt: string;
   updatedAt: string;
-  isDraft: boolean;
+  publishedAt: string | null;
+  scheduledAt: string | null;
+
+  // 关联数据
+  author: AuthorInfo;
+  category: CategoryInfo;
+  tags: TagInfo[];
 }
 
 /**
@@ -266,12 +278,14 @@ export interface GetMyPostsListParams {
 
 /**
  * 文章修订信息
+ * 对应后端：RevisionInfo
  */
 export interface RevisionInfo {
   id: number;
   version: number;
+  title: string;
+  summary: string;
   createdAt: string;
-  createdBy: string;
 }
 
 /**
@@ -301,15 +315,15 @@ export interface PostRevisionListParams {
 
 /**
  * 分类树响应
+ * 对应后端：CategoryTreeResponse
  */
 export interface CategoryTreeResponse {
   id: number;
   name: string;
   slug: string;
   description: string | null;
-  coverImage: string | null;
   parentId: number | null;
-  level: number;
+  parentName: string | null;
   sortOrder: number;
   postCount: number;
   children: CategoryTreeResponse[];
@@ -317,23 +331,24 @@ export interface CategoryTreeResponse {
 
 /**
  * 分类详情响应
+ * 对应后端：CategoryDetailResponse
  */
 export interface CategoryDetailResponse {
   id: number;
   name: string;
   slug: string;
   description: string | null;
-  coverImage: string | null;
   parentId: number | null;
-  level: number;
+  parentName: string | null;
   sortOrder: number;
   postCount: number;
-  path: string;
-  breadcrumbs: CategoryBreadcrumb[];
+  createdAt: string;
+  updatedAt: string;
+  children: CategoryDetailResponse[];
 }
 
 /**
- * 分类面包屑
+ * 分类面包屑（前端自定义）
  */
 export interface CategoryBreadcrumb {
   id: number;
@@ -385,7 +400,19 @@ export interface CategoryPostsParams {
 // =================== 标签相关类型 ===================
 
 /**
- * 标签简单信息
+ * 标签信息（用于文章中的标签）
+ * 对应后端：TagInfo
+ */
+export interface TagInfo {
+  id: number;
+  name: string;
+  slug: string;
+  color: string | null;
+}
+
+/**
+ * 标签简单信息（已废弃，使用 TagInfo 代替）
+ * @deprecated 使用 TagInfo 代替
  */
 export interface TagSimple {
   id: number;
@@ -396,6 +423,7 @@ export interface TagSimple {
 
 /**
  * 标签列表响应
+ * 对应后端：TagListResponse
  */
 export interface TagListResponse {
   id: number;
@@ -409,6 +437,7 @@ export interface TagListResponse {
 
 /**
  * 标签详情响应
+ * 对应后端：TagDetailResponse
  */
 export interface TagDetailResponse {
   id: number;
@@ -419,7 +448,9 @@ export interface TagDetailResponse {
   postCount: number;
   createdAt: string;
   updatedAt: string;
-  createdBy: UserInfo;
+  createdBy: number;
+  createdByUsername: string;
+  isApproved: boolean;
 }
 
 /**

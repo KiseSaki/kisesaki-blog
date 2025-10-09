@@ -45,9 +45,9 @@ export const UserLayout = ({
   onBack,
 }: UserLayoutProps) => {
   return (
-    <div className={cn('min-h-screen bg-background', className)}>
+    <div className={cn('min-h-screen', className)}>
       {/* 页面头部 */}
-      <div className='border-b bg-card'>
+      <div>
         <div className='container mx-auto px-4 py-6 sm:px-6 lg:px-8'>
           <div className='flex items-center justify-between'>
             <div className='flex-1 min-w-0'>

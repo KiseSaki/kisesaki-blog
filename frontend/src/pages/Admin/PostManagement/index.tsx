@@ -117,7 +117,6 @@ const PostManagement = () => {
               draft.q = value;
               draft.pageable!.currentPage = 1; // 重置到第一页
             });
-            fetchMyPosts(params);
           }}
           loading={isFetchingMyPosts}
         />
@@ -139,7 +138,6 @@ const PostManagement = () => {
                 draft.categoryId = value;
                 draft.pageable!.currentPage = 1;
               });
-              fetchMyPosts(params);
             }}
           />
           <Select
@@ -152,7 +150,6 @@ const PostManagement = () => {
                 draft.status = value;
                 draft.pageable!.currentPage = 1; // 重置到第一页
               });
-              fetchMyPosts(params);
             }}
           />
           <RangePicker
@@ -165,7 +162,6 @@ const PostManagement = () => {
                 draft.pageable!.endTime = dateStrings[1];
                 draft.pageable!.currentPage = 1; // 重置到第一页
               });
-              fetchMyPosts(params);
             }}
           />
         </Space>
@@ -204,7 +200,6 @@ const PostManagement = () => {
                 draft.pageable!.currentPage = page;
                 draft.pageable!.pageSize = pageSize;
               });
-              fetchMyPosts(params);
             }}
           />
         </div>

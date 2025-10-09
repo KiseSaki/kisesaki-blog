@@ -114,3 +114,39 @@ export interface MyCommentParams {
   // 状态筛选
   status?: CommentStatus;
 }
+
+/**
+ * 创建评论请求体
+ * 对应后端：CreateCommentBody
+ */
+export interface CreateCommentBody {
+  /**
+   * 回复目标评论ID。
+   * 为空时创建顶级评论；
+   * 指向顶级评论时创建该评论的回复；
+   * 指向二级回复时创建同一父评论下的回复（@功能）
+   */
+  replyToId?: number;
+  // 评论内容（不能为空，最多500字符）
+  content: string;
+}
+
+/**
+ * 更新评论请求体
+ * 对应后端：UpdateCommentBody
+ */
+export interface UpdateCommentBody {
+  // 评论内容
+  content?: string;
+}
+
+/**
+ * 举报评论请求体
+ * 对应后端：ReportCommentBody
+ */
+export interface ReportCommentBody {
+  // 举报原因（不能为空，最多50字符）
+  reason: string;
+  // 举报详细描述（最多500字符）
+  description?: string;
+}

@@ -6,6 +6,7 @@
 import type { ErrorInfo } from '@/types/common';
 import type { ReactNode } from 'react';
 import React, { Suspense } from 'react';
+import { Loading } from '../feedback';
 import ErrorBoundary from '../feedback/ErrorBoundary';
 
 /**
@@ -22,18 +23,6 @@ interface SuspenseWrapperProps {
     showHomeButton?: boolean;
   };
 }
-
-/**
- * 默认加载组件
- */
-const DefaultLoading: React.FC<{ text: string }> = ({ text }) => (
-  <div className='flex items-center justify-center min-h-[200px]'>
-    <div className='flex flex-col items-center space-y-4'>
-      <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
-      <p className='text-sm text-gray-600'>{text}</p>
-    </div>
-  </div>
-);
 
 /**
  * Suspense 包装器组件
@@ -61,7 +50,7 @@ export const SuspenseWrapper: React.FC<SuspenseWrapperProps> = ({
   errorBoundaryProps = {},
 }) => {
   // 默认加载组件
-  const defaultFallback = fallback || <DefaultLoading text={loadingText} />;
+  const defaultFallback = fallback || <Loading text={loadingText} />;
 
   // 只有 Suspense 包装
   const suspenseContent = (

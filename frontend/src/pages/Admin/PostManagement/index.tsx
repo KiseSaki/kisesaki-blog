@@ -1,4 +1,5 @@
 import { Loading, UserLayout } from '@/components';
+import { ADMIN_POST_CREATE_LINK } from '@/config';
 import { useCategory, usePost } from '@/hooks';
 import type {
   CategoryQueryParams,
@@ -15,6 +16,7 @@ import {
   Table,
 } from 'antd';
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router';
 import { useImmer } from 'use-immer';
 import { columns, statusOptions } from './config';
 
@@ -22,6 +24,8 @@ const { Search } = Input;
 const { RangePicker } = DatePicker;
 
 const PostManagement = () => {
+  const navigate = useNavigate();
+
   // 自己发布的文章
   const { myPosts, isFetchingMyPosts, fetchMyPosts } = usePost();
   // 查询参数
@@ -172,7 +176,9 @@ const PostManagement = () => {
       {/* 操作区 */}
       <div className='flex justify-end gap-4 items-center'>
         <Button type='dashed'>批量操作</Button>
-        <Button type='primary'>新建文章</Button>
+        <Button type='primary' onClick={() => navigate(ADMIN_POST_CREATE_LINK)}>
+          新建文章
+        </Button>
       </div>
 
       {/* 内容区 - 使用 flex-1 填充剩余空间 */}

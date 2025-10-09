@@ -1,3 +1,4 @@
+import { ADMIN_POST_EDIT_LINK } from '@/config';
 import type { MyPostsListResponse } from '@/types';
 import type { TableProps } from 'antd';
 import { Tag } from 'antd';
@@ -74,15 +75,7 @@ export const columns: TableProps<MyPostsListResponse>['columns'] = [
     title: '',
     key: 'action',
     render: (_, record) => {
-      return (
-        <a
-          href={`/admin/posts/edit/${record.id}`}
-          target='_blank'
-          rel='noreferrer'
-        >
-          编辑
-        </a>
-      );
+      return <a href={`${ADMIN_POST_EDIT_LINK}/${record.id}`}>编辑</a>;
     },
   },
 ];

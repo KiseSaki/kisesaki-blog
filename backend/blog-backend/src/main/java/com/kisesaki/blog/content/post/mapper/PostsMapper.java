@@ -1,5 +1,8 @@
 package com.kisesaki.blog.content.post.mapper;
 
+import java.util.List;
+import java.util.Map;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -201,4 +204,12 @@ public interface PostsMapper extends BaseMapper<Posts> {
          */
         long countPostsByCategory(@Param("categoryId") Long categoryId,
                         @Param("params") CategoryPostsParams params);
+
+        /**
+         * 根据文章ID列表批量查询标签
+         *
+         * @param postIds 文章ID列表
+         * @return 标签列表（Map格式，包含 post_id, tag_id, tag_name, tag_slug, tag_color）
+         */
+        List<Map<String, Object>> selectTagsByPostIds(@Param("postIds") List<Long> postIds);
 }

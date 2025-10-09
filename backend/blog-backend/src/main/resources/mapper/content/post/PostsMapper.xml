@@ -622,18 +622,13 @@
             <result property="description" column="category_description"/>
         </association>
 
-        <!-- 标签集合 -->
-        <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.TagInfo">
-            <id property="id" column="tag_id"/>
-            <result property="name" column="tag_name"/>
-            <result property="slug" column="tag_slug"/>
-            <result property="color" column="tag_color"/>
-        </collection>
+        <!-- 标签集合（不在此处映射，由Service层单独查询后组装） -->
     </resultMap>
 
     <!-- 分页查询我的文章列表 -->
     <select id="selectMyPostsPage" resultMap="MyPostsListMap">
-        SELECT DISTINCT
+        -- 不再使用 DISTINCT，也不关联标签表
+        SELECT
         -- 文章基本信息
         p.id AS post_id,
         p.title AS post_title,
@@ -667,13 +662,7 @@
         c.id AS category_id,
         c.name AS category_name,
         c.slug AS category_slug,
-        c.description AS category_description,
-
-        -- 标签信息
-        t.id AS tag_id,
-        t.name AS tag_name,
-        t.slug AS tag_slug,
-        t.color AS tag_color
+        c.description AS category_description
         FROM posts p
 
         -- 关联作者信息
@@ -682,10 +671,6 @@
 
         -- 关联分类信息
         LEFT JOIN categories c ON p.category_id = c.id
-
-        -- 关联标签信息
-        LEFT JOIN post_tags pt ON p.id = pt.post_id
-        LEFT JOIN tags t ON pt.tag_id = t.id
 
         -- 只获取当前用户的文章
         WHERE p.author_id = #{userId}
@@ -712,13 +697,18 @@
         <if test="params.categoryName != null and params.categoryName != ''">
             AND c.name ILIKE CONCAT('%', #{params.categoryName}, '%')
         </if>
-        <!-- 标签ID过滤 -->
+        <!-- 标签过滤：当需要按标签筛选时，使用 EXISTS 子查询而不是 JOIN -->
         <if test="params.tagId != null">
-            AND pt.tag_id = #{params.tagId}
+            AND EXISTS (
+                SELECT 1 FROM post_tags pt WHERE pt.post_id = p.id AND pt.tag_id = #{params.tagId}
+            )
         </if>
-        <!-- 标签名称过滤 -->
         <if test="params.tagName != null and params.tagName != ''">
-            AND t.name ILIKE CONCAT('%', #{params.tagName}, '%')
+            AND EXISTS (
+                SELECT 1 FROM post_tags pt
+                INNER JOIN tags t ON pt.tag_id = t.id
+                WHERE pt.post_id = p.id AND t.name ILIKE CONCAT('%', #{params.tagName}, '%')
+            )
         </if>
         <!-- 是否置顶过滤 -->
         <if test="params.isTop != null">
@@ -764,19 +754,15 @@
 
     <!-- 专门的计数查询，确保正确处理DISTINCT -->
     <select id="countMyPosts" resultType="long">
-        SELECT COUNT(DISTINCT p.id)
+        -- 计数查询不需要关联标签表，避免重复计数
+        SELECT COUNT(p.id)
         FROM posts p
 
         -- 关联作者信息
         LEFT JOIN "user" u ON p.author_id = u.id
-        LEFT JOIN user_profiles up ON u.id = up.user_id
 
         -- 关联分类信息
         LEFT JOIN categories c ON p.category_id = c.id
-
-        -- 关联标签信息（可能导致重复）
-        LEFT JOIN post_tags pt ON p.id = pt.post_id
-        LEFT JOIN tags t ON pt.tag_id = t.id
 
         -- 只获取当前用户的文章
         WHERE p.author_id = #{userId}
@@ -803,13 +789,18 @@
         <if test="params.categoryName != null and params.categoryName != ''">
             AND c.name ILIKE CONCAT('%', #{params.categoryName}, '%')
         </if>
-        <!-- 标签ID过滤 -->
+        <!-- 标签过滤：使用 EXISTS 子查询 -->
         <if test="params.tagId != null">
-            AND pt.tag_id = #{params.tagId}
+            AND EXISTS (
+                SELECT 1 FROM post_tags pt WHERE pt.post_id = p.id AND pt.tag_id = #{params.tagId}
+            )
         </if>
-        <!-- 标签名称过滤 -->
         <if test="params.tagName != null and params.tagName != ''">
-            AND t.name ILIKE CONCAT('%', #{params.tagName}, '%')
+            AND EXISTS (
+                SELECT 1 FROM post_tags pt
+                INNER JOIN tags t ON pt.tag_id = t.id
+                WHERE pt.post_id = p.id AND t.name ILIKE CONCAT('%', #{params.tagName}, '%')
+            )
         </if>
         <!-- 是否置顶过滤 -->
         <if test="params.isTop != null">
@@ -1408,5 +1399,22 @@
                   AND p.category_id = #{categoryId}
             </otherwise>
         </choose>
+    </select>
+
+    <!-- 根据文章ID列表批量查询标签 -->
+    <select id="selectTagsByPostIds" resultType="map">
+        SELECT 
+            pt.post_id,
+            t.id AS tag_id,
+            t.name AS tag_name,
+            t.slug AS tag_slug,
+            t.color AS tag_color
+        FROM post_tags pt
+        INNER JOIN tags t ON pt.tag_id = t.id
+        WHERE pt.post_id IN
+        <foreach collection="postIds" item="postId" open="(" separator="," close=")">
+            #{postId}
+        </foreach>
+        ORDER BY pt.post_id, t.id
     </select>
 </mapper>

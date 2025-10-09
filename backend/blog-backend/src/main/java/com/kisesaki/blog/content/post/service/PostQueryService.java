@@ -1,6 +1,8 @@
 package com.kisesaki.blog.content.post.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
@@ -141,6 +143,38 @@ public class PostQueryService {
 
         // 手动设置总数
         result.setTotal(totalCount);
+
+        // 批量查询标签并组装到文章中
+        List<MyPostsListResponse> posts = result.getRecords();
+        if (!posts.isEmpty()) {
+            // 收集所有文章ID
+            List<Long> postIds = posts.stream()
+                    .map(MyPostsListResponse::getId)
+                    .toList();
+
+            // 批量查询标签
+            List<Map<String, Object>> tagMaps = postsMapper.selectTagsByPostIds(postIds);
+
+            // 将标签按文章ID分组
+            Map<Long, List<TagInfo>> postTagsMap = new HashMap<>();
+            for (Map<String, Object> tagMap : tagMaps) {
+                Long postId = ((Number) tagMap.get("post_id")).longValue();
+                
+                TagInfo tagInfo = new TagInfo();
+                tagInfo.setId(((Number) tagMap.get("tag_id")).longValue());
+                tagInfo.setName((String) tagMap.get("tag_name"));
+                tagInfo.setSlug((String) tagMap.get("tag_slug"));
+                tagInfo.setColor((String) tagMap.get("tag_color"));
+
+                postTagsMap.computeIfAbsent(postId, k -> new java.util.ArrayList<>()).add(tagInfo);
+            }
+
+            // 将标签设置到对应的文章中
+            for (MyPostsListResponse post : posts) {
+                List<TagInfo> tags = postTagsMap.getOrDefault(post.getId(), List.of());
+                post.setTags(tags);
+            }
+        }
 
         return PageResponse.of(result);
     }

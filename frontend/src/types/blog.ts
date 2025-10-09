@@ -271,9 +271,15 @@ export interface GetMyPostsListParams {
   // 分页参数（嵌套对象）
   pageable?: PageableParams;
   // 业务筛选参数
+  q?: string; // 对应后端 q
   status?: PostStatus;
   categoryId?: number;
-  keyword?: string;
+  categoryName?: string; // 分类名称
+  tagId?: number; // 标签ID
+  tagName?: string; // 标签名称
+  isTop?: boolean; // 是否置顶
+  isFeatured?: boolean; // 是否为精选文章
+  visibility?: 'public' | 'private' | 'password_protected'; // 可见性
 }
 
 /**

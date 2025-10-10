@@ -132,3 +132,85 @@ export function formatTimeAgo(
   // fallback: minutes
   return `${minutes}分钟前`;
 }
+
+/**
+ * 检测滚动容器是否触底
+ * @param element 滚动容器元素
+ * @param threshold 触底阈值（距离底部多少像素时认为已触底），默认 10px
+ * @returns 是否已触底
+ */
+export function isScrolledToBottom(
+  element: HTMLElement,
+  threshold = 10
+): boolean {
+  const { scrollTop, scrollHeight, clientHeight } = element;
+  return scrollHeight - scrollTop <= clientHeight + threshold;
+}
+
+/**
+ * 分页加载助手类型定义
+ */
+export interface PaginationState {
+  currentPage: number;
+  totalPages: number;
+}
+
+/**
+ * 触底加载更多的通用处理函数
+ * 适用于下拉选择框、列表等需要分页加载的场景
+ *
+ * @param options 配置选项
+ * @returns 处理触底加载的函数
+ *
+ * @example
+ * ```tsx
+ * const handleLoadMore = createScrollLoadHandler({
+ *   hasMore: categories.currentPage < categories.totalPages,
+ *   isFetching: isFetchingCategories,
+ *   onLoadMore: async () => {
+ *     await fetchPageCategories({
+ *       ...params,
+ *       pageable: { ...params.pageable, currentPage: nextPage }
+ *     }, true);
+ *     setParams(draft => {
+ *       draft.pageable = { ...draft.pageable, currentPage: nextPage };
+ *     });
+ *   }
+ * });
+ *
+ * <Select onScrollCapture={handleLoadMore}>...</Select>
+ * ```
+ */
+export function createScrollLoadHandler(options: {
+  /** 是否还有更多数据 */
+  hasMore: boolean;
+  /** 是否正在加载中 */
+  isFetching: boolean;
+  /** 加载更多的回调函数 */
+  onLoadMore: () => Promise<void> | void;
+  /** 触底阈值（距离底部多少像素时触发加载），默认 10px */
+  threshold?: number;
+}) {
+  const { hasMore, isFetching, onLoadMore, threshold = 10 } = options;
+
+  // 使用闭包保存加载状态，防止重复触发
+  let isLoadingMore = false;
+
+  return (event: React.UIEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement;
+
+    // 检查是否触底 && 还有更多数据 && 未在加载中 && 未被标记为加载中
+    if (
+      isScrolledToBottom(target, threshold) &&
+      hasMore &&
+      !isFetching &&
+      !isLoadingMore
+    ) {
+      isLoadingMore = true;
+
+      Promise.resolve(onLoadMore()).finally(() => {
+        isLoadingMore = false;
+      });
+    }
+  };
+}

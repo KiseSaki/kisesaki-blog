@@ -19,6 +19,7 @@ import com.kisesaki.blog.content.post.dto.BasePostDto;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
 import com.kisesaki.blog.content.post.dto.PostCommand.MetaDataDto;
+import com.kisesaki.blog.content.post.dto.PostCommand.PostEditDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostResponse;
 import com.kisesaki.blog.content.post.entity.PostMeta;
@@ -697,5 +698,26 @@ public class PostCommandService {
         if (deletedCount == 0) {
             throw BusinessException.notFound("指定的元数据");
         }
+    }
+
+    // ========== 文章编辑相关方法 ==========
+
+    /**
+     * 获取文章编辑详情
+     * 用于编辑表单回显，包含所有可编辑字段
+     *
+     * @param postId 文章ID
+     * @param userId 当前用户ID
+     * @return 文章编辑详情
+     */
+    public PostEditDetailResponse getPostEditDetail(Long postId, Long userId) {
+        // 从Mapper查询文章详情（已包含权限校验：author_id = userId）
+        PostEditDetailResponse detail = postsMapper.getPostEditDetail(postId, userId);
+
+        if (detail == null) {
+            throw BusinessException.notFound("文章");
+        }
+
+        return detail;
     }
 }

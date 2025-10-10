@@ -21,6 +21,7 @@ import com.kisesaki.blog.content.post.dto.RevisionInfo;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
 import com.kisesaki.blog.content.post.dto.PostCommand.MetaDataDto;
+import com.kisesaki.blog.content.post.dto.PostCommand.PostEditDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.GetMyPostsListParams;
@@ -150,6 +151,28 @@ public class PostController {
         log.info("用户 {} 更新文章 {}: {}", userId, id, request);
         UpdatePostResponse result = postCommandService.updatePost(id, request, userId);
         return ResultUtils.success("更新文章成功", result);
+    }
+
+    /**
+     * 获取文章编辑详情
+     * 用于编辑表单回显，返回所有可编辑字段（包括 Markdown 原始内容）
+     *
+     * @param id             文章ID
+     * @param authentication 认证信息
+     * @return 文章编辑详情
+     */
+    @GetMapping("/{id}/edit")
+    @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
+    public ApiResponse<PostEditDetailResponse> getPostEditDetail(@PathVariable Long id,
+            Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        if (userId == null) {
+            throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
+        }
+
+        log.info("用户 {} 获取文章 {} 编辑详情", userId, id);
+        PostEditDetailResponse result = postCommandService.getPostEditDetail(id, userId);
+        return ResultUtils.success("获取文章编辑详情成功", result);
     }
 
     /**

@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.content.category.dto.query.CategoryPostsParams;
 import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostQueryDto;
 import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostStatsDto;
+import com.kisesaki.blog.content.post.dto.PostCommand.PostEditDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.GetMyPostsListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.MyPostsListResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
@@ -212,4 +213,13 @@ public interface PostsMapper extends BaseMapper<Posts> {
          * @return 标签列表（Map格式，包含 post_id, tag_id, tag_name, tag_slug, tag_color）
          */
         List<Map<String, Object>> selectTagsByPostIds(@Param("postIds") List<Long> postIds);
+
+        /**
+         * 获取文章编辑详情（包含所有可编辑字段）
+         *
+         * @param postId 文章ID
+         * @param userId 当前用户ID（用于权限校验）
+         * @return 文章编辑详情
+         */
+        PostEditDetailResponse getPostEditDetail(@Param("postId") Long postId, @Param("userId") Long userId);
 }

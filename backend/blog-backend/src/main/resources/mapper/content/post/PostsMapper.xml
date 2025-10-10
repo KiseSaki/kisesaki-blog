@@ -1403,7 +1403,7 @@
 
     <!-- 根据文章ID列表批量查询标签 -->
     <select id="selectTagsByPostIds" resultType="map">
-        SELECT 
+        SELECT
             pt.post_id,
             t.id AS tag_id,
             t.name AS tag_name,
@@ -1416,5 +1416,80 @@
             #{postId}
         </foreach>
         ORDER BY pt.post_id, t.id
+    </select>
+
+    <!-- 文章编辑详情结果映射 -->
+    <resultMap id="PostEditDetailMap" type="com.kisesaki.blog.content.post.dto.PostCommand.PostEditDetailResponse">
+        <id property="id" column="post_id"/>
+        <result property="title" column="post_title"/>
+        <result property="slug" column="post_slug"/>
+        <result property="excerpt" column="post_excerpt"/>
+        <result property="content" column="post_content"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="coverImageUrl" column="post_cover_image_url"/>
+        <result property="featuredImageUrl" column="post_featured_image_url"/>
+        <result property="status" column="post_status"/>
+        <result property="visibility" column="post_visibility"/>
+        <result property="password" column="post_password"/>
+        <result property="isFeatured" column="post_is_featured"/>
+        <result property="isTop" column="post_is_top"/>
+        <result property="allowComments" column="post_allow_comments"/>
+        <result property="seoTitle" column="post_seo_title"/>
+        <result property="seoDescription" column="post_seo_description"/>
+        <result property="seoKeywords" column="post_seo_keywords"/>
+        <result property="scheduledAt" column="post_scheduled_at"/>
+        <result property="publishedAt" column="post_published_at"/>
+        <result property="createdAt" column="post_created_at"/>
+        <result property="updatedAt" column="post_updated_at"/>
+        <result property="readingTime" column="post_reading_time"/>
+        <result property="authorId" column="author_id"/>
+        <result property="authorUsername" column="author_username"/>
+
+        <!-- 标签ID列表（通过collection收集） -->
+        <collection property="tagIds" ofType="java.lang.Long" column="post_id" select="selectTagIdsByPostId"/>
+    </resultMap>
+
+    <!-- 获取文章编辑详情 -->
+    <select id="getPostEditDetail" resultMap="PostEditDetailMap">
+        SELECT
+            p.id AS post_id,
+            p.title AS post_title,
+            p.slug AS post_slug,
+            p.excerpt AS post_excerpt,
+            p.content AS post_content,
+            p.category_id,
+            c.name AS category_name,
+            p.cover_image_url AS post_cover_image_url,
+            p.featured_image_url AS post_featured_image_url,
+            p.status AS post_status,
+            p.visibility AS post_visibility,
+            p.password AS post_password,
+            p.is_featured AS post_is_featured,
+            p.is_top AS post_is_top,
+            p.allow_comments AS post_allow_comments,
+            p.seo_title AS post_seo_title,
+            p.seo_description AS post_seo_description,
+            p.seo_keywords AS post_seo_keywords,
+            p.scheduled_at AS post_scheduled_at,
+            p.published_at AS post_published_at,
+            p.created_at AS post_created_at,
+            p.updated_at AS post_updated_at,
+            p.reading_time AS post_reading_time,
+            u.id AS author_id,
+            u.username AS author_username
+        FROM posts p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN "user" u ON p.author_id = u.id
+        WHERE p.id = #{postId}
+          AND p.author_id = #{userId}
+    </select>
+
+    <!-- 根据文章ID查询标签ID列表 -->
+    <select id="selectTagIdsByPostId" resultType="java.lang.Long">
+        SELECT tag_id
+        FROM post_tags
+        WHERE post_id = #{post_id}
+        ORDER BY tag_id
     </select>
 </mapper>

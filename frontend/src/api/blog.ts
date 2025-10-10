@@ -26,6 +26,7 @@ import type {
   PopularCategoryParams,
   PopularCategoryResponse,
   PopularTagResponse,
+  PostEditDetailResponse,
   PostRevisionContentResponse,
   PostRevisionListParams,
   PublishedPostDetailResponse,
@@ -118,6 +119,15 @@ export const createPostApi = (request: CreatePostRequest) =>
  */
 export const updatePostApi = (id: number, request: UpdatePostRequest) =>
   httpClient.put<UpdatePostResponse>(`/posts/${id}`, request);
+
+/**
+ * 获取文章编辑详情
+ * 用于后台编辑表单回显，返回所有可编辑字段（包括 Markdown 原始内容）
+ * @param id 文章ID
+ * @returns 文章编辑详情
+ */
+export const getPostEditDetailApi = (id: number) =>
+  httpClient.get<PostEditDetailResponse>(`/posts/${id}/edit`);
 
 /**
  * 删除文章

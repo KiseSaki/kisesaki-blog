@@ -310,11 +310,37 @@ export interface PostRevisionContentResponse {
 }
 
 /**
- * 文章修订列表查询参数 直接用 PageableParams
+ * 文章编辑用详情响应
+ * 用于后台编辑表单回显，包含所有可编辑字段
+ * 对应后端：PostEditDetailResponse
  */
-export interface PostRevisionListParams {
-  // 分页参数（嵌套对象）
-  pageable?: PageableParams;
+export interface PostEditDetailResponse {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string | undefined;
+  content: string; // Markdown 原始内容
+  categoryId: number;
+  categoryName: string;
+  tagIds: number[]; // 标签ID列表，用于表单回显
+  coverImageUrl: string | undefined;
+  featuredImageUrl: string | undefined;
+  status: 'draft' | 'published' | 'archived';
+  visibility: 'public' | 'private' | 'password_protected';
+  password: string | undefined;
+  isFeatured: boolean;
+  isTop: boolean;
+  allowComments: boolean;
+  seoTitle: string | undefined;
+  seoDescription: string | undefined;
+  seoKeywords: string | undefined;
+  scheduledAt: string | undefined;
+  publishedAt: string | undefined;
+  createdAt: string;
+  updatedAt: string;
+  readingTime: number | undefined;
+  authorId: number;
+  authorUsername: string;
 }
 
 // =================== 分类相关类型 ===================

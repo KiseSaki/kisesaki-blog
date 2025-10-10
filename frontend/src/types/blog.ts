@@ -461,6 +461,7 @@ export interface TagDetailResponse {
 
 /**
  * 热门标签响应
+ * 对应后端：PopularTagResponse
  */
 export interface PopularTagResponse {
   id: number;
@@ -468,10 +469,13 @@ export interface PopularTagResponse {
   slug: string;
   color: string | null;
   postCount: number;
+  popularityScore: number;
+  lastUsedAt: string;
 }
 
 /**
  * 标签云项
+ * 对应后端：TagCloudItem
  */
 export interface TagCloudItem {
   id: number;
@@ -479,22 +483,27 @@ export interface TagCloudItem {
   slug: string;
   color: string | null;
   postCount: number;
-  weight: number;
+  fontWeight: number;
+  popularityScore: number;
 }
 
 /**
  * 标签搜索项
+ * 对应后端：TagSearchItem
  */
 export interface TagSearchItem {
   id: number;
   name: string;
   slug: string;
+  description: string | null;
   color: string | null;
   postCount: number;
+  matchScore: number;
 }
 
 /**
  * 我的标签响应
+ * 对应后端：MyTagResponse
  */
 export interface MyTagResponse {
   id: number;
@@ -503,44 +512,181 @@ export interface MyTagResponse {
   description: string | null;
   color: string | null;
   postCount: number;
-  usageCount: number;
   createdAt: string;
+  isApproved: boolean;
+  approvalStatus: 'pending' | 'approved' | 'rejected';
+  approvalNote: string | null;
 }
 
 /**
  * 标签列表查询参数
+ * 对应后端：TagListParams
  */
 export interface TagListParams {
   // 分页参数（嵌套对象）
   pageable?: PageableParams;
   // 业务筛选参数
-  keyword?: string;
-  sortBy?: 'NAME' | 'POST_COUNT' | 'CREATED_AT';
+  name?: string;
 }
 
 /**
  * 标签搜索参数
+ * 对应后端：TagSearchParams
  */
 export interface TagSearchParams {
-  keyword: string;
+  q: string;
   limit?: number;
+  approvedOnly?: boolean;
+  sort?: 'name' | 'popularity' | 'created_at';
 }
 
 /**
  * 标签下文章列表查询参数
+ * 对应后端：TagPostsParams
  */
 export interface TagPostsParams {
   // 分页参数（嵌套对象）
   pageable?: PageableParams;
   // 业务筛选参数
-  sortBy?: PostSortType;
+  status?: PostStatus;
+  visibility?: 'public' | 'private' | 'password_protected';
+  featuredOnly?: boolean;
 }
 
 /**
  * 创建标签请求
+ * 对应后端：TagCreateRequest
  */
 export interface TagCreateRequest {
   name: string;
   description?: string;
+  slug?: string;
   color?: string;
+}
+
+// =================== 管理员标签相关类型 ===================
+
+/**
+ * 管理员标签列表响应
+ * 对应后端：AdminTagListResponse
+ */
+export interface AdminTagListResponse {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  color: string | null;
+  postCount: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: number;
+  createdByUsername: string;
+  isApproved: boolean;
+  approvalStatus: 'pending' | 'approved' | 'rejected';
+  approvedBy: number | null;
+  approvedByUsername: string | null;
+  approvedAt: string | null;
+  approvalNote: string | null;
+  lastUsedAt: string | null;
+  popularityScore: number | null;
+}
+
+/**
+ * 管理员创建标签请求
+ * 对应后端：AdminTagCreateRequest
+ */
+export interface AdminTagCreateRequest {
+  name: string;
+  slug?: string;
+  description?: string;
+  color?: string;
+  isApproved?: boolean;
+  approvalNote?: string;
+}
+
+/**
+ * 管理员更新标签请求
+ * 对应后端：AdminTagUpdateRequest
+ */
+export interface AdminTagUpdateRequest {
+  name?: string;
+  slug?: string;
+  description?: string;
+  color?: string;
+  isApproved?: boolean;
+  approvalNote?: string;
+}
+
+/**
+ * 管理员标签审核请求
+ * 对应后端：AdminTagApprovalRequest
+ */
+export interface AdminTagApprovalRequest {
+  status: 'approved' | 'rejected';
+  note?: string;
+}
+
+/**
+ * 管理员标签列表查询参数
+ * 对应后端：AdminTagListParams
+ */
+export interface AdminTagListParams {
+  pageable?: PageableParams;
+  name?: string;
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
+  createdBy?: number;
+  unusedOnly?: boolean;
+  minPostCount?: number;
+  maxPostCount?: number;
+}
+
+/**
+ * 待审核标签响应
+ * 对应后端：AdminTagPendingResponse
+ */
+export interface AdminTagPendingResponse {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  color: string | null;
+  createdAt: string;
+  createdBy: number;
+  createdByUsername: string;
+}
+
+/**
+ * 未使用标签响应
+ * 对应后端：AdminTagUnusedResponse
+ */
+export interface AdminTagUnusedResponse {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  color: string | null;
+  createdAt: string;
+  createdBy: number;
+  createdByUsername: string;
+  unusedDays: number;
+  isApproved: boolean;
+}
+
+/**
+ * 标签合并请求
+ * 对应后端：AdminTagMergeRequest
+ */
+export interface AdminTagMergeRequest {
+  sourceTagId: number;
+  targetTagId: number;
+}
+
+/**
+ * 标签清理结果响应
+ * 对应后端：AdminTagCleanupResponse
+ */
+export interface AdminTagCleanupResponse {
+  cleanedCount: number;
+  totalUnusedCount: number;
+  message: string;
 }

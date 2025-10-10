@@ -3,7 +3,82 @@
  */
 
 import type { PageableParams } from '../api';
+import type { AuthorInfo } from './common';
+import type { CategoryInfo } from './category';
+import type { PostBase, UpdatePostRequest } from './post';
 import type { TagDetailResponse } from './tag';
+
+// =================== 管理员文章相关类型 ===================
+
+/**
+ * 管理员文章列表查询参数
+ * 对应后端：AdminPostListParams
+ */
+export interface AdminPostListParams {
+  pageable?: PageableParams;
+  q?: string;
+  status?: string;
+  authorId?: number;
+  categoryId?: number;
+  tagId?: number;
+  isFeatured?: boolean;
+  isTop?: boolean;
+  visibility?: string;
+}
+
+/**
+ * 管理员文章列表响应项
+ * 对应后端：AdminPostListResponse
+ */
+export interface AdminPostListResponse {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  coverImageUrl?: string;
+  status: string;
+  visibility: string;
+  isFeatured: boolean;
+  isTop: boolean;
+  allowComments: boolean;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  readingTime?: number;
+  wordCount?: number;
+  author: AuthorInfo;
+  category?: CategoryInfo;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+}
+
+/**
+ * 管理员创建文章请求
+ * 继承自 PostBase，移除 authorId（由后端自动设置）
+ * 对应后端：AdminCreatePostRequest
+ */
+export interface AdminCreatePostRequest extends Omit<PostBase, 'authorId'> {
+  authorId?: number; // 管理员可以指定作者ID
+  publishNow?: boolean; // 是否立即发布
+}
+
+/**
+ * 管理员更新文章请求
+ * 继承自 UpdatePostRequest，添加 authorId 支持
+ * 对应后端：AdminUpdatePostRequest
+ */
+export interface AdminUpdatePostRequest extends UpdatePostRequest {
+  authorId?: number; // 管理员可以修改作者ID
+}
+
+/**
+ * 文章表单数据（用于前端表单）
+ * 复用 PostBase 并添加 publishNow 字段
+ */
+export interface PostFormData extends PostBase {
+  publishNow: boolean; // 是否立即发布（仅创建时）
+}
 
 // =================== 管理员标签相关类型 ===================
 

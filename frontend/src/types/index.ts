@@ -25,6 +25,3 @@ export * from './interaction';
 
 // 分析统计相关类型
 export * from './analytics';
-
-// 管理员相关类型
-export * from './admin';

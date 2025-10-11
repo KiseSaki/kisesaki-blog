@@ -14,14 +14,23 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.util.AuthUtils;
+import com.kisesaki.blog.content.comment.entity.Comments;
+import com.kisesaki.blog.content.comment.mapper.CommentMapper;
+import com.kisesaki.blog.content.interaction.dto.analytics.DashboardStatsResponse;
 import com.kisesaki.blog.content.interaction.dto.analytics.EventRecordRequest;
+import com.kisesaki.blog.content.interaction.dto.analytics.PopularPostResponse;
 import com.kisesaki.blog.content.interaction.dto.analytics.PostViewStatsResponse;
+import com.kisesaki.blog.content.interaction.dto.analytics.RecentActivityResponse;
 import com.kisesaki.blog.content.interaction.dto.analytics.ViewRecordRequest;
 import com.kisesaki.blog.content.interaction.entity.CustomEvents;
 import com.kisesaki.blog.content.interaction.entity.PageViews;
 import com.kisesaki.blog.content.interaction.mapper.CustomEventsMapper;
+import com.kisesaki.blog.content.interaction.mapper.LikeMapper;
 import com.kisesaki.blog.content.interaction.mapper.PageViewsMapper;
+import com.kisesaki.blog.content.post.entity.Posts;
 import com.kisesaki.blog.content.post.mapper.PostsMapper;
+import com.kisesaki.blog.user.entity.User;
+import com.kisesaki.blog.user.mapper.UserMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +49,9 @@ public class AnalyticsService {
     private final PageViewsMapper pageViewsMapper;
     private final CustomEventsMapper customEventsMapper;
     private final PostsMapper postsMapper;
+    private final UserMapper userMapper;
+    private final CommentMapper commentMapper;
+    private final LikeMapper likeMapper;
 
     // 同一会话重复访问的时间限制（分钟）
     private static final int SESSION_DUPLICATE_TIME_LIMIT = 30;
@@ -466,5 +478,187 @@ public class AnalyticsService {
         return customEventsMapper.delete(
                 new LambdaQueryWrapper<CustomEvents>()
                         .lt(CustomEvents::getCreatedAt, expireTime));
+    }
+
+    // ==================== 仪表盘统计接口 ====================
+
+    /**
+     * 获取仪表盘统计概览
+     *
+     * @return 仪表盘统计数据
+     */
+    public DashboardStatsResponse getDashboardStats() {
+        // 文章统计
+        Long totalPosts = postsMapper.selectCount(null);
+        Long publishedPosts = postsMapper.selectCount(
+                new LambdaQueryWrapper<Posts>()
+                        .eq(Posts::getStatus, "published"));
+        Long draftPosts = postsMapper.selectCount(
+                new LambdaQueryWrapper<Posts>()
+                        .eq(Posts::getStatus, "draft"));
+        Long archivedPosts = postsMapper.selectCount(
+                new LambdaQueryWrapper<Posts>()
+                        .eq(Posts::getStatus, "archived"));
+
+        DashboardStatsResponse.PostStats postStats = DashboardStatsResponse.PostStats.builder()
+                .totalPosts(totalPosts)
+                .publishedPosts(publishedPosts)
+                .draftPosts(draftPosts)
+                .archivedPosts(archivedPosts)
+                .build();
+
+        // 用户统计
+        Long totalUsers = userMapper.selectCount(null);
+        // 活跃用户：最近30天有活动的用户
+        OffsetDateTime thirtyDaysAgo = OffsetDateTime.now().minusDays(30);
+        Long activeUsers = userMapper.selectCount(
+                new LambdaQueryWrapper<User>()
+                        .ge(User::getLastLoginAt, thirtyDaysAgo));
+        // 今日新增用户
+        OffsetDateTime todayStart = OffsetDateTime.now().with(LocalTime.MIN);
+        Long newUsersToday = userMapper.selectCount(
+                new LambdaQueryWrapper<User>()
+                        .ge(User::getCreatedAt, todayStart));
+
+        DashboardStatsResponse.UserStats userStats = DashboardStatsResponse.UserStats.builder()
+                .totalUsers(totalUsers)
+                .activeUsers(activeUsers)
+                .newUsersToday(newUsersToday)
+                .build();
+
+        // 评论统计
+        Long totalComments = commentMapper.selectCount(null);
+        Long pendingComments = commentMapper.selectCount(
+                new LambdaQueryWrapper<Comments>()
+                        .eq(Comments::getStatus, Comments.CommentStatus.PENDING));
+        Long todayComments = commentMapper.selectCount(
+                new LambdaQueryWrapper<Comments>()
+                        .ge(Comments::getCreatedAt, todayStart));
+
+        DashboardStatsResponse.CommentStats commentStats = DashboardStatsResponse.CommentStats.builder()
+                .totalComments(totalComments)
+                .pendingComments(pendingComments)
+                .todayComments(todayComments)
+                .build();
+
+        // 浏览统计
+        Long totalViews = pageViewsMapper.selectCount(null);
+        OffsetDateTime todayEnd = OffsetDateTime.now().with(LocalTime.MAX);
+        Long todayViews = pageViewsMapper.selectCount(
+                new LambdaQueryWrapper<PageViews>()
+                        .between(PageViews::getViewedAt, todayStart, todayEnd));
+
+        OffsetDateTime weekStart = OffsetDateTime.now().minusDays(7).with(LocalTime.MIN);
+        Long weekViews = pageViewsMapper.selectCount(
+                new LambdaQueryWrapper<PageViews>()
+                        .between(PageViews::getViewedAt, weekStart, todayEnd));
+
+        OffsetDateTime monthStart = OffsetDateTime.now().minusDays(30).with(LocalTime.MIN);
+        Long monthViews = pageViewsMapper.selectCount(
+                new LambdaQueryWrapper<PageViews>()
+                        .between(PageViews::getViewedAt, monthStart, todayEnd));
+
+        DashboardStatsResponse.ViewStats viewStats = DashboardStatsResponse.ViewStats.builder()
+                .totalViews(totalViews)
+                .todayViews(todayViews)
+                .weekViews(weekViews)
+                .monthViews(monthViews)
+                .build();
+
+        return DashboardStatsResponse.builder()
+                .postStats(postStats)
+                .userStats(userStats)
+                .commentStats(commentStats)
+                .viewStats(viewStats)
+                .build();
+    }
+
+    /**
+     * 获取热门文章列表
+     *
+     * @param limit 返回数量限制
+     * @return 热门文章列表
+     */
+    public List<PopularPostResponse> getPopularPosts(int limit) {
+        // 查询已发布的文章，按浏览量降序排序
+        List<Posts> posts = postsMapper.selectList(
+                new LambdaQueryWrapper<Posts>()
+                        .eq(Posts::getStatus, "published")
+                        .orderByDesc(Posts::getViewCount)
+                        .last("LIMIT " + limit));
+
+        return posts.stream()
+                .map(post -> PopularPostResponse.builder()
+                        .id(post.getId())
+                        .title(post.getTitle())
+                        .slug(post.getSlug())
+                        .viewCount(post.getViewCount() != null ? post.getViewCount().longValue() : 0L)
+                        .likeCount(post.getLikeCount() != null ? post.getLikeCount().longValue() : 0L)
+                        .commentCount(post.getCommentCount() != null ? post.getCommentCount().longValue() : 0L)
+                        .publishedAt(post.getPublishedAt())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * 获取最近活动列表
+     *
+     * @param limit 返回数量限制
+     * @return 最近活动列表
+     */
+    public List<RecentActivityResponse> getRecentActivities(int limit) {
+        List<RecentActivityResponse> activities = new java.util.ArrayList<>();
+
+        // 获取最近的文章发布活动
+        List<Posts> recentPosts = postsMapper.selectList(
+                new LambdaQueryWrapper<Posts>()
+                        .eq(Posts::getStatus, "published")
+                        .orderByDesc(Posts::getPublishedAt)
+                        .last("LIMIT " + Math.min(limit, 5)));
+
+        for (Posts post : recentPosts) {
+            User author = userMapper.selectById(post.getAuthorId());
+            if (author != null) {
+                activities.add(RecentActivityResponse.builder()
+                        .id(post.getId())
+                        .type("post")
+                        .action("published")
+                        .content(post.getTitle())
+                        .userId(author.getId())
+                        .username(author.getUsername())
+                        .createdAt(post.getPublishedAt())
+                        .build());
+            }
+        }
+
+        // 获取最近的评论活动
+        List<Comments> recentComments = commentMapper.selectList(
+                new LambdaQueryWrapper<Comments>()
+                        .eq(Comments::getStatus, Comments.CommentStatus.APPROVED)
+                        .orderByDesc(Comments::getCreatedAt)
+                        .last("LIMIT " + Math.min(limit, 5)));
+
+        for (Comments comment : recentComments) {
+            User commenter = userMapper.selectById(comment.getUserId());
+            if (commenter != null) {
+                activities.add(RecentActivityResponse.builder()
+                        .id(comment.getId())
+                        .type("comment")
+                        .action("commented")
+                        .content(comment.getContent().length() > 50
+                                ? comment.getContent().substring(0, 50) + "..."
+                                : comment.getContent())
+                        .userId(commenter.getId())
+                        .username(commenter.getUsername())
+                        .createdAt(comment.getCreatedAt())
+                        .build());
+            }
+        }
+
+        // 按时间降序排序并限制数量
+        return activities.stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .limit(limit)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

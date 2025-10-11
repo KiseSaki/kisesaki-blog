@@ -1,17 +1,24 @@
 package com.kisesaki.blog.content.interaction.controller;
 
+import java.util.List;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kisesaki.blog.common.dto.ApiResponse;
 import com.kisesaki.blog.common.dto.ResultUtils;
+import com.kisesaki.blog.content.interaction.dto.analytics.DashboardStatsResponse;
 import com.kisesaki.blog.content.interaction.dto.analytics.EventRecordRequest;
+import com.kisesaki.blog.content.interaction.dto.analytics.PopularPostResponse;
 import com.kisesaki.blog.content.interaction.dto.analytics.PostViewStatsResponse;
+import com.kisesaki.blog.content.interaction.dto.analytics.RecentActivityResponse;
 import com.kisesaki.blog.content.interaction.dto.analytics.ViewRecordRequest;
 import com.kisesaki.blog.content.interaction.service.AnalyticsService;
 
@@ -73,5 +80,44 @@ public class AnalyticsController {
 
         PostViewStatsResponse stats = analyticsService.getPostViewStats(postId);
         return ResultUtils.success(stats);
+    }
+
+    /**
+     * 获取仪表盘统计概览
+     */
+    @GetMapping("/analytics/dashboard/stats")
+    @Operation(summary = "获取仪表盘统计概览", description = "获取仪表盘统计数据，包括文章、用户、评论和浏览统计")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ApiResponse<DashboardStatsResponse> getDashboardStats() {
+        DashboardStatsResponse stats = analyticsService.getDashboardStats();
+        return ResultUtils.success(stats);
+    }
+
+    /**
+     * 获取热门文章列表
+     */
+    @GetMapping("/analytics/dashboard/popular-posts")
+    @Operation(summary = "获取热门文章列表", description = "获取按浏览量排序的热门文章列表")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ApiResponse<List<PopularPostResponse>> getPopularPosts(
+            @Parameter(description = "返回数量限制", example = "10")
+            @RequestParam(defaultValue = "10") int limit) {
+
+        List<PopularPostResponse> popularPosts = analyticsService.getPopularPosts(limit);
+        return ResultUtils.success(popularPosts);
+    }
+
+    /**
+     * 获取最近活动列表
+     */
+    @GetMapping("/analytics/dashboard/recent-activities")
+    @Operation(summary = "获取最近活动列表", description = "获取最近的文章发布和评论活动")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ApiResponse<List<RecentActivityResponse>> getRecentActivities(
+            @Parameter(description = "返回数量限制", example = "10")
+            @RequestParam(defaultValue = "10") int limit) {
+
+        List<RecentActivityResponse> activities = analyticsService.getRecentActivities(limit);
+        return ResultUtils.success(activities);
     }
 }

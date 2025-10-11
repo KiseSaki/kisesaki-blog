@@ -23,9 +23,11 @@ import com.kisesaki.blog.content.post.dto.PostCommand.PostEditDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.UpdatePostResponse;
 import com.kisesaki.blog.content.post.entity.PostMeta;
+import com.kisesaki.blog.content.post.entity.PostRevisions;
 import com.kisesaki.blog.content.post.entity.PostTags;
 import com.kisesaki.blog.content.post.entity.Posts;
 import com.kisesaki.blog.content.post.mapper.PostMetaMapper;
+import com.kisesaki.blog.content.post.mapper.PostRevisionsMapper;
 import com.kisesaki.blog.content.post.mapper.PostTagsMapper;
 import com.kisesaki.blog.content.post.mapper.PostsMapper;
 
@@ -40,6 +42,7 @@ public class PostCommandService {
     private final PostsMapper postsMapper;
     private final PostTagsMapper postTagsMapper;
     private final PostMetaMapper postMetaMapper;
+    private final PostRevisionsMapper postRevisionsMapper;
     private final CategoriesMapper categoriesMapper;
     private final MarkdownService markdownService;
 
@@ -146,6 +149,20 @@ public class PostCommandService {
 
         OffsetDateTime now = OffsetDateTime.now();
 
+        // 检查是否需要创建新版本
+        boolean revisionCreated = false;
+        Integer currentVersion = 1;
+
+        if (Boolean.TRUE.equals(request.getCreateRevision())) {
+            // 创建新版本
+            createNewRevision(existingPost, userId, request.getRevisionNote());
+            revisionCreated = true;
+            currentVersion = getNextVersionNumber(postId);
+        } else {
+            // 获取当前版本号
+            currentVersion = getCurrentVersionNumber(postId);
+        }
+
         // 更新文章字段
         existingPost.setCategoryId(request.getCategoryId());
         existingPost.setTitle(request.getTitle());
@@ -207,8 +224,8 @@ public class PostCommandService {
         response.setSlug(existingPost.getSlug());
         response.setStatus(existingPost.getStatus());
         response.setVisibility(existingPost.getVisibility());
-        response.setRevisionCreated(Boolean.FALSE); // 暂时不支持版本控制
-        response.setCurrentVersion(1); // 暂时不支持版本控制
+        response.setRevisionCreated(revisionCreated);
+        response.setCurrentVersion(currentVersion);
         response.setLastModifiedAt(existingPost.getUpdatedAt());
         response.setUpdatedAt(existingPost.getUpdatedAt());
 
@@ -722,5 +739,70 @@ public class PostCommandService {
         }
 
         return detail;
+    }
+
+    // ========== 文章版本相关方法 ==========
+
+    /**
+     * 创建新版本
+     *
+     * @param post    文章实体
+     * @param userId  用户ID
+     * @param note    版本注释
+     */
+    private void createNewRevision(Posts post, Long userId, String note) {
+        // 验证版本注释
+        if (!StringUtils.hasText(note)) {
+            throw BusinessException.paramError("创建版本时必须提供版本注释");
+        }
+
+        // 获取下一个版本号
+        Integer nextVersion = getNextVersionNumber(post.getId());
+
+        PostRevisions revision = new PostRevisions();
+        revision.setPostId(post.getId());
+        revision.setVersion(nextVersion);
+        revision.setTitle(post.getTitle());
+        revision.setContent(post.getContent());
+        revision.setSummary(StringUtils.hasText(post.getExcerpt()) ? post.getExcerpt() :
+                           markdownService.generateExcerpt(post.getContent(), 200));
+        revision.setCreatedBy(userId);
+        revision.setCreatedAt(OffsetDateTime.now());
+
+        postRevisionsMapper.insert(revision);
+    }
+
+    /**
+     * 获取下一个版本号
+     *
+     * @param postId 文章ID
+     * @return 下一个版本号
+     */
+    private Integer getNextVersionNumber(Long postId) {
+        LambdaQueryWrapper<PostRevisions> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PostRevisions::getPostId, postId)
+                .select(PostRevisions::getVersion)
+                .orderByDesc(PostRevisions::getVersion)
+                .last("limit 1");
+
+        PostRevisions latestRevision = postRevisionsMapper.selectOne(queryWrapper);
+        return latestRevision != null ? latestRevision.getVersion() + 1 : 1;
+    }
+
+    /**
+     * 获取当前版本号
+     *
+     * @param postId 文章ID
+     * @return 当前版本号
+     */
+    private Integer getCurrentVersionNumber(Long postId) {
+        LambdaQueryWrapper<PostRevisions> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PostRevisions::getPostId, postId)
+                .select(PostRevisions::getVersion)
+                .orderByDesc(PostRevisions::getVersion)
+                .last("limit 1");
+
+        PostRevisions latestRevision = postRevisionsMapper.selectOne(queryWrapper);
+        return latestRevision != null ? latestRevision.getVersion() : 1;
     }
 }

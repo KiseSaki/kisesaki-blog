@@ -3,7 +3,6 @@ package com.kisesaki.blog.content.interaction.controller;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kisesaki.blog.common.dto.ApiResponse;
+import com.kisesaki.blog.common.dto.ResultUtils;
 import com.kisesaki.blog.content.interaction.dto.like.ReactionStatusResponse;
 import com.kisesaki.blog.content.interaction.entity.Likes;
 import com.kisesaki.blog.content.interaction.service.LikeService;
@@ -43,50 +43,50 @@ public class LikeController {
     @PostMapping("/posts/{postId}/like")
     @Operation(summary = "点赞文章")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Void>> likePost(
+    public ApiResponse<Void> likePost(
             @Parameter(description = "文章ID") @PathVariable Long postId,
             Authentication authentication) {
         likeService.likePost(postId, authentication);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResultUtils.success();
     }
 
     @DeleteMapping("/posts/{postId}/like")
     @Operation(summary = "取消点赞文章")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Void>> unlikePost(
+    public ApiResponse<Void> unlikePost(
             @Parameter(description = "文章ID") @PathVariable Long postId,
             Authentication authentication) {
         likeService.unlikePost(postId, authentication);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResultUtils.success();
     }
 
     @PostMapping("/posts/{postId}/dislike")
     @Operation(summary = "点踩文章")
-    public ResponseEntity<ApiResponse<Void>> dislikePost(
+    public ApiResponse<Void> dislikePost(
             @Parameter(description = "文章ID") @PathVariable Long postId,
             Authentication authentication) {
         likeService.dislikePost(postId, authentication);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResultUtils.success();
     }
 
     @DeleteMapping("/posts/{postId}/dislike")
     @Operation(summary = "取消点踩文章")
-    public ResponseEntity<ApiResponse<Void>> unDislikePost(
+    public ApiResponse<Void> unDislikePost(
             @Parameter(description = "文章ID") @PathVariable Long postId,
             Authentication authentication) {
         likeService.unDislikePost(postId, authentication);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResultUtils.success();
     }
 
     @GetMapping("/posts/{postId}/reaction-status")
     @Operation(summary = "获取文章反应状态")
-    public ResponseEntity<ApiResponse<ReactionStatusResponse>> getPostReactionStatus(
+    public ApiResponse<ReactionStatusResponse> getPostReactionStatus(
             @Parameter(description = "文章ID") @PathVariable Long postId,
             Authentication authentication) {
 
         ReactionStatusResponse response = buildReactionStatusResponse(
                 Likes.TargetType.POST, postId, authentication);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResultUtils.success(response);
     }
 
     // =================== 评论反应相关接口 ===================
@@ -94,85 +94,85 @@ public class LikeController {
     @PostMapping("/comments/{commentId}/like")
     @Operation(summary = "点赞评论")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Void>> likeComment(
+    public ApiResponse<Void> likeComment(
             @Parameter(description = "评论ID") @PathVariable Long commentId,
             Authentication authentication) {
         likeService.likeComment(commentId, authentication);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResultUtils.success();
     }
 
     @DeleteMapping("/comments/{commentId}/like")
     @Operation(summary = "取消点赞评论")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<Void>> unlikeComment(
+    public ApiResponse<Void> unlikeComment(
             @Parameter(description = "评论ID") @PathVariable Long commentId,
             Authentication authentication) {
         likeService.unlikeComment(commentId, authentication);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResultUtils.success();
     }
 
     @PostMapping("/comments/{commentId}/dislike")
     @Operation(summary = "点踩评论")
-    public ResponseEntity<ApiResponse<Void>> dislikeComment(
+    public ApiResponse<Void> dislikeComment(
             @Parameter(description = "评论ID") @PathVariable Long commentId,
             Authentication authentication) {
         likeService.dislikeComment(commentId, authentication);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResultUtils.success();
     }
 
     @DeleteMapping("/comments/{commentId}/dislike")
     @Operation(summary = "取消点踩评论")
-    public ResponseEntity<ApiResponse<Void>> unDislikeComment(
+    public ApiResponse<Void> unDislikeComment(
             @Parameter(description = "评论ID") @PathVariable Long commentId,
             Authentication authentication) {
         likeService.unDislikeComment(commentId, authentication);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResultUtils.success();
     }
 
     @GetMapping("/comments/{commentId}/reaction-status")
     @Operation(summary = "获取评论反应状态")
-    public ResponseEntity<ApiResponse<ReactionStatusResponse>> getCommentReactionStatus(
+    public ApiResponse<ReactionStatusResponse> getCommentReactionStatus(
             @Parameter(description = "评论ID") @PathVariable Long commentId,
             Authentication authentication) {
 
         ReactionStatusResponse response = buildReactionStatusResponse(
                 Likes.TargetType.COMMENT, commentId, authentication);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResultUtils.success(response);
     }
 
     // =================== 批量查询接口 ===================
 
     @GetMapping("/posts/reaction-status")
     @Operation(summary = "批量获取文章反应状态")
-    public ResponseEntity<ApiResponse<Map<Long, ReactionStatusResponse>>> getPostsReactionStatus(
+    public ApiResponse<Map<Long, ReactionStatusResponse>> getPostsReactionStatus(
             @Parameter(description = "文章ID列表，逗号分隔") @RequestParam("postIds") List<Long> postIds,
             Authentication authentication) {
 
         Map<Long, ReactionStatusResponse> responseMap = buildBatchReactionStatusResponse(
                 Likes.TargetType.POST, postIds, authentication);
-        return ResponseEntity.ok(ApiResponse.success(responseMap));
+        return ResultUtils.success(responseMap);
     }
 
     @GetMapping("/comments/reaction-status")
     @Operation(summary = "批量获取评论反应状态")
-    public ResponseEntity<ApiResponse<Map<Long, ReactionStatusResponse>>> getCommentsReactionStatus(
+    public ApiResponse<Map<Long, ReactionStatusResponse>> getCommentsReactionStatus(
             @Parameter(description = "评论ID列表，逗号分隔") @RequestParam("commentIds") List<Long> commentIds,
             Authentication authentication) {
 
         Map<Long, ReactionStatusResponse> responseMap = buildBatchReactionStatusResponse(
                 Likes.TargetType.COMMENT, commentIds, authentication);
-        return ResponseEntity.ok(ApiResponse.success(responseMap));
+        return ResultUtils.success(responseMap);
     }
 
     // =================== 统计接口 ===================
 
     @GetMapping("/users/{userId}/likes/count")
     @Operation(summary = "获取用户点赞总数")
-    public ResponseEntity<ApiResponse<Integer>> getUserLikesCount(
+    public ApiResponse<Integer> getUserLikesCount(
             @Parameter(description = "用户ID") @PathVariable Long userId) {
 
         int count = likeService.countUserLikes(userId);
-        return ResponseEntity.ok(ApiResponse.success(count));
+        return ResultUtils.success(count);
     }
 
     // =================== 私有辅助方法 ===================

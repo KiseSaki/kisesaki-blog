@@ -63,3 +63,43 @@ export const getCategoryPostsApi = (
     `/categories/${categoryId}/posts`,
     { params }
   );
+
+// =================== 管理员分类管理接口 ===================
+
+/**
+ * 创建分类
+ * @param data 分类数据
+ * @returns 创建结果
+ */
+export const createCategoryApi = (data: {
+  name: string;
+  slug?: string;
+  description?: string;
+  parentId?: number;
+  sortOrder?: number;
+}) => httpClient.post<{ id: number }>('/categories', data);
+
+/**
+ * 更新分类
+ * @param id 分类ID
+ * @param data 更新数据
+ * @returns 更新结果
+ */
+export const updateCategoryApi = (
+  id: number,
+  data: {
+    name?: string;
+    slug?: string;
+    description?: string;
+    parentId?: number;
+    sortOrder?: number;
+  }
+) => httpClient.put<void>(`/categories/${id}`, data);
+
+/**
+ * 删除分类
+ * @param id 分类ID
+ * @returns 删除结果
+ */
+export const deleteCategoryApi = (id: number) =>
+  httpClient.delete<void>(`/categories/${id}`);

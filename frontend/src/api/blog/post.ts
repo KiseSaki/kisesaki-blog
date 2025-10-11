@@ -68,16 +68,6 @@ export const getRecentPostsApi = (params?: PublishedPostListParams) =>
   });
 
 /**
- * 获取热门文章列表
- * @param params 查询参数
- * @returns 热门文章列表
- */
-export const getPopularPostsApi = (params?: PublishedPostListParams) =>
-  httpClient.get<PageResponse<PublishedPostListResponse>>('/posts/popular', {
-    params,
-  });
-
-/**
  * 获取我的文章列表
  * @param params 查询参数
  * @returns 我的文章列表

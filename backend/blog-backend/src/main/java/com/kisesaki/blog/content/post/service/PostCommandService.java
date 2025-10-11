@@ -138,19 +138,19 @@ public class PostCommandService {
             throw BusinessException.of(com.kisesaki.blog.common.enums.ErrorCode.BUSINESS_ERROR, "文章已被删除，无法修改");
         }
 
-        // 1. 参数验证
+        // 参数验证
         validateCreateOrUpdatePostRequest(request);
 
-        // 2. 验证分类是否存在
+        // 验证分类是否存在
         validateCategoryExists(request.getCategoryId());
 
         OffsetDateTime now = OffsetDateTime.now();
 
-        // 3. 更新文章字段
+        // 更新文章字段
         existingPost.setCategoryId(request.getCategoryId());
         existingPost.setTitle(request.getTitle());
 
-        // 4. 处理slug更新，确保唯一性
+        // 处理slug更新，确保唯一性
         String newSlug = generateUniqueSlug(request.getSlug(), request.getTitle());
         if (!newSlug.equals(existingPost.getSlug())) {
             existingPost.setSlug(newSlug);
@@ -159,10 +159,10 @@ public class PostCommandService {
         existingPost.setExcerpt(request.getExcerpt());
         existingPost.setContent(request.getContent());
 
-        // 5. 生成HTML内容
+        // 生成HTML内容
         existingPost.setHtmlContent(convertMarkdownToHtml(request.getContent()));
 
-        // 6. 计算阅读时间和字数统计
+        // 计算阅读时间和字数统计
         existingPost.setReadingTime(markdownService.estimateReadingTime(request.getContent()));
         existingPost.setWordCount(markdownService.countWords(request.getContent()));
 
@@ -172,32 +172,35 @@ public class PostCommandService {
         existingPost.setIsTop(request.getIsTop() != null && request.getIsTop());
         existingPost.setAllowComments(request.getAllowComments() != null && request.getAllowComments());
         existingPost.setUpdatedAt(now);
+        // 更新图片相关字段
+        existingPost.setCoverImageUrl(request.getCoverImageUrl());
+        existingPost.setFeaturedImageUrl(request.getFeaturedImageUrl());
 
-        // 7. 生成SEO相关字段
+        // 生成SEO相关字段
         generateSeoFields(existingPost, request);
 
-        // 8. 处理密码保护逻辑
+        // 处理密码保护逻辑
         handlePasswordProtection(existingPost, request);
 
-        // 9. 设置发布时间
+        // 设置发布时间
         if (request.getScheduledAt() == null && "published".equals(request.getStatus())) {
             existingPost.setPublishedAt(now);
         }
 
-        // 10. 更新数据库
+        // 更新数据库
         try {
             postsMapper.updateById(existingPost);
         } catch (DataIntegrityViolationException e) {
             handleDataIntegrityViolation(e, existingPost.getSlug());
         }
 
-        // 11. 处理标签关联更新
+        // 处理标签关联更新
         updatePostTags(existingPost.getId(), request.getTagIds());
 
-        // 12. 更新分类文章数量
+        // 更新分类文章数量
         updateCategoryPostCount(existingPost.getId(), existingPost.getCategoryId(), request.getCategoryId());
 
-        // 13. 构建响应
+        // 构建响应
         UpdatePostResponse response = new UpdatePostResponse();
         response.setId(existingPost.getId());
         response.setTitle(existingPost.getTitle());

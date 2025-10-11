@@ -140,3 +140,17 @@ export const statusOptions = [
   { label: '已归档', value: 'archived' },
   { label: '已删除', value: 'deleted' },
 ];
+
+/**
+ * 批量操作选项
+ */
+export const batchActionOptions = [
+  { label: '批量发布', value: 'publish' },
+  { label: '批量取消发布', value: 'unpublish' },
+  { label: '批量归档', value: 'archive' },
+  { label: '批量删除', value: 'delete' },
+  { label: '批量设为精选', value: 'setFeatured' },
+  { label: '批量取消精选', value: 'unsetFeatured' },
+  { label: '批量设为置顶', value: 'setTop' },
+  { label: '批量取消置顶', value: 'unsetTop' },
+];

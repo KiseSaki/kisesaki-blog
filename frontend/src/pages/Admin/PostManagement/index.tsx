@@ -10,15 +10,19 @@ import {
   Button,
   DatePicker,
   Input,
+  message,
+  Modal,
   Pagination,
   Select,
   Space,
   Table,
+  type TableProps,
 } from 'antd';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useImmer } from 'use-immer';
-import { columns, statusOptions } from './config';
+import { batchActionOptions, columns, statusOptions } from './config';
+import { useBatchPostActions } from './hooks/useBatchPostActions';
 
 const { Search } = Input;
 const { RangePicker } = DatePicker;
@@ -32,6 +36,11 @@ const PostManagement = () => {
   const [params, setParams] = useImmer<GetMyPostsListParams>({
     pageable: { currentPage: 1, pageSize: 10, sort: 'createdAt,desc' },
   });
+
+  // 批量操作
+  const { isProcessing, executeBatchAction } = useBatchPostActions();
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [batchAction, setBatchAction] = useState<string | undefined>();
 
   // 分类
   const { pageCategories, isFetchingCategories, fetchPageCategories } =
@@ -93,6 +102,40 @@ const PostManagement = () => {
     fetchPageCategories({ pageable: { currentPage: 1, pageSize: 10 } });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 空依赖数组，只在组件挂载时执行一次
+
+  // 处理批量操作
+  const handleBatchAction = async () => {
+    if (!batchAction || selectedRowKeys.length === 0) {
+      message.warning('请选择操作和文章');
+      return;
+    }
+
+    Modal.confirm({
+      title: '确认批量操作',
+      content: `确定要对选中的 ${selectedRowKeys.length} 篇文章执行 "${
+        batchActionOptions.find(opt => opt.value === batchAction)?.label
+      }" 操作吗？`,
+      okText: '确定',
+      cancelText: '取消',
+      onOk: async () => {
+        const ids = selectedRowKeys.map(key => Number(key));
+        await executeBatchAction(batchAction, ids);
+        // 清空选择
+        setSelectedRowKeys([]);
+        setBatchAction(undefined);
+        // 刷新列表
+        fetchMyPosts(params);
+      },
+    });
+  };
+
+  // 表格行选择配置
+  const rowSelection: TableProps<MyPostsListResponse>['rowSelection'] = {
+    selectedRowKeys,
+    onChange: keys => {
+      setSelectedRowKeys(keys);
+    },
+  };
 
   if (!myPosts) {
     return <Loading />;
@@ -174,8 +217,25 @@ const PostManagement = () => {
       </Space>
 
       {/* 操作区 */}
-      <div className='flex justify-end gap-4 items-center'>
-        <Button type='dashed'>批量操作</Button>
+      <div className='flex justify-between gap-4 items-center'>
+        <Space>
+          <Select
+            className='w-32'
+            placeholder='批量操作'
+            value={batchAction}
+            options={batchActionOptions}
+            onChange={value => setBatchAction(value)}
+            disabled={selectedRowKeys.length === 0}
+          />
+          <Button
+            type='dashed'
+            onClick={handleBatchAction}
+            disabled={!batchAction || selectedRowKeys.length === 0}
+            loading={isProcessing}
+          >
+            执行 ({selectedRowKeys.length})
+          </Button>
+        </Space>
         <Button type='primary' onClick={() => navigate(ADMIN_POST_CREATE_LINK)}>
           新建文章
         </Button>
@@ -187,6 +247,7 @@ const PostManagement = () => {
           <Loading />
         ) : (
           <Table<MyPostsListResponse>
+            rowSelection={rowSelection}
             columns={columns(navigate)}
             dataSource={
               myPosts?.data.map(item => ({ key: item.id, ...item })) || []

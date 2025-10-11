@@ -73,14 +73,18 @@ const TagManagement = () => {
   // 创建标签
   const handleCreate = () => {
     setEditingTag(null);
-    setFormVisible(true);
   };
 
   // 编辑标签
   const handleEdit = (record: AdminTagListResponse) => {
     setEditingTag(record);
-    setFormVisible(true);
   };
+  // 当 editingTag 变化时打开表单（包括第一次）
+  useEffect(() => {
+    if (editingTag) {
+      setFormVisible(true);
+    }
+  }, [editingTag]);
 
   // 删除标签
   const handleDelete = (id: number) => {

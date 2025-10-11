@@ -21,6 +21,9 @@ public class AdminCommentListParams {
     @Schema(description = "评论状态（PENDING/APPROVED/REJECTED/SPAM）")
     private CommentStatus status;
 
+    @Schema(description = "是否置顶")
+    private Boolean isPinned;
+
     @Schema(description = "文章ID", example = "1")
     private Long postId;
 

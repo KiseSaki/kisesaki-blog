@@ -424,6 +424,9 @@
             <if test="params.userId != null">
                 AND c.user_id = #{params.userId}
             </if>
+            <if test="params.isPinned != null">
+                AND c.is_pinned = #{params.isPinned}
+            </if>
             <if test="params.reported != null and params.reported == true">
                 AND EXISTS (SELECT 1 FROM comment_reports cr WHERE cr.comment_id = c.id)
             </if>

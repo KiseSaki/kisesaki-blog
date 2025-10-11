@@ -119,7 +119,7 @@ export const deletePostApi = (id: number) =>
  * @returns 发布结果
  */
 export const publishPostApi = (id: number) =>
-  httpClient.post<void>(`/posts/${id}/publish`);
+  httpClient.put<void>(`/posts/${id}/publish`);
 
 /**
  * 取消发布文章
@@ -127,7 +127,7 @@ export const publishPostApi = (id: number) =>
  * @returns 取消发布结果
  */
 export const unpublishPostApi = (id: number) =>
-  httpClient.post<void>(`/posts/${id}/unpublish`);
+  httpClient.put<void>(`/posts/${id}/unpublish`);
 
 /**
  * 归档文章
@@ -135,7 +135,7 @@ export const unpublishPostApi = (id: number) =>
  * @returns 归档结果
  */
 export const archivePostApi = (id: number) =>
-  httpClient.post<void>(`/posts/${id}/archive`);
+  httpClient.put<void>(`/posts/${id}/archive`);
 
 // =================== 文章版本管理接口 ===================
 

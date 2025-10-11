@@ -119,7 +119,7 @@ export const adminGetCommentsApi = (params?: CommentListParams) =>
 export const adminApproveCommentApi = (
   id: number,
   status: 'APPROVED' | 'REJECTED' | 'SPAM'
-) => httpClient.post<void>(`/admin/comments/${id}/approve`, { status });
+) => httpClient.put<void>(`/admin/comments/${id}/status`, { status });
 
 /**
  * 删除评论（管理员）
@@ -136,4 +136,4 @@ export const adminDeleteCommentApi = (id: number) =>
  * @returns 置顶结果
  */
 export const adminPinCommentApi = (id: number, isPinned: boolean) =>
-  httpClient.post<void>(`/admin/comments/${id}/pin`, { isPinned });
+  httpClient.put<void>(`/admin/comments/${id}/pin`, { isPinned });

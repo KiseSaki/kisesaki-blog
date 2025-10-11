@@ -51,3 +51,61 @@ export interface PostViewStatsResponse {
   // 平均停留时长（秒）
   averageDuration: number;
 }
+
+/**
+ * 仪表盘统计概览响应
+ */
+export interface DashboardStatsResponse {
+  // 文章统计
+  postStats: {
+    totalPosts: number;
+    publishedPosts: number;
+    draftPosts: number;
+    archivedPosts: number;
+  };
+  // 用户统计
+  userStats: {
+    totalUsers: number;
+    activeUsers: number;
+    newUsersToday: number;
+  };
+  // 评论统计
+  commentStats: {
+    totalComments: number;
+    pendingComments: number;
+    todayComments: number;
+  };
+  // 浏览统计
+  viewStats: {
+    totalViews: number;
+    todayViews: number;
+    weekViews: number;
+    monthViews: number;
+  };
+}
+
+/**
+ * 热门文章响应
+ */
+export interface PopularPostResponse {
+  id: number;
+  title: string;
+  slug: string;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  publishedAt: string;
+}
+
+/**
+ * 最近活动响应
+ */
+export interface RecentActivityResponse {
+  id: number;
+  type: 'post' | 'comment' | 'user';
+  action: string;
+  content: string;
+  userId: number;
+  username: string;
+  createdAt: string;
+}

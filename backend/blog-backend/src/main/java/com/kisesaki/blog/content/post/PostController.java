@@ -18,6 +18,7 @@ import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.util.AuthUtils;
 import com.kisesaki.blog.content.post.dto.RevisionInfo;
+import com.kisesaki.blog.content.post.dto.PostCommand.BatchOperatePostsRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
 import com.kisesaki.blog.content.post.dto.PostCommand.MetaDataDto;
@@ -62,7 +63,7 @@ public class PostController {
      */
     @GetMapping("")
     public ApiResponse<PageResponse<PublishedPostListResponse>> selectPublishedPosts(
-            @Valid PublishedPostListParams params) {
+        @Valid PublishedPostListParams params) {
         PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
         return ResultUtils.success("获取文章列表成功", pageResponse);
     }
@@ -75,7 +76,7 @@ public class PostController {
      */
     @GetMapping("/{id}")
     public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetailById(@PathVariable Long id,
-            Authentication authentication) {
+                                                                               Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         PublishedPostDetailResponse result = postQueryService.getPublishedPostDetail(id, null, userId);
         return ResultUtils.success("获取文章详情成功", result);
@@ -89,7 +90,7 @@ public class PostController {
      */
     @GetMapping("/slug/{slug}")
     public ApiResponse<PublishedPostDetailResponse> getPublishedPostDetailBySlug(@PathVariable String slug,
-            Authentication authentication) {
+                                                                                 Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         PublishedPostDetailResponse result = postQueryService.getPublishedPostDetail(null, slug, userId);
         return ResultUtils.success("获取文章详情成功", result);
@@ -103,7 +104,7 @@ public class PostController {
      */
     @GetMapping("/featured")
     public ApiResponse<PageResponse<PublishedPostListResponse>> getFeaturedPosts(
-            @Valid PublishedPostListParams params) {
+        @Valid PublishedPostListParams params) {
         params.setIsFeatured(true);
         PageResponse<PublishedPostListResponse> pageResponse = postQueryService.selectPublishedPosts(params);
         return ResultUtils.success("获取精选文章列表成功", pageResponse);
@@ -132,7 +133,7 @@ public class PostController {
     @PostMapping("")
     @PreAuthorize("hasAuthority('POST_CREATE')")
     public ApiResponse<CreatePostResponse> createPost(@Valid @RequestBody CreatePostRequest request,
-            Authentication authentication) {
+                                                      Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 创建文章: {}", userId, request);
         CreatePostResponse result = postCommandService.createPost(request, userId);
@@ -145,8 +146,8 @@ public class PostController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<UpdatePostResponse> updatePost(@PathVariable Long id,
-            @Valid @RequestBody UpdatePostRequest request,
-            Authentication authentication) {
+                                                      @Valid @RequestBody UpdatePostRequest request,
+                                                      Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         UpdatePostResponse result = postCommandService.updatePost(id, request, userId);
         return ResultUtils.success("更新文章成功", result);
@@ -163,7 +164,7 @@ public class PostController {
     @GetMapping("/{id}/edit")
     @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<PostEditDetailResponse> getPostEditDetail(@PathVariable Long id,
-            Authentication authentication) {
+                                                                 Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         if (userId == null) {
             throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
@@ -223,6 +224,19 @@ public class PostController {
     }
 
     /**
+     * 批量操作文章（仅操作用户自己的文章）
+     */
+    @PostMapping("/batch")
+    @PreAuthorize("hasAuthority('POST_EDIT_OWN')")
+    public ApiResponse<Void> batchOperatePosts(@Valid @RequestBody BatchOperatePostsRequest request,
+                                               Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        log.info("用户 {} 批量操作文章: {}", userId, request);
+        postCommandService.batchOperatePosts(request, userId);
+        return ResultUtils.success("批量操作文章成功");
+    }
+
+    /**
      * 复制文章
      */
     @PostMapping("/{id}/duplicate")
@@ -244,8 +258,8 @@ public class PostController {
     @GetMapping("/my")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<PageResponse<MyPostsListResponse>> getMyPosts(
-            @Valid GetMyPostsListParams params,
-            Authentication authentication) {
+        @Valid GetMyPostsListParams params,
+        Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         if (userId == null) {
             throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
@@ -270,7 +284,7 @@ public class PostController {
     @GetMapping("/{id}/meta")
     @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<MetaDataDto.PostMetaResponse> getPostMeta(@PathVariable Long id,
-            Authentication authentication) {
+                                                                 Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         MetaDataDto.PostMetaResponse result = postCommandService.getPostMeta(id, userId);
         return ResultUtils.success("获取文章元数据成功", result);
@@ -287,8 +301,8 @@ public class PostController {
     @PutMapping("/{id}/meta")
     @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<MetaDataDto.PostMetaResponse> updatePostMeta(@PathVariable Long id,
-            @Valid @RequestBody MetaDataDto.UpdatePostMetaRequest request,
-            Authentication authentication) {
+                                                                    @Valid @RequestBody MetaDataDto.UpdatePostMetaRequest request,
+                                                                    Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 更新文章 {} 元数据: {}", userId, id, request);
         MetaDataDto.PostMetaResponse result = postCommandService.updatePostMeta(id, request, userId);
@@ -306,7 +320,7 @@ public class PostController {
     @DeleteMapping("/{id}/meta/{key}")
     @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<Void> deletePostMeta(@PathVariable Long id, @PathVariable String key,
-            Authentication authentication) {
+                                            Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         log.info("用户 {} 删除文章 {} 的元数据: {}", userId, id, key);
         postCommandService.deletePostMeta(id, key, userId);
@@ -317,6 +331,7 @@ public class PostController {
      * ----------------------------- 文章版本相关接口
      * -----------------------------
      */
+
     /**
      * 获取指定文章的版本列表
      *
@@ -328,15 +343,15 @@ public class PostController {
     @GetMapping("/{postId}/revisions")
     @PreAuthorize("hasAuthority('POST_REVISION_VIEW')")
     public ApiResponse<PageResponse<RevisionInfo>> getPostRevisions(@PathVariable Long postId,
-            @Valid PostRevisionListParams params,
-            Authentication authentication) {
+                                                                    @Valid PostRevisionListParams params,
+                                                                    Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         if (userId == null) {
             throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
         }
 
         PageResponse<RevisionInfo> pageResponse = postRevisionService.getPostRevisionListByPostId(postId, userId,
-                params);
+            params);
         return ResultUtils.success("获取文章版本列表成功", pageResponse);
     }
 
@@ -351,8 +366,8 @@ public class PostController {
     @GetMapping("/{postId}/revisions/{revisionId}")
     @PreAuthorize("hasAuthority('POST_REVISION_VIEW')")
     public ApiResponse<PostRevisionContentResponse> getPostRevisionContent(@PathVariable Long postId,
-            @PathVariable Long revisionId,
-            Authentication authentication) {
+                                                                           @PathVariable Long revisionId,
+                                                                           Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         if (userId == null) {
             throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
@@ -373,7 +388,7 @@ public class PostController {
     @PostMapping("/{postId}/revisions/{revisionId}/restore")
     @PreAuthorize("hasAuthority('POST_REVISION_RESTORE')")
     public ApiResponse<Void> restorePostRevision(@PathVariable Long postId, @PathVariable Long revisionId,
-            Authentication authentication) {
+                                                 Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         if (userId == null) {
             throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");
@@ -386,7 +401,7 @@ public class PostController {
     @DeleteMapping("/{postId}/revisions/{revisionId}")
     @PreAuthorize("hasAuthority('POST_EDIT_OWN') or hasAuthority('POST_EDIT_ALL')")
     public ApiResponse<Void> deletePostRevision(@PathVariable Long postId, @PathVariable Long revisionId,
-            Authentication authentication) {
+                                                Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
         if (userId == null) {
             throw BusinessException.of(ErrorCode.UNAUTHORIZED, "用户未登录");

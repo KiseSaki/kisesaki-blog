@@ -472,6 +472,50 @@ public class AdminPostService {
     }
 
     /**
+     * 批量设置精选
+     *
+     * @param request 批量精选设置请求
+     */
+    @Transactional
+    public void batchSetFeatured(AdminPostBatchDto.BatchSetFeaturedRequest request) {
+        log.info("管理员批量设置精选：{} -> {}", request.getIds(), request.getIsFeatured());
+
+        if (request.getIds().isEmpty()) {
+            throw BusinessException.paramError("文章ID列表不能为空");
+        }
+
+        LambdaUpdateWrapper<Posts> updateWrapper = new LambdaUpdateWrapper<Posts>()
+                .in(Posts::getId, request.getIds())
+                .set(Posts::getIsFeatured, request.getIsFeatured())
+                .set(Posts::getUpdatedAt, OffsetDateTime.now());
+
+        postsMapper.update(null, updateWrapper);
+        log.info("管理员批量设置精选成功，共设置 {} 篇", request.getIds().size());
+    }
+
+    /**
+     * 批量设置置顶
+     *
+     * @param request 批量置顶设置请求
+     */
+    @Transactional
+    public void batchSetTop(AdminPostBatchDto.BatchSetTopRequest request) {
+        log.info("管理员批量设置置顶：{} -> {}", request.getIds(), request.getIsTop());
+
+        if (request.getIds().isEmpty()) {
+            throw BusinessException.paramError("文章ID列表不能为空");
+        }
+
+        LambdaUpdateWrapper<Posts> updateWrapper = new LambdaUpdateWrapper<Posts>()
+                .in(Posts::getId, request.getIds())
+                .set(Posts::getIsTop, request.getIsTop())
+                .set(Posts::getUpdatedAt, OffsetDateTime.now());
+
+        postsMapper.update(null, updateWrapper);
+        log.info("管理员批量设置置顶成功，共设置 {} 篇", request.getIds().size());
+    }
+
+    /**
      * 获取文章统计数据
      *
      * @return 统计数据

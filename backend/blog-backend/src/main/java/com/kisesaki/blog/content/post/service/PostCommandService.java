@@ -10,12 +10,15 @@ import org.springframework.util.StringUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
+import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
+import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
 import com.kisesaki.blog.common.markdown.MarkdownService;
 import com.kisesaki.blog.common.util.SlugGenerator;
 import com.kisesaki.blog.content.category.entity.Categories;
 import com.kisesaki.blog.content.category.mapper.CategoriesMapper;
 import com.kisesaki.blog.content.post.dto.BasePostDto;
+import com.kisesaki.blog.content.post.dto.PostCommand.BatchOperatePostsRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostRequest;
 import com.kisesaki.blog.content.post.dto.PostCommand.CreatePostResponse;
 import com.kisesaki.blog.content.post.dto.PostCommand.MetaDataDto;
@@ -124,7 +127,7 @@ public class PostCommandService {
 
     /**
      * 更新文章
-     * 
+     *
      * @param request 更新文章请求DTO
      * @param userId  当前用户ID
      * @return 更新文章响应DTO
@@ -234,7 +237,7 @@ public class PostCommandService {
 
     /**
      * 删除文章
-     * 
+     *
      * @param postId 文章ID
      * @param userId 当前用户ID
      */
@@ -250,7 +253,7 @@ public class PostCommandService {
 
     /**
      * 发布文章
-     * 
+     *
      * @param postId 文章ID
      * @param userId 当前用户ID
      */
@@ -267,7 +270,7 @@ public class PostCommandService {
 
     /**
      * 取消发布（变为草稿）
-     * 
+     *
      * @param postId 文章ID
      * @param userId 当前用户ID
      */
@@ -283,7 +286,7 @@ public class PostCommandService {
 
     /**
      * 归档文章
-     * 
+     *
      * @param postId 文章ID
      * @param userId 当前用户ID
      */
@@ -299,7 +302,7 @@ public class PostCommandService {
 
     /**
      * 复制文章
-     * 
+     *
      * @param postId 文章ID
      * @param userId 当前用户ID
      * @return 新文章ID
@@ -354,8 +357,60 @@ public class PostCommandService {
     }
 
     /**
+     * 文章批量操作（仅操作用户自己的文章）
+     *
+     * @param request 批量操作请求
+     * @param userId  当前用户ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void batchOperatePosts(BatchOperatePostsRequest request, Long userId) {
+        log.info("用户 {} 批量操作文章: 操作={}, 文章数={}", userId, request.getOperation(), request.getPostIds().size());
+
+        // 验证所有文章都属于当前用户
+        List<Long> postIds = request.getPostIds();
+        long ownedCount = postsMapper.selectCount(
+            new LambdaQueryWrapper<Posts>()
+                .in(Posts::getId, postIds)
+                .eq(Posts::getAuthorId, userId)
+        );
+
+        if (ownedCount != postIds.size()) {
+            throw BusinessException.of(ErrorCode.ACCESS_DENIED, "只能批量操作自己的文章");
+        }
+
+        // 构建批量更新条件
+        LambdaUpdateChainWrapper<Posts> chainWrapper = ChainWrappers.lambdaUpdateChain(postsMapper)
+            .in(Posts::getId, postIds)
+            .eq(Posts::getAuthorId, userId); // 再次确保只更新自己的文章
+
+        // 根据操作类型设置更新字段
+        switch (request.getOperation()) {
+            case PUBLISH -> chainWrapper.set(Posts::getStatus, "published")
+                .set(Posts::getPublishedAt, OffsetDateTime.now());
+            case UNPUBLISH -> chainWrapper.set(Posts::getStatus, "draft");
+            case DELETE -> chainWrapper.set(Posts::getStatus, "deleted")
+                .set(Posts::getUpdatedAt, OffsetDateTime.now());
+            case ARCHIVE -> chainWrapper.set(Posts::getStatus, "archived");
+            case SET_FEATURED -> chainWrapper.set(Posts::getIsFeatured, true);
+            case UNSET_FEATURED -> chainWrapper.set(Posts::getIsFeatured, false);
+            case SET_TOP -> chainWrapper.set(Posts::getIsTop, true);
+            case UNSET_TOP -> chainWrapper.set(Posts::getIsTop, false);
+        }
+
+        // 执行更新
+        boolean success = chainWrapper.set(Posts::getUpdatedAt, OffsetDateTime.now())
+            .update();
+
+        if (!success) {
+            throw BusinessException.of(ErrorCode.DATABASE_ERROR, "批量操作失败");
+        }
+
+        log.info("批量操作成功: 操作={}, 影响文章数={}", request.getOperation(), postIds.size());
+    }
+
+    /**
      * 根据用户id和文章id查询文章
-     * 
+     *
      * @param postId 文章ID
      * @param userId 当前用户ID
      */
@@ -380,7 +435,7 @@ public class PostCommandService {
 
         // 验证可见性设置
         if (request.getVisibility() != null &&
-                !List.of("public", "private", "password_protected").contains(request.getVisibility())) {
+            !List.of("public", "private", "password_protected").contains(request.getVisibility())) {
             throw BusinessException.invalidVisibility(request.getVisibility());
         }
     }
@@ -512,24 +567,24 @@ public class PostCommandService {
     private void updateCategoryPostCount(Long postId, Long oldCategoryId, Long newCategoryId) {
         // 如果分类没有改变，不需要更新
         if ((oldCategoryId == null && newCategoryId == null) ||
-                (oldCategoryId != null && oldCategoryId.equals(newCategoryId))) {
+            (oldCategoryId != null && oldCategoryId.equals(newCategoryId))) {
             return;
         }
 
         // 减少旧分类的文章数量
         if (oldCategoryId != null) {
             new LambdaUpdateChainWrapper<>(categoriesMapper)
-                    .eq(Categories::getId, oldCategoryId)
-                    .setSql("post_count = post_count - 1")
-                    .update();
+                .eq(Categories::getId, oldCategoryId)
+                .setSql("post_count = post_count - 1")
+                .update();
         }
 
         // 增加新分类的文章数量
         if (newCategoryId != null) {
             new LambdaUpdateChainWrapper<>(categoriesMapper)
-                    .eq(Categories::getId, newCategoryId)
-                    .setSql("post_count = post_count + 1")
-                    .update();
+                .eq(Categories::getId, newCategoryId)
+                .setSql("post_count = post_count + 1")
+                .update();
         }
     }
 
@@ -542,9 +597,9 @@ public class PostCommandService {
         }
 
         new LambdaUpdateChainWrapper<>(categoriesMapper)
-                .eq(Categories::getId, categoryId)
-                .setSql("post_count = post_count + 1")
-                .update();
+            .eq(Categories::getId, categoryId)
+            .setSql("post_count = post_count + 1")
+            .update();
     }
 
     /**
@@ -643,19 +698,19 @@ public class PostCommandService {
         // 查询元数据
         LambdaQueryWrapper<PostMeta> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PostMeta::getPostId, postId)
-                .orderByAsc(PostMeta::getMetaKey);
+            .orderByAsc(PostMeta::getMetaKey);
 
         List<PostMeta> postMetaList = postMetaMapper.selectList(queryWrapper);
 
         // 转换为响应格式
         List<MetaDataDto.MetaDataItem> metaDataItems = postMetaList.stream()
-                .map(meta -> {
-                    MetaDataDto.MetaDataItem item = new MetaDataDto.MetaDataItem();
-                    item.setKey(meta.getMetaKey());
-                    item.setValue(meta.getMetaValue());
-                    return item;
-                })
-                .toList();
+            .map(meta -> {
+                MetaDataDto.MetaDataItem item = new MetaDataDto.MetaDataItem();
+                item.setKey(meta.getMetaKey());
+                item.setValue(meta.getMetaValue());
+                return item;
+            })
+            .toList();
 
         MetaDataDto.PostMetaResponse response = new MetaDataDto.PostMetaResponse();
         response.setPostId(postId);
@@ -674,7 +729,7 @@ public class PostCommandService {
      */
     @Transactional(rollbackFor = Exception.class)
     public MetaDataDto.PostMetaResponse updatePostMeta(Long postId, MetaDataDto.UpdatePostMetaRequest request,
-            Long userId) {
+                                                       Long userId) {
         // 验证文章存在且属于当前用户
         Posts post = getPostByIdAndUserId(postId, userId);
         if (post == null) {
@@ -728,7 +783,7 @@ public class PostCommandService {
         // 删除指定的元数据
         LambdaQueryWrapper<PostMeta> deleteWrapper = new LambdaQueryWrapper<>();
         deleteWrapper.eq(PostMeta::getPostId, postId)
-                .eq(PostMeta::getMetaKey, metaKey);
+            .eq(PostMeta::getMetaKey, metaKey);
 
         int deletedCount = postMetaMapper.delete(deleteWrapper);
         if (deletedCount == 0) {
@@ -762,9 +817,9 @@ public class PostCommandService {
     /**
      * 创建新版本
      *
-     * @param post    文章实体
-     * @param userId  用户ID
-     * @param note    版本注释
+     * @param post   文章实体
+     * @param userId 用户ID
+     * @param note   版本注释
      */
     private void createNewRevision(Posts post, Long userId, String note) {
         // 验证版本注释
@@ -781,7 +836,7 @@ public class PostCommandService {
         revision.setTitle(post.getTitle());
         revision.setContent(post.getContent());
         revision.setSummary(StringUtils.hasText(post.getExcerpt()) ? post.getExcerpt() :
-                           markdownService.generateExcerpt(post.getContent(), 200));
+            markdownService.generateExcerpt(post.getContent(), 200));
         revision.setCreatedBy(userId);
         revision.setCreatedAt(OffsetDateTime.now());
 
@@ -797,9 +852,9 @@ public class PostCommandService {
     private Integer getNextVersionNumber(Long postId) {
         LambdaQueryWrapper<PostRevisions> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PostRevisions::getPostId, postId)
-                .select(PostRevisions::getVersion)
-                .orderByDesc(PostRevisions::getVersion)
-                .last("limit 1");
+            .select(PostRevisions::getVersion)
+            .orderByDesc(PostRevisions::getVersion)
+            .last("limit 1");
 
         PostRevisions latestRevision = postRevisionsMapper.selectOne(queryWrapper);
         return latestRevision != null ? latestRevision.getVersion() + 1 : 1;
@@ -814,9 +869,9 @@ public class PostCommandService {
     private Integer getCurrentVersionNumber(Long postId) {
         LambdaQueryWrapper<PostRevisions> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PostRevisions::getPostId, postId)
-                .select(PostRevisions::getVersion)
-                .orderByDesc(PostRevisions::getVersion)
-                .last("limit 1");
+            .select(PostRevisions::getVersion)
+            .orderByDesc(PostRevisions::getVersion)
+            .last("limit 1");
 
         PostRevisions latestRevision = postRevisionsMapper.selectOne(queryWrapper);
         return latestRevision != null ? latestRevision.getVersion() : 1;

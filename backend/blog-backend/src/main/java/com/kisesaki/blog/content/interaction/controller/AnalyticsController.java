@@ -35,7 +35,7 @@ import lombok.RequiredArgsConstructor;
  * @author KiseSaki
  */
 @RestController
-@RequestMapping("")
+@RequestMapping("/analytics")
 @RequiredArgsConstructor
 @Tag(name = "分析统计", description = "页面浏览记录和事件统计相关接口")
 public class AnalyticsController {
@@ -45,7 +45,7 @@ public class AnalyticsController {
     /**
      * 记录页面浏览
      */
-    @PostMapping("/analytics/view")
+    @PostMapping("/view")
     @Operation(summary = "记录页面浏览", description = "记录用户的页面浏览行为，支持匿名访问")
     public ApiResponse<Void> recordPageView(
             @Valid @RequestBody ViewRecordRequest request,
@@ -59,7 +59,7 @@ public class AnalyticsController {
     /**
      * 记录自定义事件
      */
-    @PostMapping("/analytics/event")
+    @PostMapping("/event")
     @Operation(summary = "记录自定义事件", description = "记录用户的自定义行为事件（如搜索、下载等），支持匿名访问")
     public ApiResponse<Void> recordCustomEvent(
             @Valid @RequestBody EventRecordRequest request,
@@ -85,9 +85,9 @@ public class AnalyticsController {
     /**
      * 获取仪表盘统计概览
      */
-    @GetMapping("/analytics/dashboard/stats")
+    @GetMapping("/dashboard/stats")
     @Operation(summary = "获取仪表盘统计概览", description = "获取仪表盘统计数据，包括文章、用户、评论和浏览统计")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ANALYTICS_VIEW')")
     public ApiResponse<DashboardStatsResponse> getDashboardStats() {
         DashboardStatsResponse stats = analyticsService.getDashboardStats();
         return ResultUtils.success(stats);
@@ -96,9 +96,9 @@ public class AnalyticsController {
     /**
      * 获取热门文章列表
      */
-    @GetMapping("/analytics/dashboard/popular-posts")
+    @GetMapping("/dashboard/popular-posts")
     @Operation(summary = "获取热门文章列表", description = "获取按浏览量排序的热门文章列表")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ANALYTICS_VIEW')")
     public ApiResponse<List<PopularPostResponse>> getPopularPosts(
             @Parameter(description = "返回数量限制", example = "10")
             @RequestParam(defaultValue = "10") int limit) {
@@ -110,9 +110,9 @@ public class AnalyticsController {
     /**
      * 获取最近活动列表
      */
-    @GetMapping("/analytics/dashboard/recent-activities")
+    @GetMapping("/dashboard/recent-activities")
     @Operation(summary = "获取最近活动列表", description = "获取最近的文章发布和评论活动")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ANALYTICS_VIEW')")
     public ApiResponse<List<RecentActivityResponse>> getRecentActivities(
             @Parameter(description = "返回数量限制", example = "10")
             @RequestParam(defaultValue = "10") int limit) {

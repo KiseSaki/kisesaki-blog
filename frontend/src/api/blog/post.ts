@@ -172,3 +172,17 @@ export const getPostRevisionDetailApi = (postId: number, revisionId: number) =>
  */
 export const restorePostRevisionApi = (postId: number, revisionId: number) =>
   httpClient.post<void>(`/posts/${postId}/revisions/${revisionId}/restore`);
+
+// =================== 文章批量操作接口 ===================
+
+/**
+ * 批量操作文章（用户自己的文章）
+ * @param operation 操作类型
+ * @param postIds 文章ID列表
+ * @returns 操作结果
+ */
+export const batchOperatePostsApi = (operation: string, postIds: number[]) =>
+  httpClient.post<void>('/posts/batch', {
+    operation,
+    postIds,
+  });

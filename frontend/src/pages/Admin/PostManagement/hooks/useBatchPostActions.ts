@@ -1,165 +1,56 @@
 /**
  * 批量文章操作 Hook
- * 封装批量操作的业务逻辑
+ * 封装批量操作的业务逻辑，调用后端批量接口
  */
 
-import {
-  archivePostApi,
-  deletePostApi,
-  publishPostApi,
-  unpublishPostApi,
-} from '@/api';
-import { message } from 'antd';
+import { batchOperatePostsApi } from '@/api';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export const useBatchPostActions = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   /**
-   * 批量发布文章
-   */
-  const batchPublish = async (ids: number[]) => {
-    setIsProcessing(true);
-    try {
-      const results = await Promise.allSettled(
-        ids.map(id => publishPostApi(id))
-      );
-
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
-      const failCount = results.filter(r => r.status === 'rejected').length;
-
-      if (failCount === 0) {
-        message.success(`成功发布 ${successCount} 篇文章`);
-      } else {
-        message.warning(
-          `发布完成：成功 ${successCount} 篇，失败 ${failCount} 篇`
-        );
-      }
-
-      return { successCount, failCount };
-    } catch (error) {
-      message.error('批量发布失败');
-      throw error;
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  /**
-   * 批量取消发布文章
-   */
-  const batchUnpublish = async (ids: number[]) => {
-    setIsProcessing(true);
-    try {
-      const results = await Promise.allSettled(
-        ids.map(id => unpublishPostApi(id))
-      );
-
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
-      const failCount = results.filter(r => r.status === 'rejected').length;
-
-      if (failCount === 0) {
-        message.success(`成功取消发布 ${successCount} 篇文章`);
-      } else {
-        message.warning(
-          `取消发布完成：成功 ${successCount} 篇，失败 ${failCount} 篇`
-        );
-      }
-
-      return { successCount, failCount };
-    } catch (error) {
-      message.error('批量取消发布失败');
-      throw error;
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  /**
-   * 批量归档文章
-   */
-  const batchArchive = async (ids: number[]) => {
-    setIsProcessing(true);
-    try {
-      const results = await Promise.allSettled(
-        ids.map(id => archivePostApi(id))
-      );
-
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
-      const failCount = results.filter(r => r.status === 'rejected').length;
-
-      if (failCount === 0) {
-        message.success(`成功归档 ${successCount} 篇文章`);
-      } else {
-        message.warning(
-          `归档完成：成功 ${successCount} 篇，失败 ${failCount} 篇`
-        );
-      }
-
-      return { successCount, failCount };
-    } catch (error) {
-      message.error('批量归档失败');
-      throw error;
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  /**
-   * 批量删除文章
-   */
-  const batchDelete = async (ids: number[]) => {
-    setIsProcessing(true);
-    try {
-      const results = await Promise.allSettled(
-        ids.map(id => deletePostApi(id))
-      );
-
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
-      const failCount = results.filter(r => r.status === 'rejected').length;
-
-      if (failCount === 0) {
-        message.success(`成功删除 ${successCount} 篇文章`);
-      } else {
-        message.warning(
-          `删除完成：成功 ${successCount} 篇，失败 ${failCount} 篇`
-        );
-      }
-
-      return { successCount, failCount };
-    } catch (error) {
-      message.error('批量删除失败');
-      throw error;
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  /**
    * 执行批量操作
+   * @param action 操作类型
+   * @param ids 文章ID列表
    */
   const executeBatchAction = async (
     action: string,
     ids: number[]
-  ): Promise<{ successCount: number; failCount: number }> => {
+  ): Promise<{ success: boolean }> => {
     if (ids.length === 0) {
-      message.warning('请至少选择一篇文章');
-      return { successCount: 0, failCount: 0 };
+      toast.warning('请至少选择一篇文章');
+      return { success: false };
     }
 
-    switch (action) {
-      case 'publish':
-        return await batchPublish(ids);
-      case 'unpublish':
-        return await batchUnpublish(ids);
-      case 'archive':
-        return await batchArchive(ids);
-      case 'delete':
-        return await batchDelete(ids);
-      // TODO: 实现其他批量操作（精选、置顶等）
-      default:
-        message.warning('暂不支持该操作');
-        return { successCount: 0, failCount: 0 };
+    setIsProcessing(true);
+    try {
+      // 调用后端批量操作接口
+      await batchOperatePostsApi(action, ids);
+
+      // 根据操作类型显示不同的成功提示
+      const actionLabels: Record<string, string> = {
+        publish: '发布',
+        unpublish: '取消发布',
+        archive: '归档',
+        delete: '删除',
+        setFeatured: '设为精选',
+        unsetFeatured: '取消精选',
+        setTop: '设为置顶',
+        unsetTop: '取消置顶',
+      };
+
+      const label = actionLabels[action] || '操作';
+      toast.success(`成功${label} ${ids.length} 篇文章`);
+
+      return { success: true };
+    } catch (error) {
+      // 错误已由 httpClient 拦截器处理，这里只需标记失败
+      console.error('批量操作失败:', error);
+      return { success: false };
+    } finally {
+      setIsProcessing(false);
     }
   };
 

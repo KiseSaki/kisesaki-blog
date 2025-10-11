@@ -39,6 +39,8 @@ const PostManagement = () => {
 
   // 批量操作
   const { isProcessing, executeBatchAction } = useBatchPostActions();
+  // 使用 Modal.useModal 避免静态 confirm 访问上下文导致警告
+  const [modal, contextHolder] = Modal.useModal();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [batchAction, setBatchAction] = useState<string | undefined>();
 
@@ -110,7 +112,7 @@ const PostManagement = () => {
       return;
     }
 
-    Modal.confirm({
+    modal.confirm({
       title: '确认批量操作',
       content: `确定要对选中的 ${selectedRowKeys.length} 篇文章执行 "${
         batchActionOptions.find(opt => opt.value === batchAction)?.label
@@ -119,12 +121,14 @@ const PostManagement = () => {
       cancelText: '取消',
       onOk: async () => {
         const ids = selectedRowKeys.map(key => Number(key));
-        await executeBatchAction(batchAction, ids);
-        // 清空选择
-        setSelectedRowKeys([]);
-        setBatchAction(undefined);
-        // 刷新列表
-        fetchMyPosts(params);
+        const result = await executeBatchAction(batchAction, ids);
+
+        // 如果操作成功，刷新列表并清空选择
+        if (result.success) {
+          setSelectedRowKeys([]);
+          setBatchAction(undefined);
+          fetchMyPosts(params);
+        }
       },
     });
   };
@@ -146,6 +150,8 @@ const PostManagement = () => {
 
   return (
     <UserLayout title='文章管理' description='管理自己发布的文章'>
+      {/* Modal 的上下文持有者 */}
+      {contextHolder}
       {/* 筛选工具条 */}
       <Space
         align='center'
@@ -218,24 +224,27 @@ const PostManagement = () => {
 
       {/* 操作区 */}
       <div className='flex justify-between gap-4 items-center'>
-        <Space>
-          <Select
-            className='w-32'
-            placeholder='批量操作'
-            value={batchAction}
-            options={batchActionOptions}
-            onChange={value => setBatchAction(value)}
-            disabled={selectedRowKeys.length === 0}
-          />
-          <Button
-            type='dashed'
-            onClick={handleBatchAction}
-            disabled={!batchAction || selectedRowKeys.length === 0}
-            loading={isProcessing}
-          >
-            执行 ({selectedRowKeys.length})
-          </Button>
-        </Space>
+        {selectedRowKeys.length !== 0 ? (
+          <Space>
+            <Select
+              className='w-32'
+              placeholder='批量操作'
+              value={batchAction}
+              options={batchActionOptions}
+              onChange={value => setBatchAction(value)}
+            />
+            <Button
+              type='dashed'
+              onClick={handleBatchAction}
+              disabled={!batchAction || selectedRowKeys.length === 0}
+              loading={isProcessing}
+            >
+              执行 ({selectedRowKeys.length})
+            </Button>
+          </Space>
+        ) : (
+          <div />
+        )}
         <Button type='primary' onClick={() => navigate(ADMIN_POST_CREATE_LINK)}>
           新建文章
         </Button>

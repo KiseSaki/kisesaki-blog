@@ -12,12 +12,26 @@ export const columns = (
   navigate: NavigateFunction
 ): TableProps<MyPostsListResponse>['columns'] => {
   return [
-    { title: '标题', dataIndex: 'title', key: 'title' },
-    { title: '分类', dataIndex: ['category', 'name'], key: 'category' },
+    {
+      title: '标题',
+      dataIndex: 'title',
+      key: 'title',
+      ellipsis: true,
+      width: 200,
+    },
+    {
+      title: '分类',
+      dataIndex: ['category', 'name'],
+      key: 'category',
+      ellipsis: true,
+      width: 100,
+    },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
+      ellipsis: true,
+      width: 80,
       render: (value: string) => {
         let text: string;
         let color: string;
@@ -53,32 +67,55 @@ export const columns = (
       title: '创建时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
+      ellipsis: true,
+      width: 150,
       render: (value: string) => new Date(value).toLocaleString(),
     },
     {
       title: '更新时间',
       dataIndex: 'updatedAt',
       key: 'updatedAt',
+      ellipsis: true,
+      width: 150,
       render: (value: string) => new Date(value).toLocaleString(),
     },
-    { title: '查看次数', dataIndex: 'viewCount', key: 'viewCount' },
-    { title: '点赞数', dataIndex: 'likeCount', key: 'likeCount' },
-    { title: '评论数', dataIndex: 'commentCount', key: 'commentCount' },
+    {
+      title: '查看次数',
+      dataIndex: 'viewCount',
+      key: 'viewCount',
+      width: 90,
+    },
+    {
+      title: '点赞数',
+      dataIndex: 'likeCount',
+      key: 'likeCount',
+      width: 80,
+    },
+    {
+      title: '评论数',
+      dataIndex: 'commentCount',
+      key: 'commentCount',
+      width: 80,
+    },
     {
       title: '置顶',
       dataIndex: 'isTop',
       key: 'isTop',
+      width: 70,
       render: (value: boolean) => (value ? '是' : '否'),
     },
     {
       title: '精选',
       dataIndex: 'isFeatured',
       key: 'isFeatured',
+      width: 70,
       render: (value: boolean) => (value ? '是' : '否'),
     },
     {
       title: '',
       key: 'action',
+      width: 70,
+      fixed: 'right',
       render: (_, record) => {
         return (
           <a

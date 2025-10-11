@@ -182,7 +182,7 @@ const PostManagement = () => {
       </div>
 
       {/* 内容区 - 使用 flex-1 填充剩余空间 */}
-      <div className='bg-card rounded-lg flex-1 flex flex-col justify-between p-2'>
+      <div className='bg-card rounded-lg flex-1 flex flex-col gap-2 justify-between p-2'>
         {isFetchingMyPosts ? (
           <Loading />
         ) : (

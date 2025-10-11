@@ -10,8 +10,8 @@ import {
   activityActionMap,
   activityTypeMap,
   generateStatCards,
-} from './AdminDashboard/config';
-import { useDashboard } from './AdminDashboard/hooks/useDashboard';
+} from './config';
+import { useDashboard } from './hooks/useDashboard';
 
 const { Title, Text, Link } = Typography;
 
@@ -162,4 +162,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

@@ -3,18 +3,18 @@
  * 管理员用于审核、回复、删除评论的页面
  */
 
-import { Loading, UserLayout } from '@/components';
-import type { CommentListResponse, PageResponse } from '@/types';
 import {
   adminApproveCommentApi,
   adminDeleteCommentApi,
   adminGetCommentsApi,
   adminPinCommentApi,
 } from '@/api';
+import { Loading, UserLayout } from '@/components';
+import type { CommentListResponse, PageResponse } from '@/types';
 import { Input, message, Modal, Pagination, Select, Space, Table } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import { useImmer } from 'use-immer';
-import { commentColumns, statusOptions } from './CommentManagement/config';
+import { commentColumns, statusOptions } from './config';
 
 const { Search } = Input;
 
@@ -214,4 +214,3 @@ const CommentManagement = () => {
 };
 
 export default CommentManagement;
-

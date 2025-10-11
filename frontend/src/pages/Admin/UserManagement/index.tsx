@@ -3,23 +3,19 @@
  * 管理员用于管理用户账户、权限、状态的页面
  */
 
-import { Loading, UserLayout } from '@/components';
-import type { UserListItem } from '@/types';
 import {
   adminDeleteUserApi,
   adminGetUsersApi,
   adminUpdateUserRolesApi,
   adminUpdateUserStatusApi,
 } from '@/api';
+import { Loading, UserLayout } from '@/components';
+import type { UserListItem } from '@/types';
 import { Input, message, Modal, Pagination, Select, Space, Table } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import { useImmer } from 'use-immer';
-import {
-  accountTypeOptions,
-  statusOptions,
-  userColumns,
-} from './UserManagement/config';
-import { UserRoleForm } from './UserManagement/components/UserRoleForm';
+import { UserRoleForm } from './components/UserRoleForm';
+import { accountTypeOptions, statusOptions, userColumns } from './config';
 
 const { Search } = Input;
 
@@ -72,7 +68,11 @@ const UserManagement = () => {
     status: 'active' | 'inactive' | 'banned'
   ) => {
     const actionText =
-      status === 'active' ? '激活' : status === 'banned' ? '封禁' : '设置为未激活';
+      status === 'active'
+        ? '激活'
+        : status === 'banned'
+          ? '封禁'
+          : '设置为未激活';
 
     Modal.confirm({
       title: `${actionText}用户`,
@@ -250,4 +250,3 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
-

@@ -6,6 +6,7 @@
 import { UserLayout } from '@/components';
 import { Button, Card, Divider, Form, message, Tabs } from 'antd';
 import { useState } from 'react';
+import { SettingFormItem } from './components/SettingFormItem';
 import {
   emailSettings,
   generalSettings,
@@ -14,8 +15,7 @@ import {
   type SettingField,
   settingGroups,
   storageSettings,
-} from './SettingsPage/config';
-import { SettingFormItem } from './SettingsPage/components/SettingFormItem';
+} from './config';
 
 const SettingsPage = () => {
   const [form] = Form.useForm();
@@ -87,7 +87,10 @@ const SettingsPage = () => {
   ];
 
   return (
-    <UserLayout title='系统设置' description='配置网站基本信息、SEO、安全等参数'>
+    <UserLayout
+      title='系统设置'
+      description='配置网站基本信息、SEO、安全等参数'
+    >
       <Card>
         <Form form={form} layout='vertical'>
           <Tabs items={tabItems} />
@@ -107,4 +110,3 @@ const SettingsPage = () => {
 };
 
 export default SettingsPage;
-

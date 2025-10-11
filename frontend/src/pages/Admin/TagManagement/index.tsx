@@ -3,8 +3,6 @@
  * 管理员用于创建、编辑、删除博客标签的页面
  */
 
-import { Loading, UserLayout } from '@/components';
-import type { AdminTagListResponse, PageResponse } from '@/types';
 import {
   adminApproveTagApi,
   adminCreateTagApi,
@@ -12,29 +10,47 @@ import {
   adminGetTagListApi,
   adminUpdateTagApi,
 } from '@/api';
-import { Button, Input, message, Modal, Pagination, Select, Space, Table } from 'antd';
+import { Loading, UserLayout } from '@/components';
+import type { AdminTagListResponse, PageResponse } from '@/types';
+import {
+  Button,
+  Input,
+  message,
+  Modal,
+  Pagination,
+  Select,
+  Space,
+  Table,
+} from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import { useImmer } from 'use-immer';
-import { approvalStatusOptions, tagColumns } from './TagManagement/config';
-import { TagForm } from './TagManagement/components/TagForm';
+import { TagForm } from './components/TagForm';
+import { approvalStatusOptions, tagColumns } from './config';
 
 const { Search } = Input;
 
 const TagManagement = () => {
   // 标签列表数据
-  const [tagList, setTagList] = useState<PageResponse<AdminTagListResponse> | null>(null);
+  const [tagList, setTagList] =
+    useState<PageResponse<AdminTagListResponse> | null>(null);
   const [isFetching, setIsFetching] = useState(false);
 
   // 查询参数
   const [params, setParams] = useImmer({
     pageable: { currentPage: 1, pageSize: 20 },
     name: undefined as string | undefined,
-    approvalStatus: undefined as 'pending' | 'approved' | 'rejected' | undefined,
+    approvalStatus: undefined as
+      | 'pending'
+      | 'approved'
+      | 'rejected'
+      | undefined,
   });
 
   // 表单状态
   const [formVisible, setFormVisible] = useState(false);
-  const [editingTag, setEditingTag] = useState<AdminTagListResponse | null>(null);
+  const [editingTag, setEditingTag] = useState<AdminTagListResponse | null>(
+    null
+  );
 
   // 获取标签列表
   const fetchTags = useCallback(async () => {
@@ -218,4 +234,3 @@ const TagManagement = () => {
 };
 
 export default TagManagement;
-

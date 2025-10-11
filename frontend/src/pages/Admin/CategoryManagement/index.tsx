@@ -3,18 +3,14 @@
  * 管理员用于创建、编辑、删除博客分类的页面
  */
 
+import { createCategoryApi, deleteCategoryApi, updateCategoryApi } from '@/api';
 import { Loading, UserLayout } from '@/components';
 import { useCategory } from '@/hooks';
 import type { CategoryTreeResponse } from '@/types';
-import {
-  createCategoryApi,
-  deleteCategoryApi,
-  updateCategoryApi,
-} from '@/api';
 import { Button, Input, message, Modal, Space, Table } from 'antd';
 import { useEffect, useState } from 'react';
-import { categoryColumns } from './CategoryManagement/config';
-import { CategoryForm } from './CategoryManagement/components/CategoryForm';
+import { CategoryForm } from './components/CategoryForm';
+import { categoryColumns } from './config';
 
 const { Search } = Input;
 
@@ -158,4 +154,3 @@ const CategoryManagement = () => {
 };
 
 export default CategoryManagement;
-

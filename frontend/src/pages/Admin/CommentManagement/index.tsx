@@ -137,6 +137,7 @@ const CommentManagement = () => {
         <Space>
           <Search
             placeholder='搜索评论内容'
+            enterButton
             allowClear
             onSearch={value =>
               setParams(draft => {

@@ -152,6 +152,7 @@ const UserManagement = () => {
         <Space>
           <Search
             placeholder='搜索用户名或邮箱'
+            enterButton
             allowClear
             onSearch={value =>
               setParams(draft => {

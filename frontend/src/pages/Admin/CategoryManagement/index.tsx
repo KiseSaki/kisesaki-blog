@@ -111,6 +111,7 @@ const CategoryManagement = () => {
       >
         <Search
           placeholder='搜索分类'
+          enterButton
           allowClear
           onSearch={value => setKeyword(value)}
           style={{ width: 300 }}

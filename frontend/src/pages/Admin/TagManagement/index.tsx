@@ -164,6 +164,7 @@ const TagManagement = () => {
         <Space>
           <Search
             placeholder='搜索标签'
+            enterButton
             allowClear
             onSearch={value =>
               setParams(draft => {

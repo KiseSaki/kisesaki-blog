@@ -282,6 +282,22 @@ public class PostCommandService {
     }
 
     /**
+     * 归档文章
+     * 
+     * @param postId 文章ID
+     * @param userId 当前用户ID
+     */
+    public void archivePost(Long postId, Long userId) {
+        Posts existingPost = getPostByIdAndUserId(postId, userId);
+        if (existingPost == null) {
+            throw BusinessException.notFound("文章");
+        }
+        existingPost.setStatus("archived");
+        existingPost.setUpdatedAt(OffsetDateTime.now());
+        postsMapper.updateById(existingPost);
+    }
+
+    /**
      * 复制文章
      * 
      * @param postId 文章ID

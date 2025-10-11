@@ -211,6 +211,18 @@ public class PostController {
     }
 
     /**
+     * 归档文章
+     */
+    @PutMapping("/{id}/archive")
+    @PreAuthorize("hasAuthority('POST_PUBLISH')")
+    public ApiResponse<Void> archivePost(@PathVariable Long id, Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        log.info("用户 {} 归档文章 {}", userId, id);
+        postCommandService.archivePost(id, userId);
+        return ResultUtils.success("归档文章成功");
+    }
+
+    /**
      * 复制文章
      */
     @PostMapping("/{id}/duplicate")

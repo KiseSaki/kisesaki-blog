@@ -4,8 +4,7 @@
  */
 
 import { UserLayout } from '@/components';
-import { Button, Card, Divider, Form, message, Tabs } from 'antd';
-import { useState } from 'react';
+import { Button, Card, Divider, Form, Tabs } from 'antd';
 import { SettingFormItem } from './components/SettingFormItem';
 import {
   emailSettings,
@@ -16,37 +15,10 @@ import {
   settingGroups,
   storageSettings,
 } from './config';
+import { useSettings } from './hooks/useSettings';
 
 const SettingsPage = () => {
-  const [form] = Form.useForm();
-  const [isSaving, setIsSaving] = useState(false);
-
-  // 保存设置
-  const handleSave = async () => {
-    try {
-      const values = await form.validateFields();
-      setIsSaving(true);
-
-      // TODO: 调用保存设置的API
-      console.log('保存设置:', values);
-
-      // 模拟API请求
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      message.success('设置保存成功');
-    } catch (error) {
-      console.error('保存设置失败:', error);
-      message.error('设置保存失败');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // 重置设置
-  const handleReset = () => {
-    form.resetFields();
-    message.info('已重置为默认值');
-  };
+  const { form, isSaving, handleSave, handleReset } = useSettings();
 
   // 分组设置的渲染函数
   const renderSettingGroup = (fields: SettingField[]) => (

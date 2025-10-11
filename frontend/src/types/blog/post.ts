@@ -3,8 +3,8 @@
  */
 
 import type { PageableParams } from '../api';
-import type { AuthorInfo } from './common';
 import type { CategoryInfo } from './category';
+import type { AuthorInfo } from './common';
 import type { TagInfo } from './tag';
 
 // =================== 文章状态与可见性 ===================
@@ -194,11 +194,14 @@ export interface PostEditDetailResponse {
   content: string; // Markdown 原始内容
   categoryId: number;
   categoryName: string;
-  tagIds: number[]; // 标签ID列表，用于表单回显
+  tags: {
+    id: number;
+    name: string;
+  }[]; // 标签ID列表，用于表单回显
   coverImageUrl: string | undefined;
   featuredImageUrl: string | undefined;
-  status: 'draft' | 'published' | 'archived';
-  visibility: 'public' | 'private' | 'password_protected';
+  status: PostStatus;
+  visibility: PostVisibility;
   password: string | undefined;
   isFeatured: boolean;
   isTop: boolean;

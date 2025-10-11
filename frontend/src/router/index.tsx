@@ -37,6 +37,7 @@ const FavoritesPage = React.lazy(() => import('@/pages/User/FavoritesPage'));
 // 管理员相关页面
 const AdminDashboard = React.lazy(() => import('@/pages/Admin/AdminDashboard'));
 const PostManagement = React.lazy(() => import('@/pages/Admin/PostManagement'));
+const PostEditor = React.lazy(() => import('@/pages/Admin/PostEditor'));
 const CategoryManagement = React.lazy(
   () => import('@/pages/Admin/CategoryManagement')
 );
@@ -276,6 +277,22 @@ export const router = createBrowserRouter([
                 element: (
                   <SuspenseWrapper>
                     <PostManagement />
+                  </SuspenseWrapper>
+                ),
+              },
+              {
+                path: 'create',
+                element: (
+                  <SuspenseWrapper>
+                    <PostEditor />
+                  </SuspenseWrapper>
+                ),
+              },
+              {
+                path: 'edit/:id',
+                element: (
+                  <SuspenseWrapper>
+                    <PostEditor />
                   </SuspenseWrapper>
                 ),
               },

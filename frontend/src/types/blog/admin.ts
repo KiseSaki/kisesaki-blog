@@ -3,8 +3,8 @@
  */
 
 import type { PageableParams } from '../api';
-import type { AuthorInfo } from './common';
 import type { CategoryInfo } from './category';
+import type { AuthorInfo } from './common';
 import type { PostBase, UpdatePostRequest } from './post';
 import type { TagDetailResponse } from './tag';
 
@@ -78,6 +78,15 @@ export interface AdminUpdatePostRequest extends UpdatePostRequest {
  */
 export interface PostFormData extends PostBase {
   publishNow: boolean; // 是否立即发布（仅创建时）
+  createRevision?: boolean; // 是否创建新版本
+  revisionNote?: string; // 版本备注
+
+  categoryName?: string; // 分类名称（仅前端显示）
+
+  tags: {
+    id: number;
+    name: string;
+  }[]; // 标签列表
 }
 
 // =================== 管理员标签相关类型 ===================

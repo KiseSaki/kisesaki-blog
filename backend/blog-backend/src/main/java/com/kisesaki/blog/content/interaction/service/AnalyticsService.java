@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 分析统计服务
- * 
+ *
  * @author KiseSaki
  */
 @Service
@@ -657,6 +657,7 @@ public class AnalyticsService {
 
         // 按时间降序排序并限制数量
         return activities.stream()
+                .filter(activity -> activity.getCreatedAt() != null)
                 .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
                 .limit(limit)
                 .collect(java.util.stream.Collectors.toList());

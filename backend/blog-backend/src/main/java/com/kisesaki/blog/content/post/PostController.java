@@ -148,7 +148,6 @@ public class PostController {
             @Valid @RequestBody UpdatePostRequest request,
             Authentication authentication) {
         Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
-        log.info("用户 {} 更新文章 {}: {}", userId, id, request);
         UpdatePostResponse result = postCommandService.updatePost(id, request, userId);
         return ResultUtils.success("更新文章成功", result);
     }
@@ -308,7 +307,7 @@ public class PostController {
      */
     /**
      * 获取指定文章的版本列表
-     * 
+     *
      * @param postId         文章ID
      * @param params         分页参数
      * @param authentication 认证信息
@@ -331,7 +330,7 @@ public class PostController {
 
     /**
      * 获取指定文章的指定版本内容
-     * 
+     *
      * @param postId         文章ID
      * @param revisionId     版本ID
      * @param authentication 认证信息
@@ -353,7 +352,7 @@ public class PostController {
 
     /**
      * 恢复文章到指定版本
-     * 
+     *
      * @param postId         文章ID
      * @param revisionId     版本ID
      * @param authentication 认证信息

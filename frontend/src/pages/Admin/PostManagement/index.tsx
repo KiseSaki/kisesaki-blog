@@ -187,7 +187,7 @@ const PostManagement = () => {
           <Loading />
         ) : (
           <Table<MyPostsListResponse>
-            columns={columns}
+            columns={columns(navigate)}
             dataSource={
               myPosts?.data.map(item => ({ key: item.id, ...item })) || []
             }

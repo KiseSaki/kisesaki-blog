@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author KiseSaki
  */
 @RestController
-@RequestMapping("/api/admin/posts")
+@RequestMapping("/admin/posts")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "管理员文章管理", description = "管理员文章管理相关接口")

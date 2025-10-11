@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
  * @author KiseSaki
  */
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/admin")
 @Tag(name = "管理员评论", description = "管理员评论管理相关接口")
 @RequiredArgsConstructor
 public class AdminCommentController {

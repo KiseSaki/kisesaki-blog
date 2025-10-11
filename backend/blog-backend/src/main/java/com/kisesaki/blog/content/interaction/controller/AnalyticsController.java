@@ -24,11 +24,11 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * 分析统计控制器
- * 
+ *
  * @author KiseSaki
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("")
 @RequiredArgsConstructor
 @Tag(name = "分析统计", description = "页面浏览记录和事件统计相关接口")
 public class AnalyticsController {

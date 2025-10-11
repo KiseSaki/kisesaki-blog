@@ -27,11 +27,11 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * 收藏功能控制器
- * 
+ *
  * @author KiseSaki
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("")
 @RequiredArgsConstructor
 @Tag(name = "收藏管理", description = "文章收藏相关接口")
 public class FavoriteController {

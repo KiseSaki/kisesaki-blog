@@ -33,12 +33,10 @@ export const CategoryForm = ({
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (visible && initialValues) {
-      form.setFieldsValue(initialValues);
-    } else {
+    if (!visible) {
       form.resetFields();
     }
-  }, [visible, initialValues, form]);
+  }, [visible, form]);
 
   const handleOk = async () => {
     try {
@@ -63,9 +61,14 @@ export const CategoryForm = ({
       onCancel={onCancel}
       okText='确定'
       cancelText='取消'
-      destroyOnClose
+      destroyOnHidden
     >
-      <Form form={form} layout='vertical' preserve={false}>
+      <Form
+        form={form}
+        layout='vertical'
+        preserve={false}
+        initialValues={initialValues}
+      >
         <Form.Item
           label='分类名称'
           name='name'

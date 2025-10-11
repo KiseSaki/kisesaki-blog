@@ -22,12 +22,10 @@ export const UserRoleForm = ({
   const [form] = Form.useForm();
 
   useEffect(() => {
-    if (visible) {
-      form.setFieldsValue({ roles: initialRoles });
-    } else {
+    if (!visible) {
       form.resetFields();
     }
-  }, [visible, initialRoles, form]);
+  }, [visible, form]);
 
   const handleOk = async () => {
     try {
@@ -47,9 +45,14 @@ export const UserRoleForm = ({
       onCancel={onCancel}
       okText='确定'
       cancelText='取消'
-      destroyOnClose
+      destroyOnHidden
     >
-      <Form form={form} layout='vertical' preserve={false}>
+      <Form
+        form={form}
+        layout='vertical'
+        preserve={false}
+        initialValues={{ roles: initialRoles }}
+      >
         <Form.Item
           label='用户角色'
           name='roles'

@@ -89,8 +89,8 @@
             <if test="params.userId != null">
                 AND c.user_id = #{params.userId}
             </if>
-            <if test="params.status != null and params.status != ''">
-                AND c.status = #{params.status}
+            <if test="params.status != null">
+                AND c.status = #{params.status, typeHandler=com.kisesaki.blog.content.comment.handler.CommentStatusTypeHandler}
             </if>
             <if test="params.isPinned != null">
                 AND c.is_pinned = #{params.isPinned}
@@ -359,8 +359,8 @@
         <if test="postId != null">
             AND c.post_id = #{postId}
         </if>
-        <if test="status != null and status != ''">
-            AND c.status = #{status}
+        <if test="status != null">
+            AND c.status = #{status, typeHandler=com.kisesaki.blog.content.comment.handler.CommentStatusTypeHandler}
         </if>
 
         ORDER BY c.created_at DESC
@@ -415,8 +415,8 @@
         WHERE 1=1
 
         <if test="params != null">
-            <if test="params.status != null and params.status != ''">
-                AND c.status = #{params.status}
+            <if test="params.status != null">
+                AND c.status = #{params.status, typeHandler=com.kisesaki.blog.content.comment.handler.CommentStatusTypeHandler}
             </if>
             <if test="params.postId != null">
                 AND c.post_id = #{params.postId}

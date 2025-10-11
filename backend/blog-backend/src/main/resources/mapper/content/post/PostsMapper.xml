@@ -1,1495 +1,1512 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.kisesaki.blog.content.post.mapper.PostsMapper">
-    <!-- 文章列表响应结果映射 -->
-    <resultMap id="PublishedPostListMap" type="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse">
-        <!-- 文章基本信息 -->
-        <id property="id" column="post_id"/>
-        <result property="title" column="post_title"/>
-        <result property="slug" column="post_slug"/>
-        <result property="excerpt" column="post_excerpt"/>
-        <result property="coverImageUrl" column="post_cover_image_url"/>
-        <result property="viewCount" column="post_view_count"/>
-        <result property="likeCount" column="post_like_count"/>
-        <result property="commentCount" column="post_comment_count"/>
-        <result property="shareCount" column="post_share_count"/>
-        <result property="readingTime" column="post_reading_time"/>
-        <result property="isFeatured" column="post_is_featured"/>
-        <result property="isTop" column="post_is_top"/>
-        <result property="publishedAt" column="post_published_at"/>
-
-        <!-- 作者信息 -->
-        <association property="author" javaType="com.kisesaki.blog.content.post.dto.AuthorInfo">
-            <id property="id" column="author_id"/>
-            <result property="username" column="author_username"/>
-            <result property="displayName" column="author_display_name"/>
-            <result property="avatarUrl" column="author_avatar_url"/>
-            <result property="bio" column="author_bio"/>
-        </association>
-
-        <!-- 分类信息 -->
-        <association property="category" javaType="com.kisesaki.blog.content.post.dto.CategoryInfo">
-            <id property="id" column="category_id"/>
-            <result property="name" column="category_name"/>
-            <result property="slug" column="category_slug"/>
-            <result property="description" column="category_description"/>
-        </association>
-
-        <!-- 标签集合 -->
-        <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.TagInfo">
-            <id property="id" column="tag_id"/>
-            <result property="name" column="tag_name"/>
-            <result property="slug" column="tag_slug"/>
-            <result property="color" column="tag_color"/>
-        </collection>
-    </resultMap>
-
-    <!-- 根据文章ID获取文章响应结果映射 -->
-    <resultMap id="PublishedPostDetailMap" type="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse">
-        <!-- 文章基本信息 -->
-        <id property="id" column="post_id"/>
-        <result property="title" column="post_title"/>
-        <result property="slug" column="post_slug"/>
-
-        <result property="excerpt" column="post_excerpt"/>
-        <result property="htmlContent" column="post_html_content"/>
-        <result property="readingTime" column="post_reading_time"/>
-
-        <result property="coverImageUrl" column="post_cover_image_url"/>
-        <result property="featuredImageUrl" column="post_featured_image_url"/>
-        <result property="isFeatured" column="post_is_featured"/>
-        <result property="isTop" column="post_is_top"/>
-
-        <result property="viewCount" column="post_view_count"/>
-        <result property="likeCount" column="post_like_count"/>
-        <result property="commentCount" column="post_comment_count"/>
-        <result property="shareCount" column="post_share_count"/>
-
-        <result property="seoTitle" column="post_seo_title"/>
-        <result property="seoDescription" column="post_seo_description"/>
-        <result property="seoKeywords" column="post_seo_keywords"/>
-
-        <result property="publishedAt" column="post_published_at"/>
-        <result property="lastModifiedAt" column="post_last_modified_at"/>
-
-        <!-- 是否允许评论 -->
-        <association property="permissions" javaType="com.kisesaki.blog.content.post.dto.Permissions">
-            <result property="canComment" column="post_allow_comments"/>
-        </association>
-
-        <!-- 作者信息 -->
-        <association property="author" javaType="com.kisesaki.blog.content.post.dto.AuthorInfo">
-            <id property="id" column="author_id"/>
-            <result property="username" column="author_username"/>
-            <result property="displayName" column="author_display_name"/>
-            <result property="avatarUrl" column="author_avatar_url"/>
-            <result property="bio" column="author_bio"/>
-        </association>
-
-        <!-- 分类信息 -->
-        <association property="category" javaType="com.kisesaki.blog.content.post.dto.CategoryInfo">
-            <id property="id" column="category_id"/>
-            <result property="name" column="category_name"/>
-            <result property="slug" column="category_slug"/>
-            <result property="description" column="category_description"/>
-        </association>
-
-        <!-- 版本历史 -->
-        <collection property="revisions" ofType="com.kisesaki.blog.content.post.dto.RevisionInfo">
-            <result property="id" column="revision_id"/>
-            <result property="title" column="revision_title"/>
-            <result property="version" column="revision_version"/>
-            <result property="summary" column="revision_summary"/>
-            <result property="createdAt" column="revision_created_at"/>
-        </collection>
-
-        <!-- 标签集合 -->
-        <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.TagInfo">
-            <id property="id" column="tag_id"/>
-            <result property="name" column="tag_name"/>
-            <result property="slug" column="tag_slug"/>
-            <result property="color" column="tag_color"/>
-        </collection>
-    </resultMap>
-
-    <!-- 按条件获取已发布文章列表 -->
-    <select id="selectPublishedPostsPage" resultMap="PublishedPostListMap">
-        -- DISTINCT作用： 避免多分类、多标签文章重复出现
-        SELECT DISTINCT
-        -- 文章基本信息
-        p.id AS post_id,
-        p.title AS post_title,
-        p.slug AS post_slug,
-        p.excerpt AS post_excerpt,
-        p.cover_image_url AS post_cover_image_url,
-        p.view_count AS post_view_count,
-        p.like_count AS post_like_count,
-        p.comment_count AS post_comment_count,
-        p.share_count AS post_share_count,
-        p.reading_time AS post_reading_time,
-        p.is_featured AS post_is_featured,
-        p.is_top AS post_is_top,
-        p.published_at AS post_published_at,
-        p.created_at,
-
-        -- 作者信息
-        u.id AS author_id,
-        u.username AS author_username,
-        up.display_name AS author_display_name,
-        up.avatar_url AS author_avatar_url,
-        up.bio AS author_bio,
-
-        -- 分类信息
-        c.id AS category_id,
-        c.name AS category_name,
-        c.slug AS category_slug,
-        c.description AS category_description,
-
-        -- 标签信息
-        t.id AS tag_id,
-        t.name AS tag_name,
-        t.slug AS tag_slug,
-        t.color AS tag_color
-        FROM posts p
-
-        -- 关联作者信息
-        LEFT JOIN "user" u ON p.author_id = u.id
-        LEFT JOIN user_profiles up ON u.id = up.user_id
-
-        -- 关联分类信息
-        LEFT JOIN categories c ON p.category_id = c.id
-
-        -- 关联标签信息
-        LEFT JOIN post_tags pt ON p.id = pt.post_id
-        LEFT JOIN tags t ON pt.tag_id = t.id
-
-        -- 只获取已发布、允许公开访问且作者为活跃状态的文章
-        WHERE p.status = 'published'
-        AND p.visibility = 'public'
-        AND u.status = 'active'
-
-        -- 动态查询条件
-        -- 关键字搜索
-        <if test="params.q != null and params.q != ''">
-            AND (p.title ILIKE CONCAT('%', #{params.q}, '%')
-            OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
-            OR p.content ILIKE CONCAT('%', #{params.q}, '%')
-            OR u.username ILIKE CONCAT('%', #{params.q}, '%')
-            OR up.display_name ILIKE CONCAT('%', #{params.q}, '%'))
-        </if>
-        -- 分类ID过滤
-        <if test="params.categoryId != null">
-            AND p.category_id = #{params.categoryId}
-        </if>
-        -- 分类名称过滤
-        <if test="params.categoryName != null and params.categoryName != ''">
-            AND c.name = #{params.categoryName}
-        </if>
-        -- 标签ID过滤
-        <if test="params.tagId != null">
-            AND EXISTS(
-            SELECT 1 FROM post_tags pt2
-            WHERE pt2.post_id = p.id
-            AND pt2.tag_id = #{params.tagId}
-            )
-        </if>
-        -- 标签名称过滤
-        <if test="params.tagName != null and params.tagName != ''">
-            AND EXISTS(
-            SELECT 1 FROM post_tags pt2
-            JOIN tags t2 ON pt2.tag_id = t2.id
-            WHERE pt2.post_id = p.id
-            AND t2.name = #{params.tagName}
-            )
-        </if>
-        -- 作者ID过滤
-        <if test="params.authorId != null">
-            AND p.author_id = #{params.authorId}
-        </if>
-        -- 作者用户名过滤
-        <if test="params.authorUsername != null and params.authorUsername != ''">
-            AND u.username = #{params.authorUsername}
-        </if>
-        -- 作者显示名称过滤
-        <if test="params.authorDisplayName != null and params.authorDisplayName != ''">
-            AND up.display_name = #{params.authorDisplayName}
-        </if>
-        -- 是否置顶过滤
-        <if test="params.isTop != null">
-            AND p.is_top = #{params.isTop}
-        </if>
-        -- 是否精选过滤
-        <if test="params.isFeatured != null">
-            AND p.is_featured = #{params.isFeatured}
-        </if>
-        -- 发布时间范围过滤
-        <if test="params.pageable.startTime != null">
-            AND p.published_at &gt;= #{params.pageable.startTime}
-        </if>
-        <if test="params.pageable.endTime != null">
-            AND p.published_at &lt;= #{params.pageable.endTime}
-        </if>
-
-        -- 动态排序
-        ORDER BY
-        <choose>
-            <when test="params.pageable.sort != null and params.pageable.sort.contains('createdAt,desc')">
-                p.created_at DESC
-            </when>
-            <when test="params.pageable.sort != null and params.pageable.sort.contains('createdAt,asc')">
-                p.created_at ASC
-            </when>
-            <when test="params.pageable.sort != null and params.pageable.sort.contains('publishedAt,desc')">
-                p.published_at DESC
-            </when>
-            <when test="params.pageable.sort != null and params.pageable.sort.contains('publishedAt,asc')">
-                p.published_at ASC
-            </when>
-            <when test="params.pageable.sort != null and params.pageable.sort.contains('title,desc')">
-                p.title DESC
-            </when>
-            <when test="params.pageable.sort != null and params.pageable.sort.contains('title,asc')">
-                p.title ASC
-            </when>
-            <when test="params.pageable.sort != null and params.pageable.sort.contains('viewCount,desc')">
-                p.view_count DESC
-            </when>
-            <when test="params.pageable.sort != null and params.pageable.sort.contains('viewCount,asc')">
-                p.view_count ASC
-            </when>
-            <when test="params.pageable.sort != null and params.pageable.sort.contains('likeCount,desc')">
-                p.like_count DESC
-            </when>
-            <when test="params.pageable.sort != null and params.pageable.sort.contains('likeCount,asc')">
-                p.like_count ASC
-            </when>
-            <otherwise>
-                -- 默认按发布时间降序排序
-                p.published_at DESC
-            </otherwise>
-        </choose>
-    </select>
-
-    <!-- 专门的计数查询，确保正确处理DISTINCT -->
-    <select id="countPublishedPosts" resultType="long">
-        SELECT COUNT(DISTINCT p.id)
-        FROM posts p
-
-        -- 关联作者信息
-        LEFT JOIN "user" u ON p.author_id = u.id
-        LEFT JOIN user_profiles up ON u.id = up.user_id
-
-        -- 关联分类信息
-        LEFT JOIN categories c ON p.category_id = c.id
-
-        -- 关联标签信息（可能导致重复）
-        LEFT JOIN post_tags pt ON p.id = pt.post_id
-        LEFT JOIN tags t ON pt.tag_id = t.id
-
-        -- 只获取已发布、允许公开访问且作者为活跃状态的文章
-        WHERE p.status = 'published'
-        AND p.visibility = 'public'
-        AND u.status = 'active'
-
-        -- 动态查询条件（与主查询保持一致）
-        -- 关键字搜索
-        <if test="params.q != null and params.q != ''">
-            AND (p.title ILIKE CONCAT('%', #{params.q}, '%')
-            OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
-            OR p.content ILIKE CONCAT('%', #{params.q}, '%')
-            OR u.username ILIKE CONCAT('%', #{params.q}, '%')
-            OR up.display_name ILIKE CONCAT('%', #{params.q}, '%'))
-        </if>
-        -- 分类ID过滤
-        <if test="params.categoryId != null">
-            AND p.category_id = #{params.categoryId}
-        </if>
-        -- 分类名称过滤
-        <if test="params.categoryName != null and params.categoryName != ''">
-            AND c.name = #{params.categoryName}
-        </if>
-        -- 标签ID过滤
-        <if test="params.tagId != null">
-            AND EXISTS(
-            SELECT 1 FROM post_tags pt2
-            WHERE pt2.post_id = p.id
-            AND pt2.tag_id = #{params.tagId}
-            )
-        </if>
-        -- 标签名称过滤
-        <if test="params.tagName != null and params.tagName != ''">
-            AND EXISTS(
-            SELECT 1 FROM post_tags pt2
-            JOIN tags t2 ON pt2.tag_id = t2.id
-            WHERE pt2.post_id = p.id
-            AND t2.name = #{params.tagName}
-            )
-        </if>
-        -- 作者ID过滤
-        <if test="params.authorId != null">
-            AND p.author_id = #{params.authorId}
-        </if>
-        -- 作者用户名过滤
-        <if test="params.authorUsername != null and params.authorUsername != ''">
-            AND u.username = #{params.authorUsername}
-        </if>
-        -- 作者显示名称过滤
-        <if test="params.authorDisplayName != null and params.authorDisplayName != ''">
-            AND up.display_name = #{params.authorDisplayName}
-        </if>
-        -- 是否置顶过滤
-        <if test="params.isTop != null">
-            AND p.is_top = #{params.isTop}
-        </if>
-        -- 是否精选过滤
-        <if test="params.isFeatured != null">
-            AND p.is_featured = #{params.isFeatured}
-        </if>
-        -- 发布时间范围过滤
-        <if test="params.pageable.startTime != null">
-            AND p.published_at &gt;= #{params.pageable.startTime}
-        </if>
-        <if test="params.pageable.endTime != null">
-            AND p.published_at &lt;= #{params.pageable.endTime}
-        </if>
-    </select>
-
-    <!-- 公共的文章详情 SELECT/JOINS（复用点） -->
-    <sql id="PublishedPostDetailCommon">
-        SELECT
-            -- 文章基本信息
-            p.id AS post_id,
-            p.title AS post_title,
-            p.slug AS post_slug,
-
-            p.excerpt AS post_excerpt,
-            p.html_content AS post_html_content,
-            p.reading_time AS post_reading_time,
-
-            p.cover_image_url AS post_cover_image_url,
-            p.featured_image_url AS post_featured_image_url,
-            p.is_featured AS post_is_featured,
-            p.is_top AS post_is_top,
-
-            p.view_count AS post_view_count,
-            p.like_count AS post_like_count,
-            p.comment_count AS post_comment_count,
-            p.share_count AS post_share_count,
-
-            p.seo_title AS post_seo_title,
-            p.seo_description AS post_seo_description,
-            p.seo_keywords AS post_seo_keywords,
-
-            p.published_at AS post_published_at,
-            p.last_modified_at AS post_last_modified_at,
-
-            p.allow_comments AS post_allow_comments,
-
-            -- 版本历史
-            r.id AS revision_id,
-            r.title AS revision_title,
-            r.version AS revision_version,
-            r.summary AS revision_summary,
-            r.created_at AS revision_created_at,
-
-            -- 作者信息
-            u.id AS author_id,
-            u.username AS author_username,
-            up.display_name AS author_display_name,
-            up.avatar_url AS author_avatar_url,
-            up.bio AS author_bio,
-
-            -- 分类信息
-            c.id AS category_id,
-            c.name AS category_name,
-            c.slug AS category_slug,
-            c.description AS category_description,
-
-            -- 标签信息
-            t.id AS tag_id,
-            t.name AS tag_name,
-            t.slug AS tag_slug,
-            t.color AS tag_color
-
-        FROM posts p
-
-                 -- 关联最新的版本信息
-                 LEFT JOIN post_revisions r ON p.id = r.post_id AND r.version = (
-            SELECT MAX(version) FROM post_revisions WHERE post_id = p.id
-        )
-
-            -- 关联作者信息
-                 LEFT JOIN "user" u ON p.author_id = u.id
-                 LEFT JOIN user_profiles up ON u.id = up.user_id
-
-            -- 关联分类信息
-                 LEFT JOIN categories c ON p.category_id = c.id
-
-            -- 关联标签信息
-                 LEFT JOIN post_tags pt ON p.id = pt.post_id
-                 LEFT JOIN tags t ON pt.tag_id = t.id
-    </sql>
-
-    <!-- 根据 文章ID 获取以发布文章详情 -->
-    <select id="getPublishedPostDetailById" resultMap="PublishedPostDetailMap">
-        <include refid="PublishedPostDetailCommon"/>
-        -- 只获取指定ID且已发布、允许公开访问且作者为活跃状态的文章
-        WHERE p.id = #{postId}
-        AND p.status = 'published'
-        AND p.visibility = 'public'
-        AND u.status = 'active'
-    </select>
-
-    <!-- 根据 文章slug 获取以发布文章详情 -->
-    <select id="getPublishedPostDetailBySlug" resultMap="PublishedPostDetailMap">
-        <include refid="PublishedPostDetailCommon"/>
-        -- 只获取指定slug且已发布、允许公开访问且作者为活跃状态的文章
-        WHERE p.slug = #{slug}
-        AND p.status = 'published'
-        AND p.visibility = 'public'
-        AND u.status = 'active'
-    </select>
-
-
-    <!-- 获取上一篇文章（按发布时间降序，取比当前文章发布时间更早的第一篇） -->
-    <select id="getPrevPost" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$AdjacentPost">
-        SELECT
-            p.id,
-            p.title,
-            p.slug,
-            p.cover_image_url,
-            p.excerpt
-        FROM posts p
-        LEFT JOIN "user" u ON p.author_id = u.id
-        WHERE p.status = 'published'
-          AND p.visibility = 'public'
-          AND u.status = 'active'
-          AND p.id != #{currentPostId}
-          AND p.published_at &lt; #{publishedAt}
-        ORDER BY p.published_at DESC
-        LIMIT 1
-    </select>
-
-    <!-- 获取下一篇文章（按发布时间升序，取比当前文章发布时间更晚的第一篇） -->
-    <select id="getNextPost" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$AdjacentPost">
-        SELECT p.id,
-               p.title,
-               p.slug,
-               p.cover_image_url,
-               p.excerpt
-        FROM posts p
-                 LEFT JOIN "user" u ON p.author_id = u.id
-        WHERE p.status = 'published'
-          AND p.visibility = 'public'
-          AND u.status = 'active'
-          AND p.id != #{currentPostId}
-          AND p.published_at &gt; #{publishedAt}
-        ORDER BY p.published_at
-        LIMIT 1
-    </select>
-
-    <!-- 获取相关推荐文章 -->
-    <select id="getRelatedPosts" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$RelatedPost">
-        SELECT DISTINCT
-            p.id,
-            p.title,
-            p.slug,
-            p.cover_image_url AS coverImageUrl,
-            p.excerpt,
-            p.view_count AS viewCount,
-            p.published_at AS publishedAt,
-            -- 计算相关度分数：相同分类+3分，共同标签每个+1分，浏览量权重
-            (
-                CASE WHEN p.category_id = #{categoryId} THEN 3 ELSE 0 END +
-        <if test="tagIds != null and tagIds.size() > 0">
-                COALESCE((
-                    SELECT COUNT(*)
-                    FROM post_tags pt1
-                    WHERE pt1.post_id = p.id
-                    AND pt1.tag_id IN
-            <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
-                        #{tagId}
-            </foreach>
-                ), 0) +
-        </if>
-        <if test="tagIds == null or tagIds.size() == 0">
-                0 +
-        </if>
-                -- 浏览量权重（归一化到0-1分）
-                LEAST(p.view_count * 0.001, 1)
-            ) AS relevance_score
-        FROM posts p
-        LEFT JOIN "user" u ON p.author_id = u.id
-        WHERE p.status = 'published'
-          AND p.visibility = 'public'
-          AND u.status = 'active'
-          AND p.id != #{currentPostId}
-        <if test="categoryId != null or (tagIds != null and tagIds.size() > 0)">
-          AND (
-            <if test="categoryId != null">
-            -- 相同分类
-            p.category_id = #{categoryId}
-            </if>
-            <if test="categoryId != null and tagIds != null and tagIds.size() > 0">
-            OR
-            </if>
-            <if test="tagIds != null and tagIds.size() > 0">
-            -- 有共同标签
-            EXISTS (
-                SELECT 1 FROM post_tags pt
-                WHERE pt.post_id = p.id
-                AND pt.tag_id IN
-                <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
-                    #{tagId}
-                </foreach>
-            )
-            </if>
-          )
-        </if>
-        ORDER BY relevance_score DESC, viewCount DESC, publishedAt DESC
-        LIMIT #{limit}
-    </select>
-
-    <!-- 获取文章元数据 -->
-    <select id="getPostMeta" resultType="map">
-        SELECT
-            meta_key AS "key",
-            meta_value AS "value"
-        FROM post_meta
-        WHERE post_id = #{postId}
-    </select>
-
-    <!-- 获取热门文章（降级推荐策略） -->
-    <select id="getPopularPosts" resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$RelatedPost">
-        SELECT
-            p.id,
-            p.title,
-            p.slug,
-            p.cover_image_url AS coverImageUrl
-        FROM posts p
-        LEFT JOIN "user" u ON p.author_id = u.id
-        WHERE p.status = 'published'
-          AND p.visibility = 'public'
-          AND u.status = 'active'
-          AND p.id != #{currentPostId}
-        ORDER BY
-            -- 综合热度排序：浏览量 * 0.4 + 点赞数 * 0.3 + 评论数 * 0.2 + 分享数 * 0.1
-            (p.view_count * 0.4 + p.like_count * 0.3 + p.comment_count * 0.2 + p.share_count * 0.1) DESC,
-            p.published_at DESC
-        LIMIT #{limit}
-    </select>
-
-    <!-- 我的文章列表响应结果映射 -->
-    <resultMap id="MyPostsListMap" type="com.kisesaki.blog.content.post.dto.PostQuery.MyPostsListResponse">
-        <!-- 文章基本信息 -->
-        <id property="id" column="post_id"/>
-        <result property="title" column="post_title"/>
-        <result property="slug" column="post_slug"/>
-        <result property="excerpt" column="post_excerpt"/>
-        <result property="coverImageUrl" column="post_cover_image_url"/>
-        <result property="status" column="post_status"/>
-        <result property="visibility" column="post_visibility"/>
-        <result property="viewCount" column="post_view_count"/>
-        <result property="likeCount" column="post_like_count"/>
-        <result property="commentCount" column="post_comment_count"/>
-        <result property="shareCount" column="post_share_count"/>
-        <result property="readingTime" column="post_reading_time"/>
-        <result property="wordCount" column="post_word_count"/>
-        <result property="isFeatured" column="post_is_featured"/>
-        <result property="isTop" column="post_is_top"/>
-        <result property="allowComments" column="post_allow_comments"/>
-        <result property="createdAt" column="post_created_at"/>
-        <result property="updatedAt" column="post_updated_at"/>
-        <result property="publishedAt" column="post_published_at"/>
-        <result property="scheduledAt" column="post_scheduled_at"/>
-
-        <!-- 作者信息 -->
-        <association property="author" javaType="com.kisesaki.blog.content.post.dto.AuthorInfo">
-            <id property="id" column="author_id"/>
-            <result property="username" column="author_username"/>
-            <result property="displayName" column="author_display_name"/>
-            <result property="avatarUrl" column="author_avatar_url"/>
-            <result property="bio" column="author_bio"/>
-        </association>
-
-        <!-- 分类信息 -->
-        <association property="category" javaType="com.kisesaki.blog.content.post.dto.CategoryInfo">
-            <id property="id" column="category_id"/>
-            <result property="name" column="category_name"/>
-            <result property="slug" column="category_slug"/>
-            <result property="description" column="category_description"/>
-        </association>
-
-        <!-- 标签集合（不在此处映射，由Service层单独查询后组装） -->
-    </resultMap>
-
-    <!-- 分页查询我的文章列表 -->
-    <select id="selectMyPostsPage" resultMap="MyPostsListMap">
-        -- 不再使用 DISTINCT，也不关联标签表
-        SELECT
-        -- 文章基本信息
-        p.id AS post_id,
-        p.title AS post_title,
-        p.slug AS post_slug,
-        p.excerpt AS post_excerpt,
-        p.cover_image_url AS post_cover_image_url,
-        p.status AS post_status,
-        p.visibility AS post_visibility,
-        p.view_count AS post_view_count,
-        p.like_count AS post_like_count,
-        p.comment_count AS post_comment_count,
-        p.share_count AS post_share_count,
-        p.reading_time AS post_reading_time,
-        p.word_count AS post_word_count,
-        p.is_featured AS post_is_featured,
-        p.is_top AS post_is_top,
-        p.allow_comments AS post_allow_comments,
-        p.created_at AS post_created_at,
-        p.updated_at AS post_updated_at,
-        p.published_at AS post_published_at,
-        p.scheduled_at AS post_scheduled_at,
-
-        -- 作者信息
-        u.id AS author_id,
-        u.username AS author_username,
-        up.display_name AS author_display_name,
-        up.avatar_url AS author_avatar_url,
-        up.bio AS author_bio,
-
-        -- 分类信息
-        c.id AS category_id,
-        c.name AS category_name,
-        c.slug AS category_slug,
-        c.description AS category_description
-        FROM posts p
-
-        -- 关联作者信息
-        LEFT JOIN "user" u ON p.author_id = u.id
-        LEFT JOIN user_profiles up ON u.id = up.user_id
-
-        -- 关联分类信息
-        LEFT JOIN categories c ON p.category_id = c.id
-
-        -- 只获取当前用户的文章
-        WHERE p.author_id = #{userId}
-        AND u.status = 'active'
-
-        -- 动态查询条件
-                                        <!-- 关键字搜索 -->
-        <if test="params.q != null and params.q != ''">
-            AND (
-                p.title ILIKE CONCAT('%', #{params.q}, '%')
-                OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
-                OR p.content ILIKE CONCAT('%', #{params.q}, '%')
-            )
-        </if>
-        <!-- 文章状态过滤 -->
-        <if test="params.status != null and params.status != ''">
-            AND p.status = #{params.status}
-        </if>
-        <!-- 分类ID过滤 -->
-        <if test="params.categoryId != null">
-            AND p.category_id = #{params.categoryId}
-        </if>
-        <!-- 分类名称过滤 -->
-        <if test="params.categoryName != null and params.categoryName != ''">
-            AND c.name ILIKE CONCAT('%', #{params.categoryName}, '%')
-        </if>
-        <!-- 标签过滤：当需要按标签筛选时，使用 EXISTS 子查询而不是 JOIN -->
-        <if test="params.tagId != null">
-            AND EXISTS (
-                SELECT 1 FROM post_tags pt WHERE pt.post_id = p.id AND pt.tag_id = #{params.tagId}
-            )
-        </if>
-        <if test="params.tagName != null and params.tagName != ''">
-            AND EXISTS (
-                SELECT 1 FROM post_tags pt
-                INNER JOIN tags t ON pt.tag_id = t.id
-                WHERE pt.post_id = p.id AND t.name ILIKE CONCAT('%', #{params.tagName}, '%')
-            )
-        </if>
-        <!-- 是否置顶过滤 -->
-        <if test="params.isTop != null">
-            AND p.is_top = #{params.isTop}
-        </if>
-        <!-- 是否精选过滤 -->
-        <if test="params.isFeatured != null">
-            AND p.is_featured = #{params.isFeatured}
-        </if>
-        <!-- 可见性过滤 -->
-        <if test="params.visibility != null and params.visibility != ''">
-            AND p.visibility = #{params.visibility}
-        </if>
-        <!-- 发布时间范围过滤 -->
-        <if test="params.pageable.startTime != null">
-            AND p.published_at >= #{params.pageable.startTime}
-        </if>
-        <if test="params.pageable.endTime != null">
-            AND p.published_at &lt;= #{params.pageable.endTime}
-        </if>
-
-        -- 动态排序
-        ORDER BY
-        <choose>
-            <when test="params.pageable.sort != null and params.pageable.sort != ''">
-                <choose>
-                    <when test="params.pageable.sort == 'createdAt:desc'">p.created_at DESC</when>
-                    <when test="params.pageable.sort == 'createdAt:asc'">p.created_at ASC</when>
-                    <when test="params.pageable.sort == 'updatedAt:desc'">p.updated_at DESC</when>
-                    <when test="params.pageable.sort == 'updatedAt:asc'">p.updated_at ASC</when>
-                    <when test="params.pageable.sort == 'publishedAt:desc'">p.published_at DESC</when>
-                    <when test="params.pageable.sort == 'publishedAt:asc'">p.published_at ASC</when>
-                    <when test="params.pageable.sort == 'title:desc'">p.title DESC</when>
-                    <when test="params.pageable.sort == 'title:asc'">p.title ASC</when>
-                    <when test="params.pageable.sort == 'viewCount:desc'">p.view_count DESC</when>
-                    <when test="params.pageable.sort == 'viewCount:asc'">p.view_count ASC</when>
-                    <otherwise>p.updated_at DESC</otherwise>
-                </choose>
-            </when>
-            <otherwise>p.updated_at DESC</otherwise>
-        </choose>
-    </select>
-
-    <!-- 专门的计数查询，确保正确处理DISTINCT -->
-    <select id="countMyPosts" resultType="long">
-        -- 计数查询不需要关联标签表，避免重复计数
-        SELECT COUNT(p.id)
-        FROM posts p
-
-        -- 关联作者信息
-        LEFT JOIN "user" u ON p.author_id = u.id
-
-        -- 关联分类信息
-        LEFT JOIN categories c ON p.category_id = c.id
-
-        -- 只获取当前用户的文章
-        WHERE p.author_id = #{userId}
-        AND u.status = 'active'
-
-        -- 动态查询条件（与主查询保持一致）
-                                        <!-- 关键字搜索 -->
-        <if test="params.q != null and params.q != ''">
-            AND (
-                p.title ILIKE CONCAT('%', #{params.q}, '%')
-                OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
-                OR p.content ILIKE CONCAT('%', #{params.q}, '%')
-            )
-        </if>
-        <!-- 文章状态过滤 -->
-        <if test="params.status != null and params.status != ''">
-            AND p.status = #{params.status}
-        </if>
-        <!-- 分类ID过滤 -->
-        <if test="params.categoryId != null">
-            AND p.category_id = #{params.categoryId}
-        </if>
-        <!-- 分类名称过滤 -->
-        <if test="params.categoryName != null and params.categoryName != ''">
-            AND c.name ILIKE CONCAT('%', #{params.categoryName}, '%')
-        </if>
-        <!-- 标签过滤：使用 EXISTS 子查询 -->
-        <if test="params.tagId != null">
-            AND EXISTS (
-                SELECT 1 FROM post_tags pt WHERE pt.post_id = p.id AND pt.tag_id = #{params.tagId}
-            )
-        </if>
-        <if test="params.tagName != null and params.tagName != ''">
-            AND EXISTS (
-                SELECT 1 FROM post_tags pt
-                INNER JOIN tags t ON pt.tag_id = t.id
-                WHERE pt.post_id = p.id AND t.name ILIKE CONCAT('%', #{params.tagName}, '%')
-            )
-        </if>
-        <!-- 是否置顶过滤 -->
-        <if test="params.isTop != null">
-            AND p.is_top = #{params.isTop}
-        </if>
-        <!-- 是否精选过滤 -->
-        <if test="params.isFeatured != null">
-            AND p.is_featured = #{params.isFeatured}
-        </if>
-        <!-- 可见性过滤 -->
-        <if test="params.visibility != null and params.visibility != ''">
-            AND p.visibility = #{params.visibility}
-        </if>
-        <!-- 发布时间范围过滤 -->
-        <if test="params.pageable.startTime != null">
-            AND p.published_at >= #{params.pageable.startTime}
-        </if>
-        <if test="params.pageable.endTime != null">
-            AND p.published_at &lt;= #{params.pageable.endTime}
-        </if>
-    </select>
-
-    <!-- ========== 管理员专用查询 ========== -->
-
-    <!-- 管理员文章列表响应结果映射 -->
-    <resultMap id="AdminPostListMap" type="com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostQueryDto$AdminPostListResponse">
-        <!-- 文章基本信息 -->
-        <id property="id" column="post_id"/>
-        <result property="title" column="post_title"/>
-        <result property="slug" column="post_slug"/>
-        <result property="excerpt" column="post_excerpt"/>
-        <result property="coverImageUrl" column="post_cover_image_url"/>
-        <result property="status" column="post_status"/>
-        <result property="visibility" column="post_visibility"/>
-        <result property="viewCount" column="post_view_count"/>
-        <result property="likeCount" column="post_like_count"/>
-        <result property="commentCount" column="post_comment_count"/>
-        <result property="shareCount" column="post_share_count"/>
-        <result property="readingTime" column="post_reading_time"/>
-        <result property="wordCount" column="post_word_count"/>
-        <result property="isFeatured" column="post_is_featured"/>
-        <result property="isTop" column="post_is_top"/>
-        <result property="allowComments" column="post_allow_comments"/>
-        <result property="createdAt" column="post_created_at"/>
-        <result property="updatedAt" column="post_updated_at"/>
-        <result property="publishedAt" column="post_published_at"/>
-        <result property="scheduledAt" column="post_scheduled_at"/>
-        <result property="lastModifiedAt" column="post_last_modified_at"/>
-
-        <!-- 作者信息 -->
-        <association property="author" javaType="com.kisesaki.blog.content.post.dto.AuthorInfo">
-            <id property="id" column="author_id"/>
-            <result property="username" column="author_username"/>
-            <result property="displayName" column="author_display_name"/>
-            <result property="avatarUrl" column="author_avatar_url"/>
-            <result property="bio" column="author_bio"/>
-        </association>
-
-        <!-- 分类信息 -->
-        <association property="category" javaType="com.kisesaki.blog.content.post.dto.CategoryInfo">
-            <id property="id" column="category_id"/>
-            <result property="name" column="category_name"/>
-            <result property="slug" column="category_slug"/>
-            <result property="description" column="category_description"/>
-        </association>
-
-        <!-- 标签集合 -->
-        <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.TagInfo">
-            <id property="id" column="tag_id"/>
-            <result property="name" column="tag_name"/>
-            <result property="slug" column="tag_slug"/>
-            <result property="color" column="tag_color"/>
-        </collection>
-    </resultMap>
-
-    <!-- 分页查询管理员文章列表 -->
-    <select id="selectAdminPostsPage" resultMap="AdminPostListMap">
-        SELECT DISTINCT
-        -- 文章基本信息
-        p.id AS post_id,
-        p.title AS post_title,
-        p.slug AS post_slug,
-        p.excerpt AS post_excerpt,
-        p.cover_image_url AS post_cover_image_url,
-        p.status AS post_status,
-        p.visibility AS post_visibility,
-        p.view_count AS post_view_count,
-        p.like_count AS post_like_count,
-        p.comment_count AS post_comment_count,
-        p.share_count AS post_share_count,
-        p.reading_time AS post_reading_time,
-        p.word_count AS post_word_count,
-        p.is_featured AS post_is_featured,
-        p.is_top AS post_is_top,
-        p.allow_comments AS post_allow_comments,
-        p.created_at AS post_created_at,
-        p.updated_at AS post_updated_at,
-        p.published_at AS post_published_at,
-        p.scheduled_at AS post_scheduled_at,
-        p.last_modified_at AS post_last_modified_at,
-
-        -- 作者信息
-        u.id AS author_id,
-        u.username AS author_username,
-        up.display_name AS author_display_name,
-        up.avatar_url AS author_avatar_url,
-        up.bio AS author_bio,
-
-        -- 分类信息
-        c.id AS category_id,
-        c.name AS category_name,
-        c.slug AS category_slug,
-        c.description AS category_description,
-
-        -- 标签信息
-        t.id AS tag_id,
-        t.name AS tag_name,
-        t.slug AS tag_slug,
-        t.color AS tag_color
-        FROM posts p
-
-        -- 关联作者信息
-        LEFT JOIN "user" u ON p.author_id = u.id
-        LEFT JOIN user_profiles up ON u.id = up.user_id
-
-        -- 关联分类信息
-        LEFT JOIN categories c ON p.category_id = c.id
-
-        -- 关联标签信息
-        LEFT JOIN post_tags pt ON p.id = pt.post_id
-        LEFT JOIN tags t ON pt.tag_id = t.id
-
-        -- 管理员可以查看所有文章（不限制可见性和作者状态）
-        WHERE 1=1
-
-        -- 动态查询条件
-                                <!-- 关键字搜索 -->
-        <if test="params.q != null and params.q != ''">
-            AND (
-                p.title ILIKE CONCAT('%', #{params.q}, '%')
-                OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
-                OR p.content ILIKE CONCAT('%', #{params.q}, '%')
-                OR u.username ILIKE CONCAT('%', #{params.q}, '%')
-                OR up.display_name ILIKE CONCAT('%', #{params.q}, '%')
-            )
-        </if>
-        <!-- 文章状态过滤 -->
-        <if test="params.status != null and params.status != ''">
-            AND p.status = #{params.status}
-        </if>
-        <!-- 可见性过滤 -->
-        <if test="params.visibility != null and params.visibility != ''">
-            AND p.visibility = #{params.visibility}
-        </if>
-        <!-- 分类ID过滤 -->
-        <if test="params.categoryId != null">
-            AND p.category_id = #{params.categoryId}
-        </if>
-        <!-- 分类名称过滤 -->
-        <if test="params.categoryName != null and params.categoryName != ''">
-            AND c.name ILIKE CONCAT('%', #{params.categoryName}, '%')
-        </if>
-        <!-- 标签ID过滤 -->
-        <if test="params.tagId != null">
-            AND EXISTS(
-                SELECT 1 FROM post_tags pt2
-                WHERE pt2.post_id = p.id
-                AND pt2.tag_id = #{params.tagId}
-            )
-        </if>
-        <!-- 标签名称过滤 -->
-        <if test="params.tagName != null and params.tagName != ''">
-            AND EXISTS(
-                SELECT 1 FROM post_tags pt2
-                JOIN tags t2 ON pt2.tag_id = t2.id
-                WHERE pt2.post_id = p.id
-                AND t2.name ILIKE CONCAT('%', #{params.tagName}, '%')
-            )
-        </if>
-        <!-- 作者ID过滤 -->
-        <if test="params.authorId != null">
-            AND p.author_id = #{params.authorId}
-        </if>
-        <!-- 作者用户名过滤 -->
-        <if test="params.authorUsername != null and params.authorUsername != ''">
-            AND u.username ILIKE CONCAT('%', #{params.authorUsername}, '%')
-        </if>
-        <!-- 作者显示名称过滤 -->
-        <if test="params.authorDisplayName != null and params.authorDisplayName != ''">
-            AND up.display_name ILIKE CONCAT('%', #{params.authorDisplayName}, '%')
-        </if>
-        <!-- 是否置顶过滤 -->
-        <if test="params.isTop != null">
-            AND p.is_top = #{params.isTop}
-        </if>
-        <!-- 是否精选过滤 -->
-        <if test="params.isFeatured != null">
-            AND p.is_featured = #{params.isFeatured}
-        </if>
-        <!-- 是否允许评论过滤 -->
-        <if test="params.allowComments != null">
-            AND p.allow_comments = #{params.allowComments}
-        </if>
-        <!-- 创建时间范围过滤 -->
-        <if test="params.pageable.startTime != null">
-            AND p.created_at >= #{params.pageable.startTime}
-        </if>
-        <if test="params.pageable.endTime != null">
-            AND p.created_at &lt;= #{params.pageable.endTime}
-        </if>
-        <!-- 发布时间范围过滤 -->
-        <if test="params.publishedStartTime != null">
-            AND p.published_at >= #{params.publishedStartTime}
-        </if>
-        <if test="params.publishedEndTime != null">
-            AND p.published_at &lt;= #{params.publishedEndTime}
-        </if>
-        <!-- 更新时间范围过滤 -->
-        <if test="params.updatedStartTime != null">
-            AND p.updated_at >= #{params.updatedStartTime}
-        </if>
-        <if test="params.updatedEndTime != null">
-            AND p.updated_at &lt;= #{params.updatedEndTime}
-        </if>
-
-        -- 动态排序
-        ORDER BY
-        <choose>
-            <when test="params.pageable.sort != null and params.pageable.sort != ''">
-                <choose>
-                    <when test="params.pageable.sort == 'createdAt:desc'">p.created_at DESC</when>
-                    <when test="params.pageable.sort == 'createdAt:asc'">p.created_at ASC</when>
-                    <when test="params.pageable.sort == 'updatedAt:desc'">p.updated_at DESC</when>
-                    <when test="params.pageable.sort == 'updatedAt:asc'">p.updated_at ASC</when>
-                    <when test="params.pageable.sort == 'publishedAt:desc'">p.published_at DESC</when>
-                    <when test="params.pageable.sort == 'publishedAt:asc'">p.published_at ASC</when>
-                    <when test="params.pageable.sort == 'title:desc'">p.title DESC</when>
-                    <when test="params.pageable.sort == 'title:asc'">p.title ASC</when>
-                    <when test="params.pageable.sort == 'viewCount:desc'">p.view_count DESC</when>
-                    <when test="params.pageable.sort == 'viewCount:asc'">p.view_count ASC</when>
-                    <when test="params.pageable.sort == 'likeCount:desc'">p.like_count DESC</when>
-                    <when test="params.pageable.sort == 'likeCount:asc'">p.like_count ASC</when>
-                    <when test="params.pageable.sort == 'commentCount:desc'">p.comment_count DESC</when>
-                    <when test="params.pageable.sort == 'commentCount:asc'">p.comment_count ASC</when>
-                    <otherwise>p.updated_at DESC</otherwise>
-                </choose>
-            </when>
-            <otherwise>p.updated_at DESC</otherwise>
-        </choose>
-    </select>
-
-    <!-- 专门的管理员文章计数查询，确保正确处理DISTINCT -->
-    <select id="countAdminPosts" resultType="long">
-        SELECT COUNT(DISTINCT p.id)
-        FROM posts p
-
-        -- 关联作者信息
-        LEFT JOIN "user" u ON p.author_id = u.id
-        LEFT JOIN user_profiles up ON u.id = up.user_id
-
-        -- 关联分类信息
-        LEFT JOIN categories c ON p.category_id = c.id
-
-        -- 关联标签信息（可能导致重复）
-        LEFT JOIN post_tags pt ON p.id = pt.post_id
-        LEFT JOIN tags t ON pt.tag_id = t.id
-
-        -- 管理员可以查看所有文章（不限制可见性和作者状态）
-        WHERE 1=1
-
-        -- 动态查询条件（与主查询保持一致）
-                                <!-- 关键字搜索 -->
-        <if test="params.q != null and params.q != ''">
-            AND (
-                p.title ILIKE CONCAT('%', #{params.q}, '%')
-                OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
-                OR p.content ILIKE CONCAT('%', #{params.q}, '%')
-                OR u.username ILIKE CONCAT('%', #{params.q}, '%')
-                OR up.display_name ILIKE CONCAT('%', #{params.q}, '%')
-            )
-        </if>
-        <!-- 文章状态过滤 -->
-        <if test="params.status != null and params.status != ''">
-            AND p.status = #{params.status}
-        </if>
-        <!-- 可见性过滤 -->
-        <if test="params.visibility != null and params.visibility != ''">
-            AND p.visibility = #{params.visibility}
-        </if>
-        <!-- 分类ID过滤 -->
-        <if test="params.categoryId != null">
-            AND p.category_id = #{params.categoryId}
-        </if>
-        <!-- 分类名称过滤 -->
-        <if test="params.categoryName != null and params.categoryName != ''">
-            AND c.name ILIKE CONCAT('%', #{params.categoryName}, '%')
-        </if>
-        <!-- 标签ID过滤 -->
-        <if test="params.tagId != null">
-            AND EXISTS(
-                SELECT 1 FROM post_tags pt2
-                WHERE pt2.post_id = p.id
-                AND pt2.tag_id = #{params.tagId}
-            )
-        </if>
-        <!-- 标签名称过滤 -->
-        <if test="params.tagName != null and params.tagName != ''">
-            AND EXISTS(
-                SELECT 1 FROM post_tags pt2
-                JOIN tags t2 ON pt2.tag_id = t2.id
-                WHERE pt2.post_id = p.id
-                AND t2.name ILIKE CONCAT('%', #{params.tagName}, '%')
-            )
-        </if>
-        <!-- 作者ID过滤 -->
-        <if test="params.authorId != null">
-            AND p.author_id = #{params.authorId}
-        </if>
-        <!-- 作者用户名过滤 -->
-        <if test="params.authorUsername != null and params.authorUsername != ''">
-            AND u.username ILIKE CONCAT('%', #{params.authorUsername}, '%')
-        </if>
-        <!-- 作者显示名称过滤 -->
-        <if test="params.authorDisplayName != null and params.authorDisplayName != ''">
-            AND up.display_name ILIKE CONCAT('%', #{params.authorDisplayName}, '%')
-        </if>
-        <!-- 是否置顶过滤 -->
-        <if test="params.isTop != null">
-            AND p.is_top = #{params.isTop}
-        </if>
-        <!-- 是否精选过滤 -->
-        <if test="params.isFeatured != null">
-            AND p.is_featured = #{params.isFeatured}
-        </if>
-        <!-- 是否允许评论过滤 -->
-        <if test="params.allowComments != null">
-            AND p.allow_comments = #{params.allowComments}
-        </if>
-        <!-- 创建时间范围过滤 -->
-        <if test="params.pageable.startTime != null">
-            AND p.created_at >= #{params.pageable.startTime}
-        </if>
-        <if test="params.pageable.endTime != null">
-            AND p.created_at &lt;= #{params.pageable.endTime}
-        </if>
-        <!-- 发布时间范围过滤 -->
-        <if test="params.publishedStartTime != null">
-            AND p.published_at >= #{params.publishedStartTime}
-        </if>
-        <if test="params.publishedEndTime != null">
-            AND p.published_at &lt;= #{params.publishedEndTime}
-        </if>
-        <!-- 更新时间范围过滤 -->
-        <if test="params.updatedStartTime != null">
-            AND p.updated_at >= #{params.updatedStartTime}
-        </if>
-        <if test="params.updatedEndTime != null">
-            AND p.updated_at &lt;= #{params.updatedEndTime}
-        </if>
-    </select>
-
-    <!-- 获取文章统计数据 -->
-    <select id="getPostStats" resultType="com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostStatsDto$PostStatsResponse">
-        SELECT
-            -- 基础统计
-            COUNT(*) AS totalPosts,
-            COUNT(CASE WHEN p.status = 'published' THEN 1 END) AS publishedPosts,
-            COUNT(CASE WHEN p.status = 'draft' THEN 1 END) AS draftPosts,
-            COUNT(CASE WHEN p.status = 'archived' THEN 1 END) AS archivedPosts,
-            COUNT(CASE WHEN p.is_featured = true THEN 1 END) AS featuredPosts,
-            COUNT(CASE WHEN p.is_top = true THEN 1 END) AS topPosts,
-
-            -- 互动统计
-            COALESCE(SUM(p.view_count), 0) AS totalViews,
-            COALESCE(SUM(p.like_count), 0) AS totalLikes,
-            COALESCE(SUM(p.comment_count), 0) AS totalComments,
-            COALESCE(SUM(p.share_count), 0) AS totalShares,
-
-            -- 时间段统计
-            COUNT(CASE WHEN p.created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) AS monthlyNewPosts,
-            COUNT(CASE WHEN p.created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) AS weeklyNewPosts,
-            COUNT(CASE WHEN p.created_at >= CURRENT_DATE THEN 1 END) AS dailyNewPosts
-
-        FROM posts p
-        WHERE p.status != 'deleted'  -- 排除已删除的文章
-    </select>
-
-    <!-- 分页查询指定标签下的已发布文章 -->
-    <select id="selectPostsByTagPage" resultMap="PublishedPostListMap">
-        SELECT DISTINCT
-            p.id AS post_id,
-            p.title AS post_title,
-            p.slug AS post_slug,
-            p.excerpt AS post_excerpt,
-            p.cover_image_url AS post_cover_image_url,
-            p.view_count AS post_view_count,
-            p.like_count AS post_like_count,
-            p.comment_count AS post_comment_count,
-            p.share_count AS post_share_count,
-            p.reading_time AS post_reading_time,
-            p.is_featured AS post_is_featured,
-            p.is_top AS post_is_top,
-            p.published_at AS post_published_at,
-
-            -- 作者信息
-            u.id AS author_id,
-            u.username AS author_username,
-            u.display_name AS author_display_name,
-            u.avatar_url AS author_avatar_url,
-            u.bio AS author_bio,
-
-            -- 分类信息
-            c.id AS category_id,
-            c.name AS category_name,
-            c.slug AS category_slug,
-            c.description AS category_description,
-
-            -- 标签信息（返回所有标签，不仅是查询的标签）
-            t.id AS tag_id,
-            t.name AS tag_name,
-            t.slug AS tag_slug,
-            t.color AS tag_color
-
-        FROM posts p
-        INNER JOIN "user" u ON p.author_id = u.id
-        LEFT JOIN categories c ON p.category_id = c.id
-        INNER JOIN post_tags pt ON p.id = pt.post_id
-        LEFT JOIN post_tags pt_all ON p.id = pt_all.post_id
-        LEFT JOIN tags t ON pt_all.tag_id = t.id
-
-        WHERE p.status = #{params.status}
-          AND p.visibility = #{params.visibility}
-          AND pt.tag_id = #{tagId}
-        <if test="params.featuredOnly != null and params.featuredOnly">
-              AND p.is_featured = true
-        </if>
-
-        ORDER BY
-        <choose>
-            <when test="params.pageable.sort != null and params.pageable.sort != ''">
-                <if test="params.pageable.sort.contains('publishedAt')">
-                    p.published_at <if test="params.pageable.sortDirection == 'desc'">DESC</if>
-                    <if test="params.pageable.sortDirection != 'desc'">ASC</if>
-                </if>
-                <if test="params.pageable.sort.contains('viewCount')">
-                    p.view_count <if test="params.pageable.sortDirection == 'desc'">DESC</if>
-                    <if test="params.pageable.sortDirection != 'desc'">ASC</if>
-                </if>
-                <if test="params.pageable.sort.contains('likeCount')">
-                    p.like_count <if test="params.pageable.sortDirection == 'desc'">DESC</if>
-                    <if test="params.pageable.sortDirection != 'desc'">ASC</if>
-                </if>
-                <if test="params.pageable.sort.contains('title')">
-                    p.title <if test="params.pageable.sortDirection == 'desc'">DESC</if>
-                    <if test="params.pageable.sortDirection != 'desc'">ASC</if>
-                </if>
-            </when>
-            <otherwise>
-                p.published_at DESC
-            </otherwise>
-        </choose>
-    </select>
-
-    <!-- 计算指定标签下的已发布文章数量 -->
-    <select id="countPostsByTag" resultType="long">
-        SELECT COUNT(DISTINCT p.id)
-        FROM posts p
-        INNER JOIN post_tags pt ON p.id = pt.post_id
-        WHERE p.status = #{params.status}
-          AND p.visibility = #{params.visibility}
-          AND pt.tag_id = #{tagId}
-        <if test="params.featuredOnly != null and params.featuredOnly">
-              AND p.is_featured = true
-        </if>
-    </select>
-
-    <!-- 分页查询指定分类下的已发布文章 -->
-    <select id="selectPostsByCategoryPage" resultMap="PublishedPostListMap">
-        SELECT DISTINCT
-            p.id AS post_id,
-            p.title AS post_title,
-            p.slug AS post_slug,
-            p.excerpt AS post_excerpt,
-            p.cover_image_url AS post_cover_image_url,
-            p.view_count AS post_view_count,
-            p.like_count AS post_like_count,
-            p.comment_count AS post_comment_count,
-            p.share_count AS post_share_count,
-            p.reading_time AS post_reading_time,
-            p.is_featured AS post_is_featured,
-            p.is_top AS post_is_top,
-            p.published_at AS post_published_at,
-
-            -- 作者信息
-            u.id AS author_id,
-            u.username AS author_username,
-            up.display_name AS author_display_name,
-            up.avatar_url AS author_avatar_url,
-            up.bio AS author_bio,
-
-            -- 分类信息
-            c.id AS category_id,
-            c.name AS category_name,
-            c.slug AS category_slug,
-            c.description AS category_description,
-
-            -- 标签信息
-            t.id AS tag_id,
-            t.name AS tag_name,
-            t.slug AS tag_slug,
-            t.color AS tag_color
-
-        FROM posts p
-        INNER JOIN "user" u ON p.author_id = u.id
-        LEFT JOIN user_profiles up ON u.id = up.user_id
-        LEFT JOIN categories c ON p.category_id = c.id
-        LEFT JOIN post_tags pt ON p.id = pt.post_id
-        LEFT JOIN tags t ON pt.tag_id = t.id
-
-        WHERE p.status = #{params.status}
-          AND p.visibility = 'public'
-          AND u.status = 'active'
-        <choose>
-            <when test="params.includeChildren != null and params.includeChildren">
-                <!-- 包含子分类：使用递归查询获取当前分类及其所有子分类的文章 -->
-                  AND p.category_id IN (
-                      WITH RECURSIVE category_tree AS (
-                          -- 基础查询：当前分类
-                          SELECT id FROM categories WHERE id = #{categoryId}
-                          UNION ALL
-                          -- 递归查询：子分类
-                          SELECT c.id
-                          FROM categories c
-                          INNER JOIN category_tree ct ON c.parent_id = ct.id
-                      )
-                      SELECT id FROM category_tree
-                  )
-            </when>
-            <otherwise>
-                <!-- 仅当前分类：只查询当前分类的文章 -->
-                  AND p.category_id = #{categoryId}
-            </otherwise>
-        </choose>
-
-        ORDER BY
-        <choose>
-            <when test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('publishedAt')">
-                p.published_at <if test="params.pageable.sortDirection == 'desc'">DESC</if>
-                <if test="params.pageable.sortDirection != 'desc'">ASC</if>
-            </when>
-            <when test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('viewCount')">
-                p.view_count <if test="params.pageable.sortDirection == 'desc'">DESC</if>
-                <if test="params.pageable.sortDirection != 'desc'">ASC</if>
-            </when>
-            <when test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('likeCount')">
-                p.like_count <if test="params.pageable.sortDirection == 'desc'">DESC</if>
-                <if test="params.pageable.sortDirection != 'desc'">ASC</if>
-            </when>
-            <when test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('title')">
-                p.title <if test="params.pageable.sortDirection == 'desc'">DESC</if>
-                <if test="params.pageable.sortDirection != 'desc'">ASC</if>
-            </when>
-            <otherwise>
-                p.published_at DESC
-            </otherwise>
-        </choose>
-    </select>
-
-    <!-- 计算指定分类下的已发布文章数量 -->
-    <select id="countPostsByCategory" resultType="long">
-        SELECT COUNT(DISTINCT p.id)
-        FROM posts p
-        LEFT JOIN "user" u ON p.author_id = u.id
-        LEFT JOIN categories c ON p.category_id = c.id
-        WHERE p.status = #{params.status}
-          AND p.visibility = 'public'
-          AND u.status = 'active'
-        <choose>
-            <when test="params.includeChildren != null and params.includeChildren">
-                <!-- 包含子分类：使用递归查询获取当前分类及其所有子分类的文章 -->
-                  AND p.category_id IN (
-                      WITH RECURSIVE category_tree AS (
-                          -- 基础查询：当前分类
-                          SELECT id FROM categories WHERE id = #{categoryId}
-                          UNION ALL
-                          -- 递归查询：子分类
-                          SELECT c.id
-                          FROM categories c
-                          INNER JOIN category_tree ct ON c.parent_id = ct.id
-                      )
-                      SELECT id FROM category_tree
-                  )
-            </when>
-            <otherwise>
-                <!-- 仅当前分类：只查询当前分类的文章 -->
-                  AND p.category_id = #{categoryId}
-            </otherwise>
-        </choose>
-    </select>
-
-    <!-- 根据文章ID列表批量查询标签 -->
-    <select id="selectTagsByPostIds" resultType="map">
-        SELECT
-            pt.post_id,
-            t.id AS tag_id,
-            t.name AS tag_name,
-            t.slug AS tag_slug,
-            t.color AS tag_color
-        FROM post_tags pt
-        INNER JOIN tags t ON pt.tag_id = t.id
-        WHERE pt.post_id IN
-        <foreach collection="postIds" item="postId" open="(" separator="," close=")">
-            #{postId}
+  <!-- 文章列表响应结果映射 -->
+  <resultMap id="PublishedPostListMap" type="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostListResponse">
+    <!-- 文章基本信息 -->
+    <id property="id" column="post_id"/>
+    <result property="title" column="post_title"/>
+    <result property="slug" column="post_slug"/>
+    <result property="excerpt" column="post_excerpt"/>
+    <result property="coverImageUrl" column="post_cover_image_url"/>
+    <result property="viewCount" column="post_view_count"/>
+    <result property="likeCount" column="post_like_count"/>
+    <result property="commentCount" column="post_comment_count"/>
+    <result property="shareCount" column="post_share_count"/>
+    <result property="readingTime" column="post_reading_time"/>
+    <result property="isFeatured" column="post_is_featured"/>
+    <result property="isTop" column="post_is_top"/>
+    <result property="publishedAt" column="post_published_at"/>
+
+    <!-- 作者信息 -->
+    <association property="author" javaType="com.kisesaki.blog.content.post.dto.AuthorInfo">
+      <id property="id" column="author_id"/>
+      <result property="username" column="author_username"/>
+      <result property="displayName" column="author_display_name"/>
+      <result property="avatarUrl" column="author_avatar_url"/>
+      <result property="bio" column="author_bio"/>
+    </association>
+
+    <!-- 分类信息 -->
+    <association property="category" javaType="com.kisesaki.blog.content.post.dto.CategoryInfo">
+      <id property="id" column="category_id"/>
+      <result property="name" column="category_name"/>
+      <result property="slug" column="category_slug"/>
+      <result property="description" column="category_description"/>
+    </association>
+
+    <!-- 标签集合 -->
+    <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.TagInfo">
+      <id property="id" column="tag_id"/>
+      <result property="name" column="tag_name"/>
+      <result property="slug" column="tag_slug"/>
+      <result property="color" column="tag_color"/>
+    </collection>
+  </resultMap>
+
+  <!-- 根据文章ID获取文章响应结果映射 -->
+  <resultMap id="PublishedPostDetailMap"
+             type="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse">
+    <!-- 文章基本信息 -->
+    <id property="id" column="post_id"/>
+    <result property="title" column="post_title"/>
+    <result property="slug" column="post_slug"/>
+
+    <result property="excerpt" column="post_excerpt"/>
+    <result property="htmlContent" column="post_html_content"/>
+    <result property="readingTime" column="post_reading_time"/>
+
+    <result property="coverImageUrl" column="post_cover_image_url"/>
+    <result property="featuredImageUrl" column="post_featured_image_url"/>
+    <result property="isFeatured" column="post_is_featured"/>
+    <result property="isTop" column="post_is_top"/>
+
+    <result property="viewCount" column="post_view_count"/>
+    <result property="likeCount" column="post_like_count"/>
+    <result property="commentCount" column="post_comment_count"/>
+    <result property="shareCount" column="post_share_count"/>
+
+    <result property="seoTitle" column="post_seo_title"/>
+    <result property="seoDescription" column="post_seo_description"/>
+    <result property="seoKeywords" column="post_seo_keywords"/>
+
+    <result property="publishedAt" column="post_published_at"/>
+    <result property="lastModifiedAt" column="post_last_modified_at"/>
+
+    <!-- 是否允许评论 -->
+    <association property="permissions" javaType="com.kisesaki.blog.content.post.dto.Permissions">
+      <result property="canComment" column="post_allow_comments"/>
+    </association>
+
+    <!-- 作者信息 -->
+    <association property="author" javaType="com.kisesaki.blog.content.post.dto.AuthorInfo">
+      <id property="id" column="author_id"/>
+      <result property="username" column="author_username"/>
+      <result property="displayName" column="author_display_name"/>
+      <result property="avatarUrl" column="author_avatar_url"/>
+      <result property="bio" column="author_bio"/>
+    </association>
+
+    <!-- 分类信息 -->
+    <association property="category" javaType="com.kisesaki.blog.content.post.dto.CategoryInfo">
+      <id property="id" column="category_id"/>
+      <result property="name" column="category_name"/>
+      <result property="slug" column="category_slug"/>
+      <result property="description" column="category_description"/>
+    </association>
+
+    <!-- 版本历史 -->
+    <collection property="revisions" ofType="com.kisesaki.blog.content.post.dto.RevisionInfo">
+      <result property="id" column="revision_id"/>
+      <result property="title" column="revision_title"/>
+      <result property="version" column="revision_version"/>
+      <result property="summary" column="revision_summary"/>
+      <result property="createdAt" column="revision_created_at"/>
+    </collection>
+
+    <!-- 标签集合 -->
+    <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.TagInfo">
+      <id property="id" column="tag_id"/>
+      <result property="name" column="tag_name"/>
+      <result property="slug" column="tag_slug"/>
+      <result property="color" column="tag_color"/>
+    </collection>
+  </resultMap>
+
+  <!-- 按条件获取已发布文章列表 -->
+  <select id="selectPublishedPostsPage" resultMap="PublishedPostListMap">
+    -- DISTINCT作用： 避免多分类、多标签文章重复出现
+    SELECT DISTINCT
+    -- 文章基本信息
+    p.id AS post_id,
+    p.title AS post_title,
+    p.slug AS post_slug,
+    p.excerpt AS post_excerpt,
+    p.cover_image_url AS post_cover_image_url,
+    p.view_count AS post_view_count,
+    p.like_count AS post_like_count,
+    p.comment_count AS post_comment_count,
+    p.share_count AS post_share_count,
+    p.reading_time AS post_reading_time,
+    p.is_featured AS post_is_featured,
+    p.is_top AS post_is_top,
+    p.published_at AS post_published_at,
+    p.created_at,
+
+    -- 作者信息
+    u.id AS author_id,
+    u.username AS author_username,
+    up.display_name AS author_display_name,
+    up.avatar_url AS author_avatar_url,
+    up.bio AS author_bio,
+
+    -- 分类信息
+    c.id AS category_id,
+    c.name AS category_name,
+    c.slug AS category_slug,
+    c.description AS category_description,
+
+    -- 标签信息
+    t.id AS tag_id,
+    t.name AS tag_name,
+    t.slug AS tag_slug,
+    t.color AS tag_color
+    FROM posts p
+
+    -- 关联作者信息
+    LEFT JOIN "user" u ON p.author_id = u.id
+    LEFT JOIN user_profiles up ON u.id = up.user_id
+
+    -- 关联分类信息
+    LEFT JOIN categories c ON p.category_id = c.id
+
+    -- 关联标签信息
+    LEFT JOIN post_tags pt ON p.id = pt.post_id
+    LEFT JOIN tags t ON pt.tag_id = t.id
+
+    -- 只获取已发布、允许公开访问且作者为活跃状态的文章
+    WHERE p.status = 'published'
+    AND p.visibility = 'public'
+    AND u.status = 'active'
+
+    -- 动态查询条件
+    -- 关键字搜索
+    <if test="params.q != null and params.q != ''">
+      AND (p.title ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.content ILIKE CONCAT('%', #{params.q}, '%')
+      OR u.username ILIKE CONCAT('%', #{params.q}, '%')
+      OR up.display_name ILIKE CONCAT('%', #{params.q}, '%'))
+    </if>
+    -- 分类ID过滤
+    <if test="params.categoryId != null">
+      AND p.category_id = #{params.categoryId}
+    </if>
+    -- 分类名称过滤
+    <if test="params.categoryName != null and params.categoryName != ''">
+      AND c.name = #{params.categoryName}
+    </if>
+    -- 标签ID过滤
+    <if test="params.tagId != null">
+      AND EXISTS(
+      SELECT 1 FROM post_tags pt2
+      WHERE pt2.post_id = p.id
+      AND pt2.tag_id = #{params.tagId}
+      )
+    </if>
+    -- 标签名称过滤
+    <if test="params.tagName != null and params.tagName != ''">
+      AND EXISTS(
+      SELECT 1 FROM post_tags pt2
+      JOIN tags t2 ON pt2.tag_id = t2.id
+      WHERE pt2.post_id = p.id
+      AND t2.name = #{params.tagName}
+      )
+    </if>
+    -- 作者ID过滤
+    <if test="params.authorId != null">
+      AND p.author_id = #{params.authorId}
+    </if>
+    -- 作者用户名过滤
+    <if test="params.authorUsername != null and params.authorUsername != ''">
+      AND u.username = #{params.authorUsername}
+    </if>
+    -- 作者显示名称过滤
+    <if test="params.authorDisplayName != null and params.authorDisplayName != ''">
+      AND up.display_name = #{params.authorDisplayName}
+    </if>
+    -- 是否置顶过滤
+    <if test="params.isTop != null">
+      AND p.is_top = #{params.isTop}
+    </if>
+    -- 是否精选过滤
+    <if test="params.isFeatured != null">
+      AND p.is_featured = #{params.isFeatured}
+    </if>
+    -- 发布时间范围过滤
+    <if test="params.pageable.startTime != null">
+      AND p.published_at &gt;= #{params.pageable.startTime}
+    </if>
+    <if test="params.pageable.endTime != null">
+      AND p.published_at &lt;= #{params.pageable.endTime}
+    </if>
+
+    -- 动态排序
+    ORDER BY
+    <choose>
+      <when test="params.pageable.sort != null and params.pageable.sort.contains('createdAt,desc')">
+        p.created_at DESC
+      </when>
+      <when test="params.pageable.sort != null and params.pageable.sort.contains('createdAt,asc')">
+        p.created_at ASC
+      </when>
+      <when test="params.pageable.sort != null and params.pageable.sort.contains('publishedAt,desc')">
+        p.published_at DESC
+      </when>
+      <when test="params.pageable.sort != null and params.pageable.sort.contains('publishedAt,asc')">
+        p.published_at ASC
+      </when>
+      <when test="params.pageable.sort != null and params.pageable.sort.contains('title,desc')">
+        p.title DESC
+      </when>
+      <when test="params.pageable.sort != null and params.pageable.sort.contains('title,asc')">
+        p.title ASC
+      </when>
+      <when test="params.pageable.sort != null and params.pageable.sort.contains('viewCount,desc')">
+        p.view_count DESC
+      </when>
+      <when test="params.pageable.sort != null and params.pageable.sort.contains('viewCount,asc')">
+        p.view_count ASC
+      </when>
+      <when test="params.pageable.sort != null and params.pageable.sort.contains('likeCount,desc')">
+        p.like_count DESC
+      </when>
+      <when test="params.pageable.sort != null and params.pageable.sort.contains('likeCount,asc')">
+        p.like_count ASC
+      </when>
+      <otherwise>
+        -- 默认按发布时间降序排序
+        p.published_at DESC
+      </otherwise>
+    </choose>
+  </select>
+
+  <!-- 专门的计数查询，确保正确处理DISTINCT -->
+  <select id="countPublishedPosts" resultType="long">
+    SELECT COUNT(DISTINCT p.id)
+    FROM posts p
+
+    -- 关联作者信息
+    LEFT JOIN "user" u ON p.author_id = u.id
+    LEFT JOIN user_profiles up ON u.id = up.user_id
+
+    -- 关联分类信息
+    LEFT JOIN categories c ON p.category_id = c.id
+
+    -- 关联标签信息（可能导致重复）
+    LEFT JOIN post_tags pt ON p.id = pt.post_id
+    LEFT JOIN tags t ON pt.tag_id = t.id
+
+    -- 只获取已发布、允许公开访问且作者为活跃状态的文章
+    WHERE p.status = 'published'
+    AND p.visibility = 'public'
+    AND u.status = 'active'
+
+    -- 动态查询条件（与主查询保持一致）
+    -- 关键字搜索
+    <if test="params.q != null and params.q != ''">
+      AND (p.title ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.content ILIKE CONCAT('%', #{params.q}, '%')
+      OR u.username ILIKE CONCAT('%', #{params.q}, '%')
+      OR up.display_name ILIKE CONCAT('%', #{params.q}, '%'))
+    </if>
+    -- 分类ID过滤
+    <if test="params.categoryId != null">
+      AND p.category_id = #{params.categoryId}
+    </if>
+    -- 分类名称过滤
+    <if test="params.categoryName != null and params.categoryName != ''">
+      AND c.name = #{params.categoryName}
+    </if>
+    -- 标签ID过滤
+    <if test="params.tagId != null">
+      AND EXISTS(
+      SELECT 1 FROM post_tags pt2
+      WHERE pt2.post_id = p.id
+      AND pt2.tag_id = #{params.tagId}
+      )
+    </if>
+    -- 标签名称过滤
+    <if test="params.tagName != null and params.tagName != ''">
+      AND EXISTS(
+      SELECT 1 FROM post_tags pt2
+      JOIN tags t2 ON pt2.tag_id = t2.id
+      WHERE pt2.post_id = p.id
+      AND t2.name = #{params.tagName}
+      )
+    </if>
+    -- 作者ID过滤
+    <if test="params.authorId != null">
+      AND p.author_id = #{params.authorId}
+    </if>
+    -- 作者用户名过滤
+    <if test="params.authorUsername != null and params.authorUsername != ''">
+      AND u.username = #{params.authorUsername}
+    </if>
+    -- 作者显示名称过滤
+    <if test="params.authorDisplayName != null and params.authorDisplayName != ''">
+      AND up.display_name = #{params.authorDisplayName}
+    </if>
+    -- 是否置顶过滤
+    <if test="params.isTop != null">
+      AND p.is_top = #{params.isTop}
+    </if>
+    -- 是否精选过滤
+    <if test="params.isFeatured != null">
+      AND p.is_featured = #{params.isFeatured}
+    </if>
+    -- 发布时间范围过滤
+    <if test="params.pageable.startTime != null">
+      AND p.published_at &gt;= #{params.pageable.startTime}
+    </if>
+    <if test="params.pageable.endTime != null">
+      AND p.published_at &lt;= #{params.pageable.endTime}
+    </if>
+  </select>
+
+  <!-- 公共的文章详情 SELECT/JOINS（复用点） -->
+  <sql id="PublishedPostDetailCommon">
+    SELECT
+      -- 文章基本信息
+      p.id                 AS post_id,
+      p.title              AS post_title,
+      p.slug               AS post_slug,
+
+      p.excerpt            AS post_excerpt,
+      p.html_content       AS post_html_content,
+      p.reading_time       AS post_reading_time,
+
+      p.cover_image_url    AS post_cover_image_url,
+      p.featured_image_url AS post_featured_image_url,
+      p.is_featured        AS post_is_featured,
+      p.is_top             AS post_is_top,
+
+      p.view_count         AS post_view_count,
+      p.like_count         AS post_like_count,
+      p.comment_count      AS post_comment_count,
+      p.share_count        AS post_share_count,
+
+      p.seo_title          AS post_seo_title,
+      p.seo_description    AS post_seo_description,
+      p.seo_keywords       AS post_seo_keywords,
+
+      p.published_at       AS post_published_at,
+      p.last_modified_at   AS post_last_modified_at,
+
+      p.allow_comments     AS post_allow_comments,
+
+      -- 版本历史
+      r.id                 AS revision_id,
+      r.title              AS revision_title,
+      r.version            AS revision_version,
+      r.summary            AS revision_summary,
+      r.created_at         AS revision_created_at,
+
+      -- 作者信息
+      u.id                 AS author_id,
+      u.username           AS author_username,
+      up.display_name      AS author_display_name,
+      up.avatar_url        AS author_avatar_url,
+      up.bio               AS author_bio,
+
+      -- 分类信息
+      c.id                 AS category_id,
+      c.name               AS category_name,
+      c.slug               AS category_slug,
+      c.description        AS category_description,
+
+      -- 标签信息
+      t.id                 AS tag_id,
+      t.name               AS tag_name,
+      t.slug               AS tag_slug,
+      t.color              AS tag_color
+
+    FROM posts p
+
+           -- 关联最新的版本信息
+           LEFT JOIN post_revisions r ON p.id = r.post_id AND r.version = (SELECT MAX(version)
+                                                                           FROM post_revisions
+                                                                           WHERE post_id = p.id)
+
+      -- 关联作者信息
+           LEFT JOIN "user" u ON p.author_id = u.id
+           LEFT JOIN user_profiles up ON u.id = up.user_id
+
+      -- 关联分类信息
+           LEFT JOIN categories c ON p.category_id = c.id
+
+      -- 关联标签信息
+           LEFT JOIN post_tags pt ON p.id = pt.post_id
+           LEFT JOIN tags t ON pt.tag_id = t.id
+  </sql>
+
+  <!-- 根据 文章ID 获取以发布文章详情 -->
+  <select id="getPublishedPostDetailById" resultMap="PublishedPostDetailMap">
+    <include refid="PublishedPostDetailCommon"/>
+    -- 只获取指定ID且已发布、允许公开访问且作者为活跃状态的文章
+    WHERE p.id = #{postId}
+    AND p.status = 'published'
+    AND p.visibility = 'public'
+    AND u.status = 'active'
+  </select>
+
+  <!-- 根据 文章slug 获取以发布文章详情 -->
+  <select id="getPublishedPostDetailBySlug" resultMap="PublishedPostDetailMap">
+    <include refid="PublishedPostDetailCommon"/>
+    -- 只获取指定slug且已发布、允许公开访问且作者为活跃状态的文章
+    WHERE p.slug = #{slug}
+    AND p.status = 'published'
+    AND p.visibility = 'public'
+    AND u.status = 'active'
+  </select>
+
+
+  <!-- 获取上一篇文章（按发布时间降序，取比当前文章发布时间更早的第一篇） -->
+  <select id="getPrevPost"
+          resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$AdjacentPost">
+    SELECT p.id,
+           p.title,
+           p.slug,
+           p.cover_image_url,
+           p.excerpt
+    FROM posts p
+           LEFT JOIN "user" u ON p.author_id = u.id
+    WHERE p.status = 'published'
+      AND p.visibility = 'public'
+      AND u.status = 'active'
+      AND p.id != #{currentPostId}
+      AND p.published_at &lt; #{publishedAt}
+    ORDER BY p.published_at DESC
+    LIMIT 1
+  </select>
+
+  <!-- 获取下一篇文章（按发布时间升序，取比当前文章发布时间更晚的第一篇） -->
+  <select id="getNextPost"
+          resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$AdjacentPost">
+    SELECT p.id,
+           p.title,
+           p.slug,
+           p.cover_image_url,
+           p.excerpt
+    FROM posts p
+           LEFT JOIN "user" u ON p.author_id = u.id
+    WHERE p.status = 'published'
+      AND p.visibility = 'public'
+      AND u.status = 'active'
+      AND p.id != #{currentPostId}
+      AND p.published_at &gt; #{publishedAt}
+    ORDER BY p.published_at
+    LIMIT 1
+  </select>
+
+  <!-- 获取相关推荐文章 -->
+  <select id="getRelatedPosts"
+          resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$RelatedPost">
+    SELECT DISTINCT
+    p.id,
+    p.title,
+    p.slug,
+    p.cover_image_url AS coverImageUrl,
+    p.excerpt,
+    p.view_count AS viewCount,
+    p.published_at AS publishedAt,
+    -- 计算相关度分数：相同分类+3分，共同标签每个+1分，浏览量权重
+    (
+    CASE WHEN p.category_id = #{categoryId} THEN 3 ELSE 0 END +
+    <if test="tagIds != null and tagIds.size() > 0">
+      COALESCE((
+      SELECT COUNT(*)
+      FROM post_tags pt1
+      WHERE pt1.post_id = p.id
+      AND pt1.tag_id IN
+      <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
+        #{tagId}
+      </foreach>
+      ), 0) +
+    </if>
+    <if test="tagIds == null or tagIds.size() == 0">
+      0 +
+    </if>
+    -- 浏览量权重（归一化到0-1分）
+    LEAST(p.view_count * 0.001, 1)
+    ) AS relevance_score
+    FROM posts p
+    LEFT JOIN "user" u ON p.author_id = u.id
+    WHERE p.status = 'published'
+    AND p.visibility = 'public'
+    AND u.status = 'active'
+    AND p.id != #{currentPostId}
+    <if test="categoryId != null or (tagIds != null and tagIds.size() > 0)">
+      AND (
+      <if test="categoryId != null">
+        -- 相同分类
+        p.category_id = #{categoryId}
+      </if>
+      <if test="categoryId != null and tagIds != null and tagIds.size() > 0">
+        OR
+      </if>
+      <if test="tagIds != null and tagIds.size() > 0">
+        -- 有共同标签
+        EXISTS (
+        SELECT 1 FROM post_tags pt
+        WHERE pt.post_id = p.id
+        AND pt.tag_id IN
+        <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
+          #{tagId}
         </foreach>
-        ORDER BY pt.post_id, t.id
-    </select>
+        )
+      </if>
+      )
+    </if>
+    ORDER BY relevance_score DESC, viewCount DESC, publishedAt DESC
+    LIMIT #{limit}
+  </select>
 
-    <!-- 文章编辑详情结果映射 -->
-    <resultMap id="PostEditDetailMap" type="com.kisesaki.blog.content.post.dto.PostCommand.PostEditDetailResponse">
-        <id property="id" column="post_id"/>
-        <result property="title" column="post_title"/>
-        <result property="slug" column="post_slug"/>
-        <result property="excerpt" column="post_excerpt"/>
-        <result property="content" column="post_content"/>
-        <result property="categoryId" column="category_id"/>
-        <result property="categoryName" column="category_name"/>
-        <result property="coverImageUrl" column="post_cover_image_url"/>
-        <result property="featuredImageUrl" column="post_featured_image_url"/>
-        <result property="status" column="post_status"/>
-        <result property="visibility" column="post_visibility"/>
-        <result property="password" column="post_password"/>
-        <result property="isFeatured" column="post_is_featured"/>
-        <result property="isTop" column="post_is_top"/>
-        <result property="allowComments" column="post_allow_comments"/>
-        <result property="seoTitle" column="post_seo_title"/>
-        <result property="seoDescription" column="post_seo_description"/>
-        <result property="seoKeywords" column="post_seo_keywords"/>
-        <result property="scheduledAt" column="post_scheduled_at"/>
-        <result property="publishedAt" column="post_published_at"/>
-        <result property="createdAt" column="post_created_at"/>
-        <result property="updatedAt" column="post_updated_at"/>
-        <result property="readingTime" column="post_reading_time"/>
-        <result property="authorId" column="author_id"/>
-        <result property="authorUsername" column="author_username"/>
+  <!-- 获取文章元数据 -->
+  <select id="getPostMeta" resultType="map">
+    SELECT meta_key   AS "key",
+           meta_value AS "value"
+    FROM post_meta
+    WHERE post_id = #{postId}
+  </select>
 
-        <!-- 标签ID列表（通过collection收集） -->
-        <collection property="tagIds" ofType="java.lang.Long" column="post_id" select="selectTagIdsByPostId"/>
-    </resultMap>
+  <!-- 获取热门文章（降级推荐策略） -->
+  <select id="getPopularPosts"
+          resultType="com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse$RelatedPost">
+    SELECT p.id,
+           p.title,
+           p.slug,
+           p.cover_image_url AS coverImageUrl
+    FROM posts p
+           LEFT JOIN "user" u ON p.author_id = u.id
+    WHERE p.status = 'published'
+      AND p.visibility = 'public'
+      AND u.status = 'active'
+      AND p.id != #{currentPostId}
+    ORDER BY
+      -- 综合热度排序：浏览量 * 0.4 + 点赞数 * 0.3 + 评论数 * 0.2 + 分享数 * 0.1
+      (p.view_count * 0.4 + p.like_count * 0.3 + p.comment_count * 0.2 + p.share_count * 0.1) DESC,
+      p.published_at DESC
+    LIMIT #{limit}
+  </select>
 
-    <!-- 获取文章编辑详情 -->
-    <select id="getPostEditDetail" resultMap="PostEditDetailMap">
-        SELECT
-            p.id AS post_id,
-            p.title AS post_title,
-            p.slug AS post_slug,
-            p.excerpt AS post_excerpt,
-            p.content AS post_content,
-            p.category_id,
-            c.name AS category_name,
-            p.cover_image_url AS post_cover_image_url,
-            p.featured_image_url AS post_featured_image_url,
-            p.status AS post_status,
-            p.visibility AS post_visibility,
-            p.password AS post_password,
-            p.is_featured AS post_is_featured,
-            p.is_top AS post_is_top,
-            p.allow_comments AS post_allow_comments,
-            p.seo_title AS post_seo_title,
-            p.seo_description AS post_seo_description,
-            p.seo_keywords AS post_seo_keywords,
-            p.scheduled_at AS post_scheduled_at,
-            p.published_at AS post_published_at,
-            p.created_at AS post_created_at,
-            p.updated_at AS post_updated_at,
-            p.reading_time AS post_reading_time,
-            u.id AS author_id,
-            u.username AS author_username
-        FROM posts p
-        LEFT JOIN categories c ON p.category_id = c.id
-        LEFT JOIN "user" u ON p.author_id = u.id
-        WHERE p.id = #{postId}
-          AND p.author_id = #{userId}
-    </select>
+  <!-- 我的文章列表响应结果映射 -->
+  <resultMap id="MyPostsListMap" type="com.kisesaki.blog.content.post.dto.PostQuery.MyPostsListResponse">
+    <!-- 文章基本信息 -->
+    <id property="id" column="post_id"/>
+    <result property="title" column="post_title"/>
+    <result property="slug" column="post_slug"/>
+    <result property="excerpt" column="post_excerpt"/>
+    <result property="coverImageUrl" column="post_cover_image_url"/>
+    <result property="status" column="post_status"/>
+    <result property="visibility" column="post_visibility"/>
+    <result property="viewCount" column="post_view_count"/>
+    <result property="likeCount" column="post_like_count"/>
+    <result property="commentCount" column="post_comment_count"/>
+    <result property="shareCount" column="post_share_count"/>
+    <result property="readingTime" column="post_reading_time"/>
+    <result property="wordCount" column="post_word_count"/>
+    <result property="isFeatured" column="post_is_featured"/>
+    <result property="isTop" column="post_is_top"/>
+    <result property="allowComments" column="post_allow_comments"/>
+    <result property="createdAt" column="post_created_at"/>
+    <result property="updatedAt" column="post_updated_at"/>
+    <result property="publishedAt" column="post_published_at"/>
+    <result property="scheduledAt" column="post_scheduled_at"/>
 
-    <!-- 根据文章ID查询标签ID列表 -->
-    <select id="selectTagIdsByPostId" resultType="java.lang.Long">
-        SELECT tag_id
-        FROM post_tags
-        WHERE post_id = #{post_id}
-        ORDER BY tag_id
-    </select>
+    <!-- 作者信息 -->
+    <association property="author" javaType="com.kisesaki.blog.content.post.dto.AuthorInfo">
+      <id property="id" column="author_id"/>
+      <result property="username" column="author_username"/>
+      <result property="displayName" column="author_display_name"/>
+      <result property="avatarUrl" column="author_avatar_url"/>
+      <result property="bio" column="author_bio"/>
+    </association>
+
+    <!-- 分类信息 -->
+    <association property="category" javaType="com.kisesaki.blog.content.post.dto.CategoryInfo">
+      <id property="id" column="category_id"/>
+      <result property="name" column="category_name"/>
+      <result property="slug" column="category_slug"/>
+      <result property="description" column="category_description"/>
+    </association>
+
+    <!-- 标签集合（不在此处映射，由Service层单独查询后组装） -->
+  </resultMap>
+
+  <!-- 分页查询我的文章列表 -->
+  <select id="selectMyPostsPage" resultMap="MyPostsListMap">
+    -- 不再使用 DISTINCT，也不关联标签表
+    SELECT
+    -- 文章基本信息
+    p.id AS post_id,
+    p.title AS post_title,
+    p.slug AS post_slug,
+    p.excerpt AS post_excerpt,
+    p.cover_image_url AS post_cover_image_url,
+    p.status AS post_status,
+    p.visibility AS post_visibility,
+    p.view_count AS post_view_count,
+    p.like_count AS post_like_count,
+    p.comment_count AS post_comment_count,
+    p.share_count AS post_share_count,
+    p.reading_time AS post_reading_time,
+    p.word_count AS post_word_count,
+    p.is_featured AS post_is_featured,
+    p.is_top AS post_is_top,
+    p.allow_comments AS post_allow_comments,
+    p.created_at AS post_created_at,
+    p.updated_at AS post_updated_at,
+    p.published_at AS post_published_at,
+    p.scheduled_at AS post_scheduled_at,
+
+    -- 作者信息
+    u.id AS author_id,
+    u.username AS author_username,
+    up.display_name AS author_display_name,
+    up.avatar_url AS author_avatar_url,
+    up.bio AS author_bio,
+
+    -- 分类信息
+    c.id AS category_id,
+    c.name AS category_name,
+    c.slug AS category_slug,
+    c.description AS category_description
+    FROM posts p
+
+    -- 关联作者信息
+    LEFT JOIN "user" u ON p.author_id = u.id
+    LEFT JOIN user_profiles up ON u.id = up.user_id
+
+    -- 关联分类信息
+    LEFT JOIN categories c ON p.category_id = c.id
+
+    -- 只获取当前用户的文章
+    WHERE p.author_id = #{userId}
+    AND u.status = 'active'
+
+    -- 动态查询条件
+    <!-- 关键字搜索 -->
+    <if test="params.q != null and params.q != ''">
+      AND (
+      p.title ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.content ILIKE CONCAT('%', #{params.q}, '%')
+      )
+    </if>
+    <!-- 文章状态过滤 -->
+    <if test="params.status != null and params.status != ''">
+      AND p.status = #{params.status}
+    </if>
+    <!-- 分类ID过滤 -->
+    <if test="params.categoryId != null">
+      AND p.category_id = #{params.categoryId}
+    </if>
+    <!-- 分类名称过滤 -->
+    <if test="params.categoryName != null and params.categoryName != ''">
+      AND c.name ILIKE CONCAT('%', #{params.categoryName}, '%')
+    </if>
+    <!-- 标签过滤：当需要按标签筛选时，使用 EXISTS 子查询而不是 JOIN -->
+    <if test="params.tagId != null">
+      AND EXISTS (
+      SELECT 1 FROM post_tags pt WHERE pt.post_id = p.id AND pt.tag_id = #{params.tagId}
+      )
+    </if>
+    <if test="params.tagName != null and params.tagName != ''">
+      AND EXISTS (
+      SELECT 1 FROM post_tags pt
+      INNER JOIN tags t ON pt.tag_id = t.id
+      WHERE pt.post_id = p.id AND t.name ILIKE CONCAT('%', #{params.tagName}, '%')
+      )
+    </if>
+    <!-- 是否置顶过滤 -->
+    <if test="params.isTop != null">
+      AND p.is_top = #{params.isTop}
+    </if>
+    <!-- 是否精选过滤 -->
+    <if test="params.isFeatured != null">
+      AND p.is_featured = #{params.isFeatured}
+    </if>
+    <!-- 可见性过滤 -->
+    <if test="params.visibility != null and params.visibility != ''">
+      AND p.visibility = #{params.visibility}
+    </if>
+    <!-- 发布时间范围过滤 -->
+    <if test="params.pageable.startTime != null">
+      AND p.published_at >= #{params.pageable.startTime}
+    </if>
+    <if test="params.pageable.endTime != null">
+      AND p.published_at &lt;= #{params.pageable.endTime}
+    </if>
+
+    -- 动态排序
+    ORDER BY
+    <choose>
+      <when test="params.pageable.sort != null and params.pageable.sort != ''">
+        <choose>
+          <when test="params.pageable.sort == 'createdAt:desc'">p.created_at DESC</when>
+          <when test="params.pageable.sort == 'createdAt:asc'">p.created_at ASC</when>
+          <when test="params.pageable.sort == 'updatedAt:desc'">p.updated_at DESC</when>
+          <when test="params.pageable.sort == 'updatedAt:asc'">p.updated_at ASC</when>
+          <when test="params.pageable.sort == 'publishedAt:desc'">p.published_at DESC</when>
+          <when test="params.pageable.sort == 'publishedAt:asc'">p.published_at ASC</when>
+          <when test="params.pageable.sort == 'title:desc'">p.title DESC</when>
+          <when test="params.pageable.sort == 'title:asc'">p.title ASC</when>
+          <when test="params.pageable.sort == 'viewCount:desc'">p.view_count DESC</when>
+          <when test="params.pageable.sort == 'viewCount:asc'">p.view_count ASC</when>
+          <otherwise>p.updated_at DESC</otherwise>
+        </choose>
+      </when>
+      <otherwise>p.updated_at DESC</otherwise>
+    </choose>
+  </select>
+
+  <!-- 专门的计数查询，确保正确处理DISTINCT -->
+  <select id="countMyPosts" resultType="long">
+    -- 计数查询不需要关联标签表，避免重复计数
+    SELECT COUNT(p.id)
+    FROM posts p
+
+    -- 关联作者信息
+    LEFT JOIN "user" u ON p.author_id = u.id
+
+    -- 关联分类信息
+    LEFT JOIN categories c ON p.category_id = c.id
+
+    -- 只获取当前用户的文章
+    WHERE p.author_id = #{userId}
+    AND u.status = 'active'
+
+    -- 动态查询条件（与主查询保持一致）
+    <!-- 关键字搜索 -->
+    <if test="params.q != null and params.q != ''">
+      AND (
+      p.title ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.content ILIKE CONCAT('%', #{params.q}, '%')
+      )
+    </if>
+    <!-- 文章状态过滤 -->
+    <if test="params.status != null and params.status != ''">
+      AND p.status = #{params.status}
+    </if>
+    <!-- 分类ID过滤 -->
+    <if test="params.categoryId != null">
+      AND p.category_id = #{params.categoryId}
+    </if>
+    <!-- 分类名称过滤 -->
+    <if test="params.categoryName != null and params.categoryName != ''">
+      AND c.name ILIKE CONCAT('%', #{params.categoryName}, '%')
+    </if>
+    <!-- 标签过滤：使用 EXISTS 子查询 -->
+    <if test="params.tagId != null">
+      AND EXISTS (
+      SELECT 1 FROM post_tags pt WHERE pt.post_id = p.id AND pt.tag_id = #{params.tagId}
+      )
+    </if>
+    <if test="params.tagName != null and params.tagName != ''">
+      AND EXISTS (
+      SELECT 1 FROM post_tags pt
+      INNER JOIN tags t ON pt.tag_id = t.id
+      WHERE pt.post_id = p.id AND t.name ILIKE CONCAT('%', #{params.tagName}, '%')
+      )
+    </if>
+    <!-- 是否置顶过滤 -->
+    <if test="params.isTop != null">
+      AND p.is_top = #{params.isTop}
+    </if>
+    <!-- 是否精选过滤 -->
+    <if test="params.isFeatured != null">
+      AND p.is_featured = #{params.isFeatured}
+    </if>
+    <!-- 可见性过滤 -->
+    <if test="params.visibility != null and params.visibility != ''">
+      AND p.visibility = #{params.visibility}
+    </if>
+    <!-- 发布时间范围过滤 -->
+    <if test="params.pageable.startTime != null">
+      AND p.published_at >= #{params.pageable.startTime}
+    </if>
+    <if test="params.pageable.endTime != null">
+      AND p.published_at &lt;= #{params.pageable.endTime}
+    </if>
+  </select>
+
+  <!-- ========== 管理员专用查询 ========== -->
+
+  <!-- 管理员文章列表响应结果映射 -->
+  <resultMap id="AdminPostListMap"
+             type="com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostQueryDto$AdminPostListResponse">
+    <!-- 文章基本信息 -->
+    <id property="id" column="post_id"/>
+    <result property="title" column="post_title"/>
+    <result property="slug" column="post_slug"/>
+    <result property="excerpt" column="post_excerpt"/>
+    <result property="coverImageUrl" column="post_cover_image_url"/>
+    <result property="status" column="post_status"/>
+    <result property="visibility" column="post_visibility"/>
+    <result property="viewCount" column="post_view_count"/>
+    <result property="likeCount" column="post_like_count"/>
+    <result property="commentCount" column="post_comment_count"/>
+    <result property="shareCount" column="post_share_count"/>
+    <result property="readingTime" column="post_reading_time"/>
+    <result property="wordCount" column="post_word_count"/>
+    <result property="isFeatured" column="post_is_featured"/>
+    <result property="isTop" column="post_is_top"/>
+    <result property="allowComments" column="post_allow_comments"/>
+    <result property="createdAt" column="post_created_at"/>
+    <result property="updatedAt" column="post_updated_at"/>
+    <result property="publishedAt" column="post_published_at"/>
+    <result property="scheduledAt" column="post_scheduled_at"/>
+    <result property="lastModifiedAt" column="post_last_modified_at"/>
+
+    <!-- 作者信息 -->
+    <association property="author" javaType="com.kisesaki.blog.content.post.dto.AuthorInfo">
+      <id property="id" column="author_id"/>
+      <result property="username" column="author_username"/>
+      <result property="displayName" column="author_display_name"/>
+      <result property="avatarUrl" column="author_avatar_url"/>
+      <result property="bio" column="author_bio"/>
+    </association>
+
+    <!-- 分类信息 -->
+    <association property="category" javaType="com.kisesaki.blog.content.post.dto.CategoryInfo">
+      <id property="id" column="category_id"/>
+      <result property="name" column="category_name"/>
+      <result property="slug" column="category_slug"/>
+      <result property="description" column="category_description"/>
+    </association>
+
+    <!-- 标签集合 -->
+    <collection property="tags" ofType="com.kisesaki.blog.content.post.dto.TagInfo">
+      <id property="id" column="tag_id"/>
+      <result property="name" column="tag_name"/>
+      <result property="slug" column="tag_slug"/>
+      <result property="color" column="tag_color"/>
+    </collection>
+  </resultMap>
+
+  <!-- 分页查询管理员文章列表 -->
+  <select id="selectAdminPostsPage" resultMap="AdminPostListMap">
+    SELECT DISTINCT
+    -- 文章基本信息
+    p.id AS post_id,
+    p.title AS post_title,
+    p.slug AS post_slug,
+    p.excerpt AS post_excerpt,
+    p.cover_image_url AS post_cover_image_url,
+    p.status AS post_status,
+    p.visibility AS post_visibility,
+    p.view_count AS post_view_count,
+    p.like_count AS post_like_count,
+    p.comment_count AS post_comment_count,
+    p.share_count AS post_share_count,
+    p.reading_time AS post_reading_time,
+    p.word_count AS post_word_count,
+    p.is_featured AS post_is_featured,
+    p.is_top AS post_is_top,
+    p.allow_comments AS post_allow_comments,
+    p.created_at AS post_created_at,
+    p.updated_at AS post_updated_at,
+    p.published_at AS post_published_at,
+    p.scheduled_at AS post_scheduled_at,
+    p.last_modified_at AS post_last_modified_at,
+
+    -- 作者信息
+    u.id AS author_id,
+    u.username AS author_username,
+    up.display_name AS author_display_name,
+    up.avatar_url AS author_avatar_url,
+    up.bio AS author_bio,
+
+    -- 分类信息
+    c.id AS category_id,
+    c.name AS category_name,
+    c.slug AS category_slug,
+    c.description AS category_description,
+
+    -- 标签信息
+    t.id AS tag_id,
+    t.name AS tag_name,
+    t.slug AS tag_slug,
+    t.color AS tag_color
+    FROM posts p
+
+    -- 关联作者信息
+    LEFT JOIN "user" u ON p.author_id = u.id
+    LEFT JOIN user_profiles up ON u.id = up.user_id
+
+    -- 关联分类信息
+    LEFT JOIN categories c ON p.category_id = c.id
+
+    -- 关联标签信息
+    LEFT JOIN post_tags pt ON p.id = pt.post_id
+    LEFT JOIN tags t ON pt.tag_id = t.id
+
+    -- 管理员可以查看所有文章（不限制可见性和作者状态）
+    WHERE 1=1
+
+    -- 动态查询条件
+    <!-- 关键字搜索 -->
+    <if test="params.q != null and params.q != ''">
+      AND (
+      p.title ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.content ILIKE CONCAT('%', #{params.q}, '%')
+      OR u.username ILIKE CONCAT('%', #{params.q}, '%')
+      OR up.display_name ILIKE CONCAT('%', #{params.q}, '%')
+      )
+    </if>
+    <!-- 文章状态过滤 -->
+    <if test="params.status != null and params.status != ''">
+      AND p.status = #{params.status}
+    </if>
+    <!-- 可见性过滤 -->
+    <if test="params.visibility != null and params.visibility != ''">
+      AND p.visibility = #{params.visibility}
+    </if>
+    <!-- 分类ID过滤 -->
+    <if test="params.categoryId != null">
+      AND p.category_id = #{params.categoryId}
+    </if>
+    <!-- 分类名称过滤 -->
+    <if test="params.categoryName != null and params.categoryName != ''">
+      AND c.name ILIKE CONCAT('%', #{params.categoryName}, '%')
+    </if>
+    <!-- 标签ID过滤 -->
+    <if test="params.tagId != null">
+      AND EXISTS(
+      SELECT 1 FROM post_tags pt2
+      WHERE pt2.post_id = p.id
+      AND pt2.tag_id = #{params.tagId}
+      )
+    </if>
+    <!-- 标签名称过滤 -->
+    <if test="params.tagName != null and params.tagName != ''">
+      AND EXISTS(
+      SELECT 1 FROM post_tags pt2
+      JOIN tags t2 ON pt2.tag_id = t2.id
+      WHERE pt2.post_id = p.id
+      AND t2.name ILIKE CONCAT('%', #{params.tagName}, '%')
+      )
+    </if>
+    <!-- 作者ID过滤 -->
+    <if test="params.authorId != null">
+      AND p.author_id = #{params.authorId}
+    </if>
+    <!-- 作者用户名过滤 -->
+    <if test="params.authorUsername != null and params.authorUsername != ''">
+      AND u.username ILIKE CONCAT('%', #{params.authorUsername}, '%')
+    </if>
+    <!-- 作者显示名称过滤 -->
+    <if test="params.authorDisplayName != null and params.authorDisplayName != ''">
+      AND up.display_name ILIKE CONCAT('%', #{params.authorDisplayName}, '%')
+    </if>
+    <!-- 是否置顶过滤 -->
+    <if test="params.isTop != null">
+      AND p.is_top = #{params.isTop}
+    </if>
+    <!-- 是否精选过滤 -->
+    <if test="params.isFeatured != null">
+      AND p.is_featured = #{params.isFeatured}
+    </if>
+    <!-- 是否允许评论过滤 -->
+    <if test="params.allowComments != null">
+      AND p.allow_comments = #{params.allowComments}
+    </if>
+    <!-- 创建时间范围过滤 -->
+    <if test="params.pageable.startTime != null">
+      AND p.created_at >= #{params.pageable.startTime}
+    </if>
+    <if test="params.pageable.endTime != null">
+      AND p.created_at &lt;= #{params.pageable.endTime}
+    </if>
+    <!-- 发布时间范围过滤 -->
+    <if test="params.publishedStartTime != null">
+      AND p.published_at >= #{params.publishedStartTime}
+    </if>
+    <if test="params.publishedEndTime != null">
+      AND p.published_at &lt;= #{params.publishedEndTime}
+    </if>
+    <!-- 更新时间范围过滤 -->
+    <if test="params.updatedStartTime != null">
+      AND p.updated_at >= #{params.updatedStartTime}
+    </if>
+    <if test="params.updatedEndTime != null">
+      AND p.updated_at &lt;= #{params.updatedEndTime}
+    </if>
+
+    -- 动态排序
+    ORDER BY
+    <choose>
+      <when test="params.pageable.sort != null and params.pageable.sort != ''">
+        <choose>
+          <when test="params.pageable.sort == 'createdAt:desc'">p.created_at DESC</when>
+          <when test="params.pageable.sort == 'createdAt:asc'">p.created_at ASC</when>
+          <when test="params.pageable.sort == 'updatedAt:desc'">p.updated_at DESC</when>
+          <when test="params.pageable.sort == 'updatedAt:asc'">p.updated_at ASC</when>
+          <when test="params.pageable.sort == 'publishedAt:desc'">p.published_at DESC</when>
+          <when test="params.pageable.sort == 'publishedAt:asc'">p.published_at ASC</when>
+          <when test="params.pageable.sort == 'title:desc'">p.title DESC</when>
+          <when test="params.pageable.sort == 'title:asc'">p.title ASC</when>
+          <when test="params.pageable.sort == 'viewCount:desc'">p.view_count DESC</when>
+          <when test="params.pageable.sort == 'viewCount:asc'">p.view_count ASC</when>
+          <when test="params.pageable.sort == 'likeCount:desc'">p.like_count DESC</when>
+          <when test="params.pageable.sort == 'likeCount:asc'">p.like_count ASC</when>
+          <when test="params.pageable.sort == 'commentCount:desc'">p.comment_count DESC</when>
+          <when test="params.pageable.sort == 'commentCount:asc'">p.comment_count ASC</when>
+          <otherwise>p.updated_at DESC</otherwise>
+        </choose>
+      </when>
+      <otherwise>p.updated_at DESC</otherwise>
+    </choose>
+  </select>
+
+  <!-- 专门的管理员文章计数查询，确保正确处理DISTINCT -->
+  <select id="countAdminPosts" resultType="long">
+    SELECT COUNT(DISTINCT p.id)
+    FROM posts p
+
+    -- 关联作者信息
+    LEFT JOIN "user" u ON p.author_id = u.id
+    LEFT JOIN user_profiles up ON u.id = up.user_id
+
+    -- 关联分类信息
+    LEFT JOIN categories c ON p.category_id = c.id
+
+    -- 关联标签信息（可能导致重复）
+    LEFT JOIN post_tags pt ON p.id = pt.post_id
+    LEFT JOIN tags t ON pt.tag_id = t.id
+
+    -- 管理员可以查看所有文章（不限制可见性和作者状态）
+    WHERE 1=1
+
+    -- 动态查询条件（与主查询保持一致）
+    <!-- 关键字搜索 -->
+    <if test="params.q != null and params.q != ''">
+      AND (
+      p.title ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.excerpt ILIKE CONCAT('%', #{params.q}, '%')
+      OR p.content ILIKE CONCAT('%', #{params.q}, '%')
+      OR u.username ILIKE CONCAT('%', #{params.q}, '%')
+      OR up.display_name ILIKE CONCAT('%', #{params.q}, '%')
+      )
+    </if>
+    <!-- 文章状态过滤 -->
+    <if test="params.status != null and params.status != ''">
+      AND p.status = #{params.status}
+    </if>
+    <!-- 可见性过滤 -->
+    <if test="params.visibility != null and params.visibility != ''">
+      AND p.visibility = #{params.visibility}
+    </if>
+    <!-- 分类ID过滤 -->
+    <if test="params.categoryId != null">
+      AND p.category_id = #{params.categoryId}
+    </if>
+    <!-- 分类名称过滤 -->
+    <if test="params.categoryName != null and params.categoryName != ''">
+      AND c.name ILIKE CONCAT('%', #{params.categoryName}, '%')
+    </if>
+    <!-- 标签ID过滤 -->
+    <if test="params.tagId != null">
+      AND EXISTS(
+      SELECT 1 FROM post_tags pt2
+      WHERE pt2.post_id = p.id
+      AND pt2.tag_id = #{params.tagId}
+      )
+    </if>
+    <!-- 标签名称过滤 -->
+    <if test="params.tagName != null and params.tagName != ''">
+      AND EXISTS(
+      SELECT 1 FROM post_tags pt2
+      JOIN tags t2 ON pt2.tag_id = t2.id
+      WHERE pt2.post_id = p.id
+      AND t2.name ILIKE CONCAT('%', #{params.tagName}, '%')
+      )
+    </if>
+    <!-- 作者ID过滤 -->
+    <if test="params.authorId != null">
+      AND p.author_id = #{params.authorId}
+    </if>
+    <!-- 作者用户名过滤 -->
+    <if test="params.authorUsername != null and params.authorUsername != ''">
+      AND u.username ILIKE CONCAT('%', #{params.authorUsername}, '%')
+    </if>
+    <!-- 作者显示名称过滤 -->
+    <if test="params.authorDisplayName != null and params.authorDisplayName != ''">
+      AND up.display_name ILIKE CONCAT('%', #{params.authorDisplayName}, '%')
+    </if>
+    <!-- 是否置顶过滤 -->
+    <if test="params.isTop != null">
+      AND p.is_top = #{params.isTop}
+    </if>
+    <!-- 是否精选过滤 -->
+    <if test="params.isFeatured != null">
+      AND p.is_featured = #{params.isFeatured}
+    </if>
+    <!-- 是否允许评论过滤 -->
+    <if test="params.allowComments != null">
+      AND p.allow_comments = #{params.allowComments}
+    </if>
+    <!-- 创建时间范围过滤 -->
+    <if test="params.pageable.startTime != null">
+      AND p.created_at >= #{params.pageable.startTime}
+    </if>
+    <if test="params.pageable.endTime != null">
+      AND p.created_at &lt;= #{params.pageable.endTime}
+    </if>
+    <!-- 发布时间范围过滤 -->
+    <if test="params.publishedStartTime != null">
+      AND p.published_at >= #{params.publishedStartTime}
+    </if>
+    <if test="params.publishedEndTime != null">
+      AND p.published_at &lt;= #{params.publishedEndTime}
+    </if>
+    <!-- 更新时间范围过滤 -->
+    <if test="params.updatedStartTime != null">
+      AND p.updated_at >= #{params.updatedStartTime}
+    </if>
+    <if test="params.updatedEndTime != null">
+      AND p.updated_at &lt;= #{params.updatedEndTime}
+    </if>
+  </select>
+
+  <!-- 获取文章统计数据 -->
+  <select id="getPostStats"
+          resultType="com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostStatsDto$PostStatsResponse">
+    SELECT
+      -- 基础统计
+      COUNT(*)                                                                      AS totalPosts,
+      COUNT(CASE WHEN p.status = 'published' THEN 1 END)                            AS publishedPosts,
+      COUNT(CASE WHEN p.status = 'draft' THEN 1 END)                                AS draftPosts,
+      COUNT(CASE WHEN p.status = 'archived' THEN 1 END)                             AS archivedPosts,
+      COUNT(CASE WHEN p.is_featured = true THEN 1 END)                              AS featuredPosts,
+      COUNT(CASE WHEN p.is_top = true THEN 1 END)                                   AS topPosts,
+
+      -- 互动统计
+      COALESCE(SUM(p.view_count), 0)                                                AS totalViews,
+      COALESCE(SUM(p.like_count), 0)                                                AS totalLikes,
+      COALESCE(SUM(p.comment_count), 0)                                             AS totalComments,
+      COALESCE(SUM(p.share_count), 0)                                               AS totalShares,
+
+      -- 时间段统计
+      COUNT(CASE WHEN p.created_at >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) AS monthlyNewPosts,
+      COUNT(CASE WHEN p.created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END)  AS weeklyNewPosts,
+      COUNT(CASE WHEN p.created_at >= CURRENT_DATE THEN 1 END)                      AS dailyNewPosts
+
+    FROM posts p
+    WHERE p.status != 'deleted' -- 排除已删除的文章
+  </select>
+
+  <!-- 分页查询指定标签下的已发布文章 -->
+  <select id="selectPostsByTagPage" resultMap="PublishedPostListMap">
+    SELECT DISTINCT
+    p.id AS post_id,
+    p.title AS post_title,
+    p.slug AS post_slug,
+    p.excerpt AS post_excerpt,
+    p.cover_image_url AS post_cover_image_url,
+    p.view_count AS post_view_count,
+    p.like_count AS post_like_count,
+    p.comment_count AS post_comment_count,
+    p.share_count AS post_share_count,
+    p.reading_time AS post_reading_time,
+    p.is_featured AS post_is_featured,
+    p.is_top AS post_is_top,
+    p.published_at AS post_published_at,
+
+    -- 作者信息
+    u.id AS author_id,
+    u.username AS author_username,
+    u.display_name AS author_display_name,
+    u.avatar_url AS author_avatar_url,
+    u.bio AS author_bio,
+
+    -- 分类信息
+    c.id AS category_id,
+    c.name AS category_name,
+    c.slug AS category_slug,
+    c.description AS category_description,
+
+    -- 标签信息（返回所有标签，不仅是查询的标签）
+    t.id AS tag_id,
+    t.name AS tag_name,
+    t.slug AS tag_slug,
+    t.color AS tag_color
+
+    FROM posts p
+    INNER JOIN "user" u ON p.author_id = u.id
+    LEFT JOIN categories c ON p.category_id = c.id
+    INNER JOIN post_tags pt ON p.id = pt.post_id
+    LEFT JOIN post_tags pt_all ON p.id = pt_all.post_id
+    LEFT JOIN tags t ON pt_all.tag_id = t.id
+
+    WHERE p.status = #{params.status}
+    AND p.visibility = #{params.visibility}
+    AND pt.tag_id = #{tagId}
+    <if test="params.featuredOnly != null and params.featuredOnly">
+      AND p.is_featured = true
+    </if>
+
+    ORDER BY
+    <choose>
+      <when test="params.pageable.sort != null and params.pageable.sort != ''">
+        <if test="params.pageable.sort.contains('publishedAt')">
+          p.published_at
+          <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+          <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+        </if>
+        <if test="params.pageable.sort.contains('viewCount')">
+          p.view_count
+          <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+          <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+        </if>
+        <if test="params.pageable.sort.contains('likeCount')">
+          p.like_count
+          <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+          <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+        </if>
+        <if test="params.pageable.sort.contains('title')">
+          p.title
+          <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+          <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+        </if>
+      </when>
+      <otherwise>
+        p.published_at DESC
+      </otherwise>
+    </choose>
+  </select>
+
+  <!-- 计算指定标签下的已发布文章数量 -->
+  <select id="countPostsByTag" resultType="long">
+    SELECT COUNT(DISTINCT p.id)
+    FROM posts p
+    INNER JOIN post_tags pt ON p.id = pt.post_id
+    WHERE p.status = #{params.status}
+    AND p.visibility = #{params.visibility}
+    AND pt.tag_id = #{tagId}
+    <if test="params.featuredOnly != null and params.featuredOnly">
+      AND p.is_featured = true
+    </if>
+  </select>
+
+  <!-- 分页查询指定分类下的已发布文章 -->
+  <select id="selectPostsByCategoryPage" resultMap="PublishedPostListMap">
+    SELECT DISTINCT
+    p.id AS post_id,
+    p.title AS post_title,
+    p.slug AS post_slug,
+    p.excerpt AS post_excerpt,
+    p.cover_image_url AS post_cover_image_url,
+    p.view_count AS post_view_count,
+    p.like_count AS post_like_count,
+    p.comment_count AS post_comment_count,
+    p.share_count AS post_share_count,
+    p.reading_time AS post_reading_time,
+    p.is_featured AS post_is_featured,
+    p.is_top AS post_is_top,
+    p.published_at AS post_published_at,
+
+    -- 作者信息
+    u.id AS author_id,
+    u.username AS author_username,
+    up.display_name AS author_display_name,
+    up.avatar_url AS author_avatar_url,
+    up.bio AS author_bio,
+
+    -- 分类信息
+    c.id AS category_id,
+    c.name AS category_name,
+    c.slug AS category_slug,
+    c.description AS category_description,
+
+    -- 标签信息
+    t.id AS tag_id,
+    t.name AS tag_name,
+    t.slug AS tag_slug,
+    t.color AS tag_color
+
+    FROM posts p
+    INNER JOIN "user" u ON p.author_id = u.id
+    LEFT JOIN user_profiles up ON u.id = up.user_id
+    LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN post_tags pt ON p.id = pt.post_id
+    LEFT JOIN tags t ON pt.tag_id = t.id
+
+    WHERE p.status = #{params.status}
+    AND p.visibility = 'public'
+    AND u.status = 'active'
+    <choose>
+      <when test="params.includeChildren != null and params.includeChildren">
+        <!-- 包含子分类：使用递归查询获取当前分类及其所有子分类的文章 -->
+        AND p.category_id IN (
+        WITH RECURSIVE category_tree AS (
+        -- 基础查询：当前分类
+        SELECT id FROM categories WHERE id = #{categoryId}
+        UNION ALL
+        -- 递归查询：子分类
+        SELECT c.id
+        FROM categories c
+        INNER JOIN category_tree ct ON c.parent_id = ct.id
+        )
+        SELECT id FROM category_tree
+        )
+      </when>
+      <otherwise>
+        <!-- 仅当前分类：只查询当前分类的文章 -->
+        AND p.category_id = #{categoryId}
+      </otherwise>
+    </choose>
+
+    ORDER BY
+    <choose>
+      <when
+        test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('publishedAt')">
+        p.published_at
+        <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+        <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+      </when>
+      <when
+        test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('viewCount')">
+        p.view_count
+        <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+        <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+      </when>
+      <when
+        test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('likeCount')">
+        p.like_count
+        <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+        <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+      </when>
+      <when
+        test="params.pageable.sortField != null and params.pageable.sortField != '' and params.pageable.sortField.contains('title')">
+        p.title
+        <if test="params.pageable.sortDirection == 'desc'">DESC</if>
+        <if test="params.pageable.sortDirection != 'desc'">ASC</if>
+      </when>
+      <otherwise>
+        p.published_at DESC
+      </otherwise>
+    </choose>
+  </select>
+
+  <!-- 计算指定分类下的已发布文章数量 -->
+  <select id="countPostsByCategory" resultType="long">
+    SELECT COUNT(DISTINCT p.id)
+    FROM posts p
+    LEFT JOIN "user" u ON p.author_id = u.id
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.status = #{params.status}
+    AND p.visibility = 'public'
+    AND u.status = 'active'
+    <choose>
+      <when test="params.includeChildren != null and params.includeChildren">
+        <!-- 包含子分类：使用递归查询获取当前分类及其所有子分类的文章 -->
+        AND p.category_id IN (
+        WITH RECURSIVE category_tree AS (
+        -- 基础查询：当前分类
+        SELECT id FROM categories WHERE id = #{categoryId}
+        UNION ALL
+        -- 递归查询：子分类
+        SELECT c.id
+        FROM categories c
+        INNER JOIN category_tree ct ON c.parent_id = ct.id
+        )
+        SELECT id FROM category_tree
+        )
+      </when>
+      <otherwise>
+        <!-- 仅当前分类：只查询当前分类的文章 -->
+        AND p.category_id = #{categoryId}
+      </otherwise>
+    </choose>
+  </select>
+
+  <!-- 根据文章ID列表批量查询标签 -->
+  <select id="selectTagsByPostIds" resultType="map">
+    SELECT
+    pt.post_id,
+    t.id AS tag_id,
+    t.name AS tag_name,
+    t.slug AS tag_slug,
+    t.color AS tag_color
+    FROM post_tags pt
+    INNER JOIN tags t ON pt.tag_id = t.id
+    WHERE pt.post_id IN
+    <foreach collection="postIds" item="postId" open="(" separator="," close=")">
+      #{postId}
+    </foreach>
+    ORDER BY pt.post_id, t.id
+  </select>
+
+  <!-- 根据文章ID获取标签 -->
+  <select id="selectTagsByPostId" resultType="map">
+    SELECT t.id,
+           t.name
+    FROM post_tags pt
+           INNER JOIN tags t ON pt.tag_id = t.id
+    WHERE pt.post_id = #{postId}
+    ORDER BY t.id
+  </select>
+
+  <!-- 文章编辑详情结果映射 -->
+  <resultMap id="PostEditDetailMap" type="com.kisesaki.blog.content.post.dto.PostCommand.PostEditDetailResponse">
+    <id property="id" column="post_id"/>
+    <result property="title" column="post_title"/>
+    <result property="slug" column="post_slug"/>
+    <result property="excerpt" column="post_excerpt"/>
+    <result property="content" column="post_content"/>
+    <result property="categoryId" column="category_id"/>
+    <result property="categoryName" column="category_name"/>
+    <result property="coverImageUrl" column="post_cover_image_url"/>
+    <result property="featuredImageUrl" column="post_featured_image_url"/>
+    <result property="status" column="post_status"/>
+    <result property="visibility" column="post_visibility"/>
+    <result property="password" column="post_password"/>
+    <result property="isFeatured" column="post_is_featured"/>
+    <result property="isTop" column="post_is_top"/>
+    <result property="allowComments" column="post_allow_comments"/>
+    <result property="seoTitle" column="post_seo_title"/>
+    <result property="seoDescription" column="post_seo_description"/>
+    <result property="seoKeywords" column="post_seo_keywords"/>
+    <result property="scheduledAt" column="post_scheduled_at"/>
+    <result property="publishedAt" column="post_published_at"/>
+    <result property="createdAt" column="post_created_at"/>
+    <result property="updatedAt" column="post_updated_at"/>
+    <result property="readingTime" column="post_reading_time"/>
+    <result property="authorId" column="author_id"/>
+    <result property="authorUsername" column="author_username"/>
+
+    <!-- 标签ID列表（通过collection收集） -->
+    <collection property="tags" ofType="java.lang.Long" column="post_id" select="selectTagsByPostId"/>
+  </resultMap>
+
+  <!-- 获取文章编辑详情 -->
+  <select id="getPostEditDetail" resultMap="PostEditDetailMap">
+    SELECT p.id                 AS post_id,
+           p.title              AS post_title,
+           p.slug               AS post_slug,
+           p.excerpt            AS post_excerpt,
+           p.content            AS post_content,
+           p.category_id,
+           c.name               AS category_name,
+           p.cover_image_url    AS post_cover_image_url,
+           p.featured_image_url AS post_featured_image_url,
+           p.status             AS post_status,
+           p.visibility         AS post_visibility,
+           p.password           AS post_password,
+           p.is_featured        AS post_is_featured,
+           p.is_top             AS post_is_top,
+           p.allow_comments     AS post_allow_comments,
+           p.seo_title          AS post_seo_title,
+           p.seo_description    AS post_seo_description,
+           p.seo_keywords       AS post_seo_keywords,
+           p.scheduled_at       AS post_scheduled_at,
+           p.published_at       AS post_published_at,
+           p.created_at         AS post_created_at,
+           p.updated_at         AS post_updated_at,
+           p.reading_time       AS post_reading_time,
+           u.id                 AS author_id,
+           u.username           AS author_username
+    FROM posts p
+           LEFT JOIN categories c ON p.category_id = c.id
+           LEFT JOIN "user" u ON p.author_id = u.id
+    WHERE p.id = #{postId}
+      AND p.author_id = #{userId}
+  </select>
 </mapper>

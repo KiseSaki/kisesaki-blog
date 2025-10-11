@@ -3,6 +3,7 @@ package com.kisesaki.blog.content.post.dto.PostCommand;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import com.kisesaki.blog.content.post.dto.TagInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -15,6 +16,12 @@ import lombok.Data;
 @Data
 @Schema(description = "文章编辑详情响应")
 public class PostEditDetailResponse {
+    @Data
+    static
+    class Tags {
+        private Long id;
+        private String name;
+    }
 
     @Schema(description = "文章ID", example = "1")
     private Long id;
@@ -37,8 +44,8 @@ public class PostEditDetailResponse {
     @Schema(description = "分类名称", example = "技术分享")
     private String categoryName;
 
-    @Schema(description = "标签ID列表", example = "[1, 2, 3]")
-    private List<Long> tagIds;
+    @Schema(description = "标签列表")
+    private List<Tags> tags;
 
     @Schema(description = "封面图片URL", example = "https://example.com/images/cover.jpg")
     private String coverImageUrl;

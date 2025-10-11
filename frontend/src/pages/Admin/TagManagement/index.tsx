@@ -37,7 +37,7 @@ const TagManagement = () => {
 
   // 查询参数
   const [params, setParams] = useImmer({
-    pageable: { currentPage: 1, pageSize: 20 },
+    pageable: { currentPage: 1, pageSize: 10 },
     name: undefined as string | undefined,
     approvalStatus: undefined as
       | 'pending'

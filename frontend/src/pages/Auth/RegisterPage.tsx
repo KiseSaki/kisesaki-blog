@@ -34,7 +34,7 @@ const RegisterPage = () => {
     },
   });
 
-  const { register } = useRegister();
+  const { register, registerLoading } = useRegister();
   // 表单提交处理函数
   const handleSubmit = async (data: RegisterFormData) => {
     const success = await register(data);
@@ -116,7 +116,9 @@ const RegisterPage = () => {
             )}
           />
 
-          <Button className='w-full'>注册</Button>
+          <Button className='w-full' loading={registerLoading} type='submit'>
+            注册
+          </Button>
         </form>
       </Form>
     </AuthLayout>

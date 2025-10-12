@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router';
  * 支持邮箱密码登录和 GitHub/Gitee OAuth 登录
  */
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, loginLoading } = useAuth();
   const navigation = useNavigate();
 
   /**
@@ -150,7 +150,7 @@ const LoginPage = () => {
             </a>
           </div>
 
-          <Button type='submit' className='w-full'>
+          <Button type='submit' className='w-full' loading={loginLoading}>
             登录
           </Button>
         </form>

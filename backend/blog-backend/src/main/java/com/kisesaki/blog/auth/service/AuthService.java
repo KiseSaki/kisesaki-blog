@@ -203,6 +203,44 @@ public class AuthService {
     }
 
     /**
+     * 重新发送验证邮件
+     */
+    public void resendVerificationEmail(Long userId) {
+        User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                .eq(User::getId, userId)
+                .ne(User::getStatus, "deleted"));
+        if (user == null) {
+            log.warn("重新发送验证邮件失败，邮箱未注册");
+            throw BusinessException.of(ErrorCode.USER_NOT_FOUND, "邮箱未注册");
+        }
+
+        if (user.getEmailVerified()) {
+            log.info("用户 {} 的邮箱已验证，无需重新发送验证邮件", user.getUsername());
+            return;
+        }
+
+        try {
+            // 生成新的邮箱验证令牌
+            String emailToken = UUID.randomUUID().toString();
+            String redisKey = UserKey.buildEmailVerificationKey(emailToken);
+            RedisService.hSet(redisKey, "userId", user.getId());
+            RedisService.expire(redisKey, 24 * 60 * 60); // 24小时过期
+
+            // 发送验证邮件
+            emailEventPublisher.publishUserRegistrationEvent(
+                    user.getEmail(),
+                    user.getId(),
+                    user.getUsername(),
+                    emailToken);
+
+            log.info("验证邮件已重新发送至");
+        } catch (Exception e) {
+            log.error("重新发送验证邮件失败", e);
+            throw BusinessException.of(ErrorCode.EMAIL_SEND_FAILED, "重新发送验证邮件失败，请稍后重试");
+        }
+    }
+
+    /**
      * 验证用户邮箱
      *
      * @param verifyEmailRequestDto 验证请求
@@ -240,10 +278,10 @@ public class AuthService {
             userMapper.updateById(user);
             // 删除整个key
             redisService.delete(redisKey);
-            
+
             // 邮箱验证成功后，将用户从 GUEST 角色升级到 USER 角色
             upgradeUserFromGuestToUser(user.getId());
-            
+
             log.info("用户 {} 的邮箱验证成功", user.getUsername());
         } catch (Exception e) {
             log.error("更新用户 {} 的邮箱验证状态失败", user.getUsername(), e);
@@ -586,7 +624,7 @@ public class AuthService {
                 userRoleService.assignRoleToUser(userId, userRole.getId());
                 log.info("用户 {} 从 GUEST 角色升级到 USER 角色成功", userId);
             } else {
-                log.warn("角色不存在：GUEST={}, USER={}，无法为用户 {} 升级角色", 
+                log.warn("角色不存在：GUEST={}, USER={}，无法为用户 {} 升级角色",
                     guestRole != null, userRole != null, userId);
             }
         } catch (Exception e) {

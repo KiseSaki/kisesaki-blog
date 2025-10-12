@@ -2,6 +2,7 @@ package com.kisesaki.blog.auth.controller;
 
 import java.util.Set;
 
+import com.kisesaki.blog.common.util.AuthUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,8 +48,8 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "用户登录", description = "用户使用用户名和密码进行登录，支持设备管理")
     public ApiResponse<LoginResponseDto> login(
-            @Valid @RequestBody LoginRequestDto loginRequestDto,
-            HttpServletRequest request) {
+        @Valid @RequestBody LoginRequestDto loginRequestDto,
+        HttpServletRequest request) {
         LoginResponseDto response = authService.login(loginRequestDto, request);
         return ResultUtils.success("登录成功", response);
     }
@@ -60,10 +61,18 @@ public class AuthController {
         return ResultUtils.success("注册成功", response);
     }
 
+    @PostMapping("/resend-verification-email")
+    @Operation(summary = "重新发送验证邮箱", description = "用户请求重新发送验证邮箱")
+    public ApiResponse<Void> resendVerificationEmail(Authentication authentication) {
+        Long userId = AuthUtils.getUserIdFromAuthentication(authentication);
+        authService.resendVerificationEmail(userId);
+        return ResultUtils.success("验证邮件已重新发送，请检查您的邮箱");
+    }
+
     @PostMapping("/verify-email")
     @Operation(summary = "验证邮箱", description = "使用邮箱验证令牌验证用户的邮箱")
     public ApiResponse<Void> verifyEmail(
-            @Valid @RequestBody VerifyEmailRequestDto verifyEmailRequest) {
+        @Valid @RequestBody VerifyEmailRequestDto verifyEmailRequest) {
         authService.verifyEmail(verifyEmailRequest);
         return ResultUtils.success("邮箱验证成功");
     }
@@ -71,8 +80,8 @@ public class AuthController {
     @PostMapping("/refreshToken")
     @Operation(summary = "刷新令牌", description = "使用刷新令牌获取新的访问令牌")
     public ApiResponse<LoginResponseDto> refreshToken(
-            @Valid @RequestBody RefreshTokenRequestDto refreshTokenRequestDto,
-            HttpServletRequest request) {
+        @Valid @RequestBody RefreshTokenRequestDto refreshTokenRequestDto,
+        HttpServletRequest request) {
         LoginResponseDto response = authService.refreshToken(refreshTokenRequestDto, request);
         return ResultUtils.success("访问令牌刷新成功", response);
     }
@@ -81,12 +90,12 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "用户登出", description = "用户登出当前设备")
     public ApiResponse<Void> logout(
-            @Valid @RequestBody LogoutRequestDto logoutRequest,
-            Authentication authentication,
-            HttpServletRequest request) {
+        @Valid @RequestBody LogoutRequestDto logoutRequest,
+        Authentication authentication,
+        HttpServletRequest request) {
         String username = authentication.getName();
         authService.logout(username,
-                logoutRequest.getRefreshToken(), logoutRequest.getDeviceId(), request);
+            logoutRequest.getRefreshToken(), logoutRequest.getDeviceId(), request);
         return ResultUtils.success("登出成功");
     }
 
@@ -103,9 +112,9 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "踢出指定设备", description = "管理员或用户踢出指定设备")
     public ApiResponse<Void> kickDevice(
-            @PathVariable String deviceId,
-            Authentication authentication,
-            HttpServletRequest request) {
+        @PathVariable String deviceId,
+        Authentication authentication,
+        HttpServletRequest request) {
         String username = authentication.getName();
         authService.kickDevice(username, deviceId, request);
         return ResultUtils.success("设备已被踢出");
@@ -124,9 +133,9 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "修改密码", description = "用户修改自己的登录密码")
     public ApiResponse<Void> changePassword(
-            @Valid @RequestBody ChangePasswordRequestDto changePasswordRequest,
-            Authentication authentication,
-            HttpServletRequest request) {
+        @Valid @RequestBody ChangePasswordRequestDto changePasswordRequest,
+        Authentication authentication,
+        HttpServletRequest request) {
         String username = authentication.getName();
         authService.changePassword(username, changePasswordRequest, request);
         return ResultUtils.success("密码修改成功");
@@ -135,7 +144,7 @@ public class AuthController {
     @PostMapping("forgot-password")
     @Operation(summary = "忘记密码", description = "用户通过邮箱重置登录密码")
     public ApiResponse<Void> forgotPassword(
-            @Valid @RequestBody ForgotPasswordRequestDto forgotPasswordRequestDto) {
+        @Valid @RequestBody ForgotPasswordRequestDto forgotPasswordRequestDto) {
         authService.forgotPassword(forgotPasswordRequestDto);
         return ResultUtils.success("密码重置邮件已发送，请检查您的邮箱");
     }
@@ -143,7 +152,7 @@ public class AuthController {
     @PostMapping("/reset-password")
     @Operation(summary = "确认重置密码", description = "用户通过邮箱收到的令牌确认重置密码")
     public ApiResponse<Void> resetPassword(
-            @Valid @RequestBody ResetPasswordRequestDto resetPasswordRequest) {
+        @Valid @RequestBody ResetPasswordRequestDto resetPasswordRequest) {
         authService.resetPassword(resetPasswordRequest);
         return ResultUtils.success("密码重置成功");
     }
@@ -152,8 +161,8 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "清理过期令牌", description = "清理用户的过期令牌")
     public ApiResponse<Void> cleanExpiredTokens(
-            Authentication authentication,
-            HttpServletRequest request) {
+        Authentication authentication,
+        HttpServletRequest request) {
         String username = authentication.getName();
         authService.cleanExpiredTokens(username, request);
         return ResultUtils.success("清理过期令牌成功");

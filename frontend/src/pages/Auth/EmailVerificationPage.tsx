@@ -1,6 +1,7 @@
 import { Button } from '@/components';
 import AuthLayout from '@/components/common/AuthLayout';
 import { FailedCard } from '@/components/feedback/FailedCard';
+import { LOGIN_LINK, PROFILE_LINK } from '@/config';
 import { useAuth, useRegister } from '@/hooks';
 import { AlertCircle, CheckCircle, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -41,7 +42,7 @@ const EmailVerificationPage = () => {
 
             // 3秒后自动跳转到登录页面
             setTimeout(() => {
-              navigate('/auth/login');
+              navigate(LOGIN_LINK);
             }, 3000);
           } else {
             setVerificationFailed(true);
@@ -92,7 +93,7 @@ const EmailVerificationPage = () => {
           <p className='text-theme-success'>
             邮箱验证成功！您的账户已激活，可以正常登录使用。
           </p>
-          <Button onClick={() => navigate('/auth/login')} className='w-full'>
+          <Button onClick={() => navigate(LOGIN_LINK)} className='w-full'>
             前往登录
           </Button>
         </div>
@@ -116,14 +117,14 @@ const EmailVerificationPage = () => {
           <div className='space-y-2'>
             {user && user.username ? (
               <Button
-                onClick={() => navigate('/user/profile')}
+                onClick={() => navigate(PROFILE_LINK)}
                 className='w-full'
               >
                 跳转个人中心
               </Button>
             ) : (
               <Button
-                onClick={() => navigate('/auth/login')}
+                onClick={() => navigate(LOGIN_LINK)}
                 className='w-full'
               >
                 登录

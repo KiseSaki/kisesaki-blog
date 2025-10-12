@@ -97,3 +97,43 @@ export const getMyCommentsApi = (params?: MyCommentParams) =>
  */
 export const reportCommentApi = (id: number, body: ReportCommentBody) =>
   httpClient.post<void>(`/comments/${id}/report`, body);
+
+// =================== 管理员评论管理接口 ===================
+
+/**
+ * 获取所有评论列表（管理员）
+ * @param params 查询参数
+ * @returns 评论列表
+ */
+export const adminGetCommentsApi = (params?: CommentListParams) =>
+  httpClient.get<PageResponse<CommentListResponse>>('/admin/comments', {
+    params,
+  });
+
+/**
+ * 审核评论（管理员）
+ * @param id 评论ID
+ * @param status 审核状态
+ * @returns 审核结果
+ */
+export const adminApproveCommentApi = (
+  id: number,
+  status: 'APPROVED' | 'REJECTED' | 'SPAM'
+) => httpClient.put<void>(`/admin/comments/${id}/status`, { status });
+
+/**
+ * 删除评论（管理员）
+ * @param id 评论ID
+ * @returns 删除结果
+ */
+export const adminDeleteCommentApi = (id: number) =>
+  httpClient.delete<void>(`/admin/comments/${id}`);
+
+/**
+ * 置顶评论（管理员）
+ * @param id 评论ID
+ * @param isPinned 是否置顶
+ * @returns 置顶结果
+ */
+export const adminPinCommentApi = (id: number, isPinned: boolean) =>
+  httpClient.put<void>(`/admin/comments/${id}/pin`, { isPinned });

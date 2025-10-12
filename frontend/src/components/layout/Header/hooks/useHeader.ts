@@ -18,17 +18,19 @@ export const useHeader = (opts?: { scrollThreshold?: number }) => {
     lastY.current = window.scrollY || 0;
 
     const onScroll = (e: Event) => {
+      // 只处理 window 或 document 的滚动事件，忽略其他元素的滚动
+      const target = e.target;
+      if (target !== document && target !== window) {
+        return;
+      }
+
       // 如果正在滚动，则返回
       if (ticking.current) return;
       ticking.current = true;
 
       // 请求动画帧
       requestAnimationFrame(() => {
-        const target = e.target as HTMLElement | Window;
-        const y =
-          target === window
-            ? window.pageYOffset
-            : (target as HTMLElement).scrollTop || 0;
+        const y = window.pageYOffset || window.scrollY || 0;
         // 页面已滚动超过阈值时显示磨砂效果
         const shouldFrost = y > threshold;
         setFrosted(shouldFrost);

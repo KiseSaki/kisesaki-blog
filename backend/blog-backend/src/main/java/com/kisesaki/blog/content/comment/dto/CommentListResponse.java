@@ -61,6 +61,12 @@ public class CommentListResponse {
     @Schema(description = "是否为文章作者回复", example = "false")
     private Boolean isAuthorReply;
 
+    @Schema(description = "IP地址", example = "192.168.0.1")
+    private String ipAddress;
+
+    @Schema(description = "用户代理", example = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+    private String userAgent;
+
     @Schema(description = "最后编辑时间（如果为 null 表示未编辑）")
     private OffsetDateTime editedAt;
 

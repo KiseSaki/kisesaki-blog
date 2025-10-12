@@ -12,7 +12,6 @@ export * from './icons';
 
 // 功能性组件
 export * from './feedback';
-export * from './navigation';
 export * from './permission';
 export * from './providers';
 export * from './theme';

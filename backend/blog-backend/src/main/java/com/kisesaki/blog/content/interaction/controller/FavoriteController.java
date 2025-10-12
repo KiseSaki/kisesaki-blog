@@ -1,6 +1,5 @@
 package com.kisesaki.blog.content.interaction.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,11 +26,11 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * 收藏功能控制器
- * 
+ *
  * @author KiseSaki
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("")
 @RequiredArgsConstructor
 @Tag(name = "收藏管理", description = "文章收藏相关接口")
 public class FavoriteController {
@@ -44,12 +43,12 @@ public class FavoriteController {
     @PostMapping("/posts/{id}/favorite")
     @Operation(summary = "收藏文章", description = "用户收藏指定文章")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<FavoriteStatusResponse>> favoritePost(
+    public ApiResponse<FavoriteStatusResponse> favoritePost(
             @Parameter(description = "文章ID") @PathVariable("id") Long postId,
             Authentication authentication) {
 
         FavoriteStatusResponse response = favoriteService.favoritePost(postId, authentication);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResultUtils.success(response);
     }
 
     /**
@@ -58,12 +57,12 @@ public class FavoriteController {
     @DeleteMapping("/posts/{id}/favorite")
     @Operation(summary = "取消收藏文章", description = "用户取消收藏指定文章")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<FavoriteStatusResponse>> unfavoritePost(
+    public ApiResponse<FavoriteStatusResponse> unfavoritePost(
             @Parameter(description = "文章ID") @PathVariable("id") Long postId,
             Authentication authentication) {
 
         FavoriteStatusResponse response = favoriteService.unfavoritePost(postId, authentication);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResultUtils.success(response);
     }
 
     /**
@@ -72,12 +71,12 @@ public class FavoriteController {
     @GetMapping("/posts/{id}/favorite-status")
     @Operation(summary = "获取文章收藏状态", description = "获取当前用户对指定文章的收藏状态")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<FavoriteStatusResponse>> getFavoriteStatus(
+    public ApiResponse<FavoriteStatusResponse> getFavoriteStatus(
             @Parameter(description = "文章ID") @PathVariable("id") Long postId,
             Authentication authentication) {
 
         FavoriteStatusResponse response = favoriteService.getFavoriteStatus(postId, authentication);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResultUtils.success(response);
     }
 
     /**
@@ -85,12 +84,12 @@ public class FavoriteController {
      */
     @GetMapping("/posts/{id}/favorites")
     @Operation(summary = "获取文章收藏用户列表", description = "分页获取收藏指定文章的用户列表")
-    public ResponseEntity<ApiResponse<PageResponse<FavoriteUserResponse>>> getPostFavoriteUsers(
+    public ApiResponse<PageResponse<FavoriteUserResponse>> getPostFavoriteUsers(
             @Parameter(description = "文章ID") @PathVariable("id") Long postId,
             @ModelAttribute PageableParams params) {
 
         PageResponse<FavoriteUserResponse> response = favoriteService.getPostFavoriteUsers(postId, params);
-        return ResponseEntity.ok(ResultUtils.success(response));
+        return ResultUtils.success(response);
     }
 
     /**
@@ -99,12 +98,12 @@ public class FavoriteController {
     @GetMapping("/users/favorites")
     @Operation(summary = "获取我的收藏列表", description = "分页获取当前用户的收藏文章列表")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<PageResponse<FavoritePostResponse>>> getCurrentUserFavorites(
+    public ApiResponse<PageResponse<FavoritePostResponse>> getCurrentUserFavorites(
             @ModelAttribute PageableParams params,
             Authentication authentication) {
 
         PageResponse<FavoritePostResponse> response = favoriteService.getCurrentUserFavorites(authentication, params);
-        return ResponseEntity.ok(ResultUtils.success(response));
+        return ResultUtils.success(response);
     }
 
     /**
@@ -112,12 +111,12 @@ public class FavoriteController {
      */
     @GetMapping("/users/{userId}/favorites")
     @Operation(summary = "获取用户的收藏列表", description = "分页获取指定用户的公开收藏文章列表")
-    public ResponseEntity<ApiResponse<PageResponse<FavoritePostResponse>>> getUserFavorites(
+    public ApiResponse<PageResponse<FavoritePostResponse>> getUserFavorites(
             @Parameter(description = "用户ID") @PathVariable Long userId,
             @ModelAttribute PageableParams params) {
 
         PageResponse<FavoritePostResponse> response = favoriteService.getUserFavorites(userId, params);
-        return ResponseEntity.ok(ResultUtils.success(response));
+        return ResultUtils.success(response);
     }
 
     /**
@@ -125,10 +124,10 @@ public class FavoriteController {
      */
     @GetMapping("/users/{userId}/favorites/count")
     @Operation(summary = "获取用户收藏总数", description = "获取指定用户的收藏文章总数")
-    public ResponseEntity<ApiResponse<Integer>> getUserFavoriteCount(
+    public ApiResponse<Integer> getUserFavoriteCount(
             @Parameter(description = "用户ID") @PathVariable Long userId) {
 
         int count = favoriteService.countUserFavorites(userId);
-        return ResponseEntity.ok(ApiResponse.success(count));
+        return ResultUtils.success(count);
     }
 }

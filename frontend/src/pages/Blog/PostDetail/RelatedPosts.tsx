@@ -1,4 +1,5 @@
 import { Image } from '@/components';
+import { BLOG_POST_DETAIL_BASE } from '@/config';
 import type { RelatedPost } from '@/types';
 import { useNavigate } from 'react-router';
 
@@ -9,7 +10,7 @@ const RelatedPostCard = ({ post }: { post: RelatedPost }) => {
       role='link'
       tabIndex={0}
       aria-label={`阅读推荐文章：${post.title}`}
-      onClick={() => navigate(`/post/${post.slug}`)}
+      onClick={() => navigate(`${BLOG_POST_DETAIL_BASE}/${post.slug}`)}
       className={`group flex items-start gap-3 p-3 rounded-lg transition transform bg-[var(--theme-card-background)] 
         border border-transparent hover:border-[color:var(--theme-border)] hover:shadow-lg hover:-translate-y-0.5 cursor-pointer`}
     >

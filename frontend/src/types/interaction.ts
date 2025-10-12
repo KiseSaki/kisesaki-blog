@@ -1,26 +1,30 @@
 /**
  * 互动相关类型定义（点赞、收藏等）
+ * 对应后端：interaction 相关的 DTO
  */
 
-import type { UserInfo } from './user';
-
 /**
- * 反应类型
+ * 反应类型（后端枚举）
  */
 export type ReactionType = 'LIKE' | 'DISLIKE';
 
 /**
+ * 目标类型（后端枚举）
+ */
+export type TargetType = 'POST' | 'COMMENT';
+
+/**
  * 反应状态响应
+ * 对应后端：ReactionStatusResponse
  */
 export interface ReactionStatusResponse {
-  // 是否点赞
+  targetId: number;
+  targetType: TargetType;
   isLiked: boolean;
-  // 是否点踩
   isDisliked: boolean;
-  // 点赞总数
   likeCount: number;
-  // 点踩总数
   dislikeCount: number;
+  userReactionType: ReactionType | null;
 }
 
 /**
@@ -33,34 +37,39 @@ export type BatchReactionStatusResponse = Record<
 
 /**
  * 收藏状态响应
+ * 对应后端：FavoriteStatusResponse
  */
 export interface FavoriteStatusResponse {
-  // 是否已收藏
-  isFavorited: boolean;
-  // 收藏总数
+  postId: number;
+  favorited: boolean; // 注意：后端使用 favorited 而非 isFavorited
   favoriteCount: number;
 }
 
 /**
  * 收藏文章响应
+ * 对应后端：FavoritePostResponse
  */
 export interface FavoritePostResponse {
-  id: number;
   postId: number;
-  postTitle: string;
-  postSlug: string;
-  postExcerpt: string;
-  postCover: string | null;
-  authorId: number;
+  title: string;
+  excerpt: string;
+  coverImageUrl: string | null;
   authorName: string;
-  authorAvatar: string | null;
-  favoritedAt: string;
+  publishedAt: string;
+  favoriteTime: string;
+  readingTime: number;
+  viewCount: number;
+  likeCount: number;
 }
 
 /**
  * 收藏用户响应
+ * 对应后端：FavoriteUserResponse
  */
 export interface FavoriteUserResponse {
-  user: UserInfo;
-  favoritedAt: string;
+  userId: number;
+  username: string;
+  nickname: string;
+  avatarUrl: string | null;
+  favoriteTime: string;
 }

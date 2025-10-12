@@ -16,11 +16,9 @@ function App() {
           // 这里可以添加错误上报到监控系统的逻辑
         }}
       >
-        <ScrollArea className='h-screen w-full overflow-hidden'>
+        <ScrollArea className='h-screen w-full overflow-auto'>
           {/* 页面内容 */}
-          <div className='min-h-screen bg-background theme-bg'>
-            <RouterProvider router={router}></RouterProvider>
-          </div>
+          <RouterProvider router={router}></RouterProvider>
         </ScrollArea>
 
         {/* Toast 通知组件 */}

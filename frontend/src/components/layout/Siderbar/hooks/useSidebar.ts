@@ -26,7 +26,7 @@ export const useSidebar = () => {
     if (location.pathname.startsWith('/user')) {
       return 'USER';
     }
-    if (location.pathname.startsWith('/admin')) {
+    if (location.pathname.startsWith('/manage')) {
       return 'ADMIN';
     }
   }, [location.pathname]);

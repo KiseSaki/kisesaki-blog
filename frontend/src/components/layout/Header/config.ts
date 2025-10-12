@@ -1,3 +1,5 @@
+import { BLOG_ARCHIVE_LINK, BLOG_CATEGORY_BASE, BLOG_TAG_BASE } from '@/config';
+
 export interface IHeaderMenu {
   label: string;
   path: string;
@@ -13,15 +15,15 @@ export const headerMenusConfig: IHeaderMenu[] = [
   },
   {
     label: '归档',
-    path: '/archive',
+    path: BLOG_ARCHIVE_LINK,
   },
   {
     label: '分类',
-    path: '/category',
+    path: BLOG_CATEGORY_BASE,
   },
   {
     label: '标签',
-    path: '/tag',
+    path: BLOG_TAG_BASE,
   },
   {
     label: '关于我',

@@ -35,7 +35,7 @@ import lombok.RequiredArgsConstructor;
  * @author KiseSaki
  */
 @RestController
-@RequestMapping("/api/admin/categories")
+@RequestMapping("/admin/categories")
 @RequiredArgsConstructor
 @Tag(name = "管理员分类管理", description = "管理员分类管理相关接口")
 public class AdminCategoryController {

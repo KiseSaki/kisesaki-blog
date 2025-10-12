@@ -1,5 +1,7 @@
 package com.kisesaki.blog.file;
 
+import com.kisesaki.blog.common.dto.ApiResponse;
+import com.kisesaki.blog.common.dto.ResultUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,18 +25,18 @@ class FileController {
 
     @PostMapping("/upload")
     @PreAuthorize("hasAuthority('FILE_UPLOAD')")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file, Authentication authentication) {
+    public ApiResponse<String> uploadFile(@RequestParam("file") MultipartFile file, Authentication authentication) {
         if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body("上传的文件不能为空");
+            return ResultUtils.error("上传的文件不能为空");
         }
         try {
             CustomUserPrincipal userPrincipal = (CustomUserPrincipal) authentication.getPrincipal();
             Long userId = userPrincipal.getId();
             String fileUrl = fileUploadService.uploadFile(file, userId);
 
-            return ResponseEntity.ok(fileUrl);
+            return ResultUtils.success("上传文件成功",fileUrl);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("文件上传失败: " + e.getMessage());
+            return ResultUtils.error(500,  e.getMessage());
         }
     }
 }

@@ -2,8 +2,6 @@
 .markdown-editor-wrapper {
   position: relative;
   width: 100%;
-  /* ScrollArea 需要固定高度 */
-  height: 100%;
 }
 
 /* 主题：亮色模式 - 使用 CSS 变量跟随主题 */
@@ -93,10 +91,44 @@
   color: var(--md-editor-text-color);
 }
 
-/* 编辑器内部区域使用默认滚动条（由 ScrollArea 统一处理） */
+/* 编辑器内部区域滚动 */
 .markdown-editor-wrapper .w-md-editor-text,
 .markdown-editor-wrapper .w-md-editor-preview {
   overflow: auto;
+}
+
+/* 自定义滚动条样式（类似 Shadcn/ui ScrollArea） */
+.markdown-editor-wrapper .w-md-editor-text::-webkit-scrollbar,
+.markdown-editor-wrapper .w-md-editor-preview::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.markdown-editor-wrapper .w-md-editor-text::-webkit-scrollbar-track,
+.markdown-editor-wrapper .w-md-editor-preview::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 5px;
+}
+
+.markdown-editor-wrapper .w-md-editor-text::-webkit-scrollbar-thumb,
+.markdown-editor-wrapper .w-md-editor-preview::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.markdown-editor-wrapper .w-md-editor-text::-webkit-scrollbar-thumb:hover,
+.markdown-editor-wrapper .w-md-editor-preview::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--border) / 0.8);
+  background-clip: padding-box;
+}
+
+/* Firefox 滚动条样式 */
+.markdown-editor-wrapper .w-md-editor-text,
+.markdown-editor-wrapper .w-md-editor-preview {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 /* 占位符样式 */
@@ -117,6 +149,7 @@
   font-size: 14px;
   line-height: 1.8;
   color: var(--md-editor-text-color);
+  background-color: var(--md-editor-bg-color);
 }
 
 .markdown-editor-wrapper .wmde-markdown h1,
@@ -236,6 +269,367 @@
   opacity: 0.8;
 }
 
+/* ==================== Mac 风格代码块样式（与 PostContent 一致） ==================== */
+
+/* 代码块容器 */
+.markdown-editor-wrapper .wmde-markdown pre.has-header {
+  position: relative;
+  background: linear-gradient(to bottom, #1e1e1e 0%, #252525 100%) !important;
+  border-radius: 12px;
+  padding: 0 !important;
+  margin: 2rem 0;
+  overflow: hidden;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 代码块头部 */
+.markdown-editor-wrapper .wmde-markdown .code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: linear-gradient(to bottom, #2d2d2d 0%, #262626 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Mac 三色按钮 */
+.markdown-editor-wrapper .wmde-markdown .mac-window-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.markdown-editor-wrapper .wmde-markdown .mac-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.markdown-editor-wrapper .wmde-markdown .mac-btn-close {
+  background: linear-gradient(135deg, #ff6057 0%, #ff5f52 100%);
+  border: 0.5px solid rgba(0, 0, 0, 0.15);
+}
+
+.markdown-editor-wrapper .wmde-markdown .mac-btn-minimize {
+  background: linear-gradient(135deg, #ffbd2e 0%, #ffb923 100%);
+  border: 0.5px solid rgba(0, 0, 0, 0.15);
+}
+
+.markdown-editor-wrapper .wmde-markdown .mac-btn-maximize {
+  background: linear-gradient(135deg, #28ca42 0%, #26c73f 100%);
+  border: 0.5px solid rgba(0, 0, 0, 0.15);
+}
+
+.markdown-editor-wrapper .wmde-markdown .mac-btn:hover {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+}
+
+/* 语言标签 */
+.markdown-editor-wrapper .wmde-markdown .code-language-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+}
+
+/* 复制按钮 */
+.markdown-editor-wrapper .wmde-markdown .copy-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.markdown-editor-wrapper .wmde-markdown .copy-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+.markdown-editor-wrapper .wmde-markdown .copy-button:active {
+  transform: translateY(0);
+}
+
+.markdown-editor-wrapper .wmde-markdown .copy-button.copied {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+.markdown-editor-wrapper .wmde-markdown .copy-button svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.markdown-editor-wrapper .wmde-markdown .copy-button .hidden {
+  display: none;
+}
+
+/* 代码内容区域 */
+.markdown-editor-wrapper .wmde-markdown pre.has-header code {
+  display: block;
+  padding: 20px 24px !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 14px !important;
+  line-height: 1.8 !important;
+  font-family:
+    'SF Mono', 'Monaco', 'Consolas', 'Courier New', monospace !important;
+  color: #e0e0e0 !important;
+  overflow-x: auto;
+}
+
+/* 代码块滚动条美化 */
+.markdown-editor-wrapper .wmde-markdown pre.has-header code::-webkit-scrollbar {
+  height: 8px;
+}
+
+.markdown-editor-wrapper
+  .wmde-markdown
+  pre.has-header
+  code::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.markdown-editor-wrapper
+  .wmde-markdown
+  pre.has-header
+  code::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.markdown-editor-wrapper
+  .wmde-markdown
+  pre.has-header
+  code::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ==================== 表格样式优化 ==================== */
+
+/* 表格响应式容器 */
+.markdown-editor-wrapper .wmde-markdown .table-wrapper {
+  overflow-x: auto;
+  margin: 2rem 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--md-editor-border-color);
+  background: var(--md-editor-bg-color);
+}
+
+.markdown-editor-wrapper .wmde-markdown .table-wrapper table {
+  margin: 0;
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+}
+
+.markdown-editor-wrapper .wmde-markdown .table-wrapper thead {
+  background: linear-gradient(
+    to bottom,
+    rgba(99, 102, 241, 0.05) 0%,
+    rgba(99, 102, 241, 0.02) 100%
+  );
+}
+
+.markdown-editor-wrapper .wmde-markdown .table-wrapper th {
+  padding: 14px 18px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--md-editor-text-color);
+  border-bottom: 2px solid var(--md-editor-border-color);
+  white-space: nowrap;
+}
+
+.markdown-editor-wrapper .wmde-markdown .table-wrapper td {
+  padding: 12px 18px;
+  font-size: 14px;
+  color: var(--md-editor-muted-color);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.markdown-editor-wrapper .wmde-markdown .table-wrapper tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.markdown-editor-wrapper .wmde-markdown .table-wrapper tbody tr:hover {
+  background-color: rgba(99, 102, 241, 0.03);
+}
+
+.markdown-editor-wrapper .wmde-markdown .table-wrapper tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ==================== 引用块样式优化 ==================== */
+
+.markdown-editor-wrapper .wmde-markdown blockquote {
+  position: relative;
+  margin: 2rem 0;
+  padding: 20px 24px 20px 64px;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.03) 0%,
+    rgba(139, 92, 246, 0.03) 100%
+  );
+  border-left: 4px solid var(--md-editor-blockquote-border);
+  border-radius: 0 8px 8px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  font-style: italic;
+}
+
+.markdown-editor-wrapper .wmde-markdown blockquote::before {
+  content: '"';
+  position: absolute;
+  left: 16px;
+  top: 12px;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--md-editor-blockquote-border);
+  opacity: 0.3;
+  line-height: 1;
+}
+
+.markdown-editor-wrapper .wmde-markdown blockquote p {
+  margin: 0;
+  color: var(--md-editor-blockquote-color);
+  line-height: 1.8;
+}
+
+/* ==================== 行内代码优化 ==================== */
+
+.markdown-editor-wrapper .wmde-markdown :not(pre) > code {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.1) 0%,
+    rgba(139, 92, 246, 0.1) 100%
+  );
+  color: var(--md-editor-code-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+/* ==================== 图片样式优化 ==================== */
+
+.markdown-editor-wrapper .wmde-markdown img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  margin: 2rem auto;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.markdown-editor-wrapper .wmde-markdown img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+}
+
+/* ==================== 列表样式优化 ==================== */
+
+.markdown-editor-wrapper .wmde-markdown ul,
+.markdown-editor-wrapper .wmde-markdown ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.markdown-editor-wrapper .wmde-markdown li {
+  margin-bottom: 0.5rem;
+  line-height: 1.8;
+  color: var(--md-editor-text-color);
+}
+
+.markdown-editor-wrapper .wmde-markdown ul > li::marker {
+  color: var(--md-editor-link-color);
+  font-weight: 600;
+}
+
+.markdown-editor-wrapper .wmde-markdown ol > li::marker {
+  color: var(--md-editor-link-color);
+  font-weight: 600;
+}
+
+/* 嵌套列表 */
+.markdown-editor-wrapper .wmde-markdown li > ul,
+.markdown-editor-wrapper .wmde-markdown li > ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ==================== 分隔线样式 ==================== */
+
+.markdown-editor-wrapper .wmde-markdown hr {
+  margin: 3rem 0;
+  border: none;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--md-editor-border-color) 50%,
+    transparent 100%
+  );
+}
+
+/* ==================== 暗色模式优化 ==================== */
+
+.dark .markdown-editor-wrapper .wmde-markdown blockquote {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.08) 0%,
+    rgba(139, 92, 246, 0.08) 100%
+  );
+}
+
+.dark .markdown-editor-wrapper .wmde-markdown :not(pre) > code {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.15) 0%,
+    rgba(139, 92, 246, 0.15) 100%
+  );
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.dark .markdown-editor-wrapper .wmde-markdown .table-wrapper {
+  border-color: var(--md-editor-border-color);
+}
+
 /* 移动端适配 */
 @media (max-width: 768px) {
   .markdown-editor-wrapper .w-md-editor-toolbar button {
@@ -246,5 +640,39 @@
 
   .markdown-editor-wrapper .w-md-editor {
     font-size: 16px; /* 防止 iOS 自动缩放 */
+  }
+
+  .markdown-editor-wrapper .wmde-markdown h1 {
+    font-size: 1.5rem;
+  }
+
+  .markdown-editor-wrapper .wmde-markdown h2 {
+    font-size: 1.25rem;
+  }
+
+  .markdown-editor-wrapper .wmde-markdown h3 {
+    font-size: 1.125rem;
+  }
+
+  .markdown-editor-wrapper .wmde-markdown pre code {
+    font-size: 0.75rem;
+  }
+
+  .markdown-editor-wrapper .wmde-markdown .code-block-header {
+    padding: 8px 12px;
+  }
+
+  .markdown-editor-wrapper .wmde-markdown .mac-btn {
+    width: 10px;
+    height: 10px;
+  }
+
+  .markdown-editor-wrapper .wmde-markdown .copy-button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .markdown-editor-wrapper .wmde-markdown .table-wrapper table {
+    min-width: 100%;
   }
 }

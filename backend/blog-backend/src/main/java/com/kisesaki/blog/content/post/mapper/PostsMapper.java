@@ -1,5 +1,8 @@
 package com.kisesaki.blog.content.post.mapper;
 
+import java.util.List;
+import java.util.Map;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -8,6 +11,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.kisesaki.blog.content.category.dto.query.CategoryPostsParams;
 import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostQueryDto;
 import com.kisesaki.blog.content.post.dto.AdminCommand.AdminPostStatsDto;
+import com.kisesaki.blog.content.post.dto.PostCommand.PostEditDetailResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.GetMyPostsListParams;
 import com.kisesaki.blog.content.post.dto.PostQuery.MyPostsListResponse;
 import com.kisesaki.blog.content.post.dto.PostQuery.PublishedPostDetailResponse;
@@ -83,8 +87,8 @@ public interface PostsMapper extends BaseMapper<Posts> {
          * @param limit         推荐数量限制
          * @return 相关推荐文章列表
          */
-        java.util.List<PublishedPostDetailResponse.RelatedPost> getRelatedPosts(@Param("categoryId") Long categoryId,
-                        @Param("tagIds") java.util.List<Long> tagIds,
+        List<PublishedPostDetailResponse.RelatedPost> getRelatedPosts(@Param("categoryId") Long categoryId,
+                        @Param("tagIds") List<Long> tagIds,
                         @Param("currentPostId") Long currentPostId,
                         @Param("limit") Integer limit);
 
@@ -94,7 +98,7 @@ public interface PostsMapper extends BaseMapper<Posts> {
          * @param postId 文章ID
          * @return 元数据Map
          */
-        java.util.Map<String, String> getPostMeta(@Param("postId") Long postId);
+        Map<String, String> getPostMeta(@Param("postId") Long postId);
 
         /**
          * 获取热门文章（用于降级推荐）
@@ -103,7 +107,7 @@ public interface PostsMapper extends BaseMapper<Posts> {
          * @param limit         数量限制
          * @return 热门文章列表
          */
-        java.util.List<PublishedPostDetailResponse.RelatedPost> getPopularPosts(
+        List<PublishedPostDetailResponse.RelatedPost> getPopularPosts(
                         @Param("currentPostId") Long currentPostId,
                         @Param("limit") Integer limit);
 
@@ -201,4 +205,21 @@ public interface PostsMapper extends BaseMapper<Posts> {
          */
         long countPostsByCategory(@Param("categoryId") Long categoryId,
                         @Param("params") CategoryPostsParams params);
+
+        /**
+         * 根据文章ID列表批量查询标签
+         *
+         * @param postIds 文章ID列表
+         * @return 标签列表（Map格式，包含 post_id, tag_id, tag_name, tag_slug, tag_color）
+         */
+        List<Map<String, Object>> selectTagsByPostIds(@Param("postIds") List<Long> postIds);
+
+        /**
+         * 获取文章编辑详情（包含所有可编辑字段）
+         *
+         * @param postId 文章ID
+         * @param userId 当前用户ID（用于权限校验）
+         * @return 文章编辑详情
+         */
+        PostEditDetailResponse getPostEditDetail(@Param("postId") Long postId, @Param("userId") Long userId);
 }

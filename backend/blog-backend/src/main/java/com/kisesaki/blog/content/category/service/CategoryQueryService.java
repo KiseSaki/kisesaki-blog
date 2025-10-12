@@ -45,16 +45,29 @@ public class CategoryQueryService {
     public PageResponse<CategoryTreeResponse> getCategoryList(CategoryQueryParams params) {
         log.debug("获取分类列表，参数: {}", params);
 
-        // 查询分类列表数据
-        List<CategoryTreeResponse> categories = categoriesMapper.selectCategoryList(params);
+        // 手动获取总数以避免MyBatis Plus自动count查询的问题
+        long totalCount = categoriesMapper.countCategoryList(params);
 
-        // 查询总数
-        Long totalCount = categoriesMapper.countCategoryList(params);
+        // 如果总数为0，直接返回空结果
+        if (totalCount == 0) {
+            return PageResponse.of(List.of(), 0L, params.getPageable());
+        }
+
+        // 查询分页数据（禁用自动count查询）
+        Page<CategoryTreeResponse> page = new Page<>(
+                params.getPageable().getCurrentPage(),
+                params.getPageable().getPageSize(),
+                false // 禁用自动count查询
+        );
+        Page<CategoryTreeResponse> result = categoriesMapper.selectCategoryList(page, params);
+
+        // 手动设置总数
+        result.setTotal(totalCount);
 
         // 构建树形结构
-        List<CategoryTreeResponse> treeData = buildCategoryTree(categories);
+        List<CategoryTreeResponse> treeData = buildCategoryTree(result.getRecords());
 
-        // 构建分页响应
+        // 构建分页响应（注意：这里返回的是树形结构后的数据，总数仍然是原始总数）
         PageResponse<CategoryTreeResponse> response = PageResponse.of(treeData, totalCount, params.getPageable());
 
         log.debug("分类列表查询完成，返回 {} 条记录，总数: {}", treeData.size(), totalCount);

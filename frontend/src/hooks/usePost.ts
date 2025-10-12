@@ -6,6 +6,7 @@
 import {
   createCommentApi,
   getFeaturedPostsApi,
+  getMyPostsApi,
   getPostCommentsApi,
   getPublishedPostBySlugApi,
   getRecentPostsApi,
@@ -14,6 +15,8 @@ import {
 import type {
   CommentListResponse,
   CreateCommentBody,
+  GetMyPostsListParams,
+  MyPostsListResponse,
   PageResponse,
   PublishedPostDetailResponse,
   PublishedPostListResponse,
@@ -68,6 +71,26 @@ export const usePost = () => {
       return null;
     } finally {
       setIsFetchingRecent(false);
+    }
+  }, []);
+
+  // 获取我的文章列表
+  const [myPosts, setMyPosts] =
+    useState<PageResponse<MyPostsListResponse> | null>(null);
+  const [isFetchingMyPosts, setIsFetchingMyPosts] = useState(false);
+
+  const fetchMyPosts = useCallback(async (params: GetMyPostsListParams) => {
+    setIsFetchingMyPosts(true);
+
+    try {
+      const res = await getMyPostsApi(params);
+      setMyPosts(res);
+      return res;
+    } catch (error) {
+      console.error('获取我的文章失败:', error);
+      return null;
+    } finally {
+      setIsFetchingMyPosts(false);
     }
   }, []);
 
@@ -165,6 +188,11 @@ export const usePost = () => {
     recentPosts,
     isFetchingRecent,
     fetchRecentPosts,
+
+    // 获取我的文章列表
+    myPosts,
+    isFetchingMyPosts,
+    fetchMyPosts,
 
     // 文章详情
     postDetail,

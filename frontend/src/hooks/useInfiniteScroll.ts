@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
- * 无限滚动加载 Hook
+ * 无限滚动加载 Hook 用于页面滚动场景
  * 监听触底事件，自动加载更多数据
  */
 export function useInfiniteScroll<T>({

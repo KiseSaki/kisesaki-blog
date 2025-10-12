@@ -1,4 +1,4 @@
-import { API_CONFIG, ENV_CONFIG, PAGINATION_CONFIG } from '@/config';
+import { API_CONFIG, ENV_CONFIG, LOGIN_LINK, PAGINATION_CONFIG } from '@/config';
 import axios, {
   type AxiosError,
   type AxiosInstance,
@@ -231,8 +231,8 @@ class HttpClient {
     useAuthStore.getState().logout();
 
     // 避免在登录页重复跳转
-    if (window.location.pathname !== '/auth/login') {
-      window.location.href = '/auth/login';
+    if (window.location.pathname !== LOGIN_LINK) {
+      window.location.href = LOGIN_LINK;
     }
   }
 

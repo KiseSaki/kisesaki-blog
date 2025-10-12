@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author KiseSaki
  */
 @RestController
-@RequestMapping("/api/admin/posts")
+@RequestMapping("/admin/posts")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "管理员文章管理", description = "管理员文章管理相关接口")
@@ -216,6 +216,36 @@ public class AdminPostController {
         log.info("管理员批量转移文章作者：{}", request);
         postAdminService.batchTransferAuthor(request);
         return ResultUtils.success("批量转移作者成功");
+    }
+
+    /**
+     * 批量设置精选
+     *
+     * @param request 批量精选设置请求
+     * @return 设置结果
+     */
+    @PutMapping("/batch-featured")
+    @Operation(summary = "批量设置精选", description = "管理员批量设置或取消文章精选")
+    @PreAuthorize("hasAuthority('POST_MANAGE')")
+    public ApiResponse<Void> batchSetFeatured(@Valid @RequestBody AdminPostBatchDto.BatchSetFeaturedRequest request) {
+        log.info("管理员批量设置文章精选：{}", request);
+        postAdminService.batchSetFeatured(request);
+        return ResultUtils.success("批量设置精选成功");
+    }
+
+    /**
+     * 批量设置置顶
+     *
+     * @param request 批量置顶设置请求
+     * @return 设置结果
+     */
+    @PutMapping("/batch-top")
+    @Operation(summary = "批量设置置顶", description = "管理员批量设置或取消文章置顶")
+    @PreAuthorize("hasAuthority('POST_MANAGE')")
+    public ApiResponse<Void> batchSetTop(@Valid @RequestBody AdminPostBatchDto.BatchSetTopRequest request) {
+        log.info("管理员批量设置文章置顶：{}", request);
+        postAdminService.batchSetTop(request);
+        return ResultUtils.success("批量设置置顶成功");
     }
 
     /**

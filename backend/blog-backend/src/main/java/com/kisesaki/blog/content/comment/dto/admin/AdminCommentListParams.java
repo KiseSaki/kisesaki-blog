@@ -1,6 +1,7 @@
 package com.kisesaki.blog.content.comment.dto.admin;
 
 import com.kisesaki.blog.common.dto.PageableParams;
+import com.kisesaki.blog.content.comment.entity.Comments.CommentStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -18,7 +19,10 @@ public class AdminCommentListParams {
     private PageableParams pageable = new PageableParams();
 
     @Schema(description = "评论状态（PENDING/APPROVED/REJECTED/SPAM）")
-    private String status;
+    private CommentStatus status;
+
+    @Schema(description = "是否置顶")
+    private Boolean isPinned;
 
     @Schema(description = "文章ID", example = "1")
     private Long postId;

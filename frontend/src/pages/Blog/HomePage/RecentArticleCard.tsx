@@ -1,4 +1,5 @@
 import { Card, CardContent, CardFooter, CardHeader, Image } from '@/components';
+import { BLOG_POST_DETAIL_BASE } from '@/config';
 import type { PublishedPostListResponse } from '@/types';
 import { Calendar, Eye, Tag } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -15,7 +16,7 @@ export const RecentArticleCard = ({
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/post/${slug}`);
+    navigate(`${BLOG_POST_DETAIL_BASE}/${slug}`);
   };
 
   return (

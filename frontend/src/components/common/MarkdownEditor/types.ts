@@ -2,9 +2,9 @@ import type { ICommand } from '@uiw/react-md-editor';
 
 export interface MarkdownEditorProps {
   // 编辑器内容
-  value: string;
+  value?: string;
   // 内容变化回调
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   // 占位符文本
   placeholder?: string;
   // 编辑器最小高度

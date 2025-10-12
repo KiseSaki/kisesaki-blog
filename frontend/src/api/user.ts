@@ -167,3 +167,53 @@ export const getFollowCountsApi = (userId: number) => {
     `/users/${userId}/follow-counts`
   );
 };
+
+// =================== 管理员用户管理接口 ===================
+
+/**
+ * 获取所有用户列表（管理员）
+ * @param params 查询参数
+ * @returns 用户列表
+ */
+export const adminGetUsersApi = (params?: {
+  pageable?: { currentPage?: number; pageSize?: number; sort?: string };
+  keyword?: string;
+  status?: string;
+  accountType?: string;
+  emailVerified?: boolean;
+}) =>
+  httpClient.get<{
+    data: UserListItem[];
+    currentPage: number;
+    pageSize: number;
+    totalRecords: number;
+    totalPages: number;
+  }>('/admin/users', { params });
+
+/**
+ * 更新用户状态（管理员）
+ * @param id 用户ID
+ * @param status 用户状态
+ * @returns 更新结果
+ */
+export const adminUpdateUserStatusApi = (
+  id: number,
+  status: 'active' | 'inactive' | 'banned'
+) => httpClient.post<void>(`/admin/users/${id}/status`, { status });
+
+/**
+ * 删除用户（管理员）
+ * @param id 用户ID
+ * @returns 删除结果
+ */
+export const adminDeleteUserApi = (id: number) =>
+  httpClient.delete<void>(`/admin/users/${id}`);
+
+/**
+ * 更新用户角色（管理员）
+ * @param id 用户ID
+ * @param roles 角色列表
+ * @returns 更新结果
+ */
+export const adminUpdateUserRolesApi = (id: number, roles: string[]) =>
+  httpClient.post<void>(`/admin/users/${id}/roles`, { roles });

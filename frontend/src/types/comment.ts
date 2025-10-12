@@ -1,14 +1,42 @@
 /**
  * 评论相关类型定义
+ * 对应后端：comment 相关的 DTO
  */
 
 import type { PageableParams } from './api';
-import type { UserInfo } from './user';
+
+/**
+ * 评论用户信息（简化版）
+ * 对应后端：CommentUserDto
+ */
+export interface CommentUserDto {
+  id: number;
+  username: string;
+  displayName: string;
+  avatarUrl: string;
+  bio: string | null;
+  status: string;
+  createdAt: string;
+  isBlogAuthor: boolean;
+}
+
+/**
+ * 当前用户对评论的交互状态
+ * 对应后端：CommentUserInteractionDto
+ */
+export interface CommentUserInteractionDto {
+  isLiked: boolean;
+  isDisliked: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canReply: boolean;
+  canPin: boolean;
+}
 
 /**
  * 评论状态
  */
-export type CommentStatus = 'NORMAL' | 'HIDDEN' | 'DELETED' | 'UNDER_REVIEW';
+export type CommentStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SPAM';
 
 /**
  * 评论排序方式
@@ -17,27 +45,28 @@ export type CommentSortType = 'LATEST' | 'OLDEST' | 'HOT';
 
 /**
  * 评论列表项
+ * 对应后端：CommentListResponse
  */
 export interface CommentListResponse {
   id: number;
   postId: number;
   userId: number;
-  parentId?: number;
-  replyToId?: number;
+  parentId: number | null;
+  replyToId: number | null;
   content: string;
-  htmlContent?: string;
+  htmlContent: string | null;
   likeCount: number;
   dislikeCount: number;
   replyCount: number;
   level: number;
   path: string;
-  status: string;
+  status: string; // PENDING/APPROVED/REJECTED/SPAM
   isPinned: boolean;
   isAuthorReply: boolean;
-  editedAt?: string;
-  user: UserInfo;
+  editedAt: string | null;
+  user: CommentUserDto;
   // 当前用户对该评论的交互状态（仅在用户已登录时返回）
-  currentUserInteraction?: CommentUserInteraction;
+  currentUserInteraction?: CommentUserInteractionDto;
   createdAt: string;
   updatedAt: string;
   hasMoreReplies: boolean;
@@ -47,28 +76,15 @@ export interface CommentListResponse {
 
 /**
  * 评论详情
+ * 对应后端：CommentDetailResponse
+ * 注意：目前后端的 CommentDetailResponse 与 CommentListResponse 字段相同
+ * 如果后端增加额外字段，需要在此处添加
  */
-export interface CommentDetailResponse extends CommentListResponse {
-  // 可以包含更多详细信息
-  parentComment?: CommentListResponse;
-  rootComment?: CommentListResponse;
-}
-
-/**
- * 当前用户对评论的交互状态
- */
-export interface CommentUserInteraction {
-  isLiked?: boolean;
-  isDisliked?: boolean;
-  canEdit?: boolean;
-  canDelete?: boolean;
-  canReply?: boolean;
-  canPin?: boolean;
-}
+export type CommentDetailResponse = CommentListResponse;
 
 /**
  * 获取评论列表参数
- * 对应后端 CommentListParams，包含嵌套的 pageable 字段
+ * 对应后端：CommentListParams，包含嵌套的 pageable 字段
  */
 export interface CommentListParams {
   // 分页参数（嵌套对象）
@@ -100,28 +116,37 @@ export interface MyCommentParams {
 }
 
 /**
- * 创建评论请求
+ * 创建评论请求体
+ * 对应后端：CreateCommentBody
  */
 export interface CreateCommentBody {
-  // 评论内容
+  /**
+   * 回复目标评论ID。
+   * 为空时创建顶级评论；
+   * 指向顶级评论时创建该评论的回复；
+   * 指向二级回复时创建同一父评论下的回复（@功能）
+   */
+  replyToId?: number;
+  // 评论内容（不能为空，最多500字符）
   content: string;
-  replyToId?: number; // 回复目标评论ID
 }
 
 /**
- * 更新评论请求
+ * 更新评论请求体
+ * 对应后端：UpdateCommentBody
  */
 export interface UpdateCommentBody {
-  // 更新后的内容
-  content: string;
+  // 评论内容
+  content?: string;
 }
 
 /**
- * 举报评论请求
+ * 举报评论请求体
+ * 对应后端：ReportCommentBody
  */
 export interface ReportCommentBody {
-  // 举报原因
+  // 举报原因（不能为空，最多50字符）
   reason: string;
-  // 详细描述
+  // 举报详细描述（最多500字符）
   description?: string;
 }

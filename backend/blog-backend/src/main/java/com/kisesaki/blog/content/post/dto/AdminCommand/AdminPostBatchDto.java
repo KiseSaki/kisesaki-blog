@@ -56,4 +56,36 @@ public class AdminPostBatchDto {
         @Schema(description = "新作者ID", example = "2")
         private Long authorId;
     }
+
+    /**
+     * 批量设置精选请求
+     */
+    @Data
+    @Schema(description = "批量设置精选请求")
+    public static class BatchSetFeaturedRequest {
+
+        @NotNull(message = "文章ID列表不能为空")
+        @Schema(description = "文章ID列表", example = "[1, 2, 3]")
+        private List<Long> ids;
+
+        @NotNull(message = "精选状态不能为空")
+        @Schema(description = "是否设为精选", example = "true")
+        private Boolean isFeatured;
+    }
+
+    /**
+     * 批量设置置顶请求
+     */
+    @Data
+    @Schema(description = "批量设置置顶请求")
+    public static class BatchSetTopRequest {
+
+        @NotNull(message = "文章ID列表不能为空")
+        @Schema(description = "文章ID列表", example = "[1, 2, 3]")
+        private List<Long> ids;
+
+        @NotNull(message = "置顶状态不能为空")
+        @Schema(description = "是否设为置顶", example = "true")
+        private Boolean isTop;
+    }
 }

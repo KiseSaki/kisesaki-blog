@@ -37,6 +37,7 @@ const FavoritesPage = React.lazy(() => import('@/pages/User/FavoritesPage'));
 // 管理员相关页面
 const AdminDashboard = React.lazy(() => import('@/pages/Admin/AdminDashboard'));
 const PostManagement = React.lazy(() => import('@/pages/Admin/PostManagement'));
+const PostEditor = React.lazy(() => import('@/pages/Admin/PostEditor'));
 const CategoryManagement = React.lazy(
   () => import('@/pages/Admin/CategoryManagement')
 );
@@ -242,7 +243,7 @@ export const router = createBrowserRouter([
 
       // 管理员相关路由（需要管理员权限）
       {
-        path: 'admin',
+        path: 'manage',
         element: (
           <PrivateRoute requiredPermissions={['DASHBOARD_ADMIN_ACCESS']} />
         ),
@@ -276,6 +277,22 @@ export const router = createBrowserRouter([
                 element: (
                   <SuspenseWrapper>
                     <PostManagement />
+                  </SuspenseWrapper>
+                ),
+              },
+              {
+                path: 'create',
+                element: (
+                  <SuspenseWrapper>
+                    <PostEditor />
+                  </SuspenseWrapper>
+                ),
+              },
+              {
+                path: 'edit/:id',
+                element: (
+                  <SuspenseWrapper>
+                    <PostEditor />
                   </SuspenseWrapper>
                 ),
               },

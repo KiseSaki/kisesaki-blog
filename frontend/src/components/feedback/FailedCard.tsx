@@ -1,4 +1,5 @@
 import { REGISTER_LINK } from '@/config';
+import { useNavigate } from 'react-router';
 import AuthLayout from '../common/AuthLayout';
 
 interface FailedCardProps {
@@ -19,6 +20,7 @@ export const FailedCard = ({
   description,
   children,
 }: FailedCardProps) => {
+  const navigation = useNavigate();
   return (
     <AuthLayout
       title={title}
@@ -27,7 +29,10 @@ export const FailedCard = ({
         <div className='w-full text-center space-y-2'>
           <div className='text-sm'>
             还没有账户？{' '}
-            <a href={REGISTER_LINK} className='text-primary hover:underline'>
+            <a
+              className='text-primary cursor-pointer'
+              onClick={() => navigation(REGISTER_LINK)}
+            >
               立即注册
             </a>
           </div>

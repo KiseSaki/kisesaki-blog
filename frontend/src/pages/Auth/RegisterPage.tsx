@@ -14,12 +14,15 @@ import { useRegister } from '@/hooks';
 import { type RegisterFormData, registerSchema } from '@/shcema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router';
 
 /**
  * 用户注册页面
  * 支持邮箱注册和表单验证
  */
 const RegisterPage = () => {
+  const navigation = useNavigate();
+
   // React Hook Form 表单实例
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -46,7 +49,10 @@ const RegisterPage = () => {
       description={
         <>
           已有账户？{' '}
-          <a href={LOGIN_LINK} className='text-primary'>
+          <a
+            className='text-primary cursor-pointer'
+            onClick={() => navigation(LOGIN_LINK)}
+          >
             去登录
           </a>
         </>

@@ -32,6 +32,12 @@ export const registerApi = (params: RegisterParams) =>
   httpClient.post<string>('/auth/register', params);
 
 /**
+ * 重新发送验证邮箱
+ */
+export const resendVerificationEmailApi = () =>
+  httpClient.post<string>('/auth/resend-verification-email');
+
+/**
  * 验证邮箱
  * @param params 验证邮箱参数
  * @returns 验证结果

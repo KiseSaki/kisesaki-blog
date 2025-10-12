@@ -1,4 +1,4 @@
-import { loginApi } from '@/api/auth';
+import { loginApi, resendVerificationEmailApi } from '@/api/auth';
 import { getUserInfoByTokenApi } from '@/api/user';
 import { useAuthStore } from '@/stores';
 import type { LoginParams, UserInfo } from '@/types';
@@ -25,6 +25,8 @@ export const useAuth = () => {
   } = useAuthStore();
 
   const [loginLoading, setLoginLoading] = useState(false);
+  const [resendVerificationLoading, setResendVerificationLoading] =
+    useState(false);
 
   /**
    * 获取用户信息
@@ -102,6 +104,24 @@ export const useAuth = () => {
     return await fetchUserInfo();
   }, [setUserLoaded, fetchUserInfo]);
 
+  /**
+   * 重新发送验证邮件
+   */
+  const resendVerificationEmail = useCallback(async (): Promise<boolean> => {
+    try {
+      setResendVerificationLoading(true);
+      await resendVerificationEmailApi();
+      toast.success('验证邮件已发送，请检查您的邮箱');
+      return true;
+    } catch (error) {
+      console.error('发送验证邮件失败:', error);
+      toast.error('发送验证邮件失败，请稍后重试');
+      return false;
+    } finally {
+      setResendVerificationLoading(false);
+    }
+  }, []);
+
   return {
     // 状态
     user,
@@ -109,6 +129,7 @@ export const useAuth = () => {
     isAuthenticated,
     isLoading,
     loginLoading,
+    resendVerificationLoading,
     userLoaded,
 
     // 操作
@@ -116,6 +137,7 @@ export const useAuth = () => {
     fetchUserInfo,
     refreshUserInfo,
     updateCurrentUser,
+    resendVerificationEmail,
     logout,
     setLoading,
   };

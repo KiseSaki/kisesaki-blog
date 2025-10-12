@@ -14,7 +14,7 @@ import {
   UserAvatarUploader,
   UserLayout,
 } from '@/components';
-import { useUser } from '@/hooks';
+import { useAuth, useUser } from '@/hooks';
 import type { UserInfo } from '@/types';
 import { SelectValue } from '@radix-ui/react-select';
 import { useForm } from 'react-hook-form';
@@ -27,6 +27,7 @@ import { useUserProfile } from './hooks/useUserProfile';
 const UserProfile = () => {
   const { userInfo } = useUserProfile();
   const { profile, loading } = useUser();
+  const { resendVerificationEmail, resendVerificationLoading } = useAuth();
   const form = useForm<UserInfo>({
     defaultValues: {
       displayName: userInfo?.displayName || '',
@@ -103,6 +104,20 @@ const UserProfile = () => {
                     <FormItem>
                       <FormLabel>邮箱</FormLabel>
                       <Input disabled placeholder='邮箱' {...field} />
+                      {!userInfo?.emailVerified && (
+                        <p className='mt-1 text-sm text-red-600'>
+                          未验证邮箱，点击
+                          <a
+                            className='underline cursor-pointer'
+                            onClick={() => resendVerificationEmail()}
+                          >
+                            重新发送验证邮件
+                          </a>
+                          {resendVerificationLoading && (
+                            <span className='ml-2 text-xs'>发送中...</span>
+                          )}
+                        </p>
+                      )}
                     </FormItem>
                   )}
                 />

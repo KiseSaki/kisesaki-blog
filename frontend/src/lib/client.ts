@@ -1,4 +1,9 @@
-import { API_CONFIG, ENV_CONFIG, LOGIN_LINK, PAGINATION_CONFIG } from '@/config';
+import {
+  API_CONFIG,
+  ENV_CONFIG,
+  LOGIN_LINK,
+  PAGINATION_CONFIG,
+} from '@/config';
 import axios, {
   type AxiosError,
   type AxiosInstance,
@@ -163,7 +168,7 @@ class HttpClient {
 
       // 认证错误处理
       if (category === ErrorCategory.AUTH) {
-        this.handleAuthError(errorCode, config);
+        this.handleAuthError(errorCode, config, error.config?.url);
         return; // 认证错误不显示通用错误提示
       }
     }
@@ -185,10 +190,18 @@ class HttpClient {
   /**
    * 处理认证相关错误
    */
-  private handleAuthError(errorCode: ErrorCodeType, config?: ApiRequestConfig) {
+  private handleAuthError(
+    errorCode: ErrorCodeType,
+    config?: ApiRequestConfig,
+    url?: string
+  ) {
     // 需要重新登录的错误
     if (isLoginRequiredError(errorCode)) {
-      this.handleUnauthorized();
+      // 特殊处理：验证邮箱接口的token失效不跳转登录
+      const isVerifyEmailRequest = url?.includes('/auth/verify-email');
+      if (!isVerifyEmailRequest) {
+        this.handleUnauthorized();
+      }
       if (
         config?.showError !== false &&
         config?.silent !== true &&

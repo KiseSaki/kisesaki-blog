@@ -6,79 +6,79 @@
 spring:
   # ===== 数据库配置 =====
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/blog_prod}
-    username: ${DATABASE_USERNAME:kisesaki}
-    password: ${DATABASE_PASSWORD}
-    driver-class-name: org.postgresql.Driver
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/blog_prod} # 生产数据库连接URL
+    username: ${DATABASE_USERNAME:kisesaki} # 数据库用户名
+    password: ${DATABASE_PASSWORD} # 数据库密码（必须设置）
+    driver-class-name: org.postgresql.Driver # PostgreSQL JDBC驱动类名
     hikari:
-      minimum-idle: 10
-      maximum-pool-size: 50
-      idle-timeout: 300000
-      max-lifetime: 1200000
-      connection-timeout: 30000
-      leak-detection-threshold: 60000
+      minimum-idle: 10 # Hikari连接池最小空闲连接数
+      maximum-pool-size: 50 # 最大连接池大小
+      idle-timeout: 300000 # 连接空闲超时时间（毫秒）
+      max-lifetime: 1200000 # 连接最大生命周期（毫秒）
+      connection-timeout: 30000 # 连接超时时间（毫秒）
+      leak-detection-threshold: 60000 # 连接泄漏检测阈值（毫秒）
 
   # ===== JPA 生产环境配置 =====
   jpa:
     hibernate:
-      ddl-auto: validate
-    show-sql: false
+      ddl-auto: validate # 生产环境仅验证表结构，不自动修改
+    show-sql: false # 生产环境不显示SQL语句
 
   # ===== Redis 配置 =====
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      database: 0
-      timeout: 5000ms
+      host: ${REDIS_HOST:localhost} # Redis服务器主机地址
+      port: ${REDIS_PORT:6379} # Redis服务器端口
+      password: ${REDIS_PASSWORD:} # Redis密码
+      database: 0 # Redis数据库索引
+      timeout: 5000ms # 连接超时时间
       lettuce:
         pool:
-          max-active: 50
-          max-idle: 20
-          min-idle: 10
-          max-wait: 3000ms
+          max-active: 50 # 最大活跃连接数
+          max-idle: 20 # 最大空闲连接数
+          min-idle: 10 # 最小空闲连接数
+          max-wait: 3000ms # 获取连接最大等待时间
 
   # ===== Kafka 配置 =====
   kafka:
-    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092} # Kafka引导服务器地址
     security:
-      protocol: SASL_PLAINTEXT
+      protocol: SASL_PLAINTEXT # 安全协议
     properties:
       sasl:
-        mechanism: PLAIN
+        mechanism: PLAIN # SASL机制
         jaas:
-          config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USERNAME:admin}" password="${KAFKA_PASSWORD:}";
+          config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USERNAME:admin}" password="${KAFKA_PASSWORD:}"; # JAAS配置
     producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      acks: all
-      retries: 5
-      batch-size: 16384
-      linger-ms: 5
-      buffer-memory: 33554432
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer # 键序列化器
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer # 值序列化器
+      acks: all # 确认模式
+      retries: 5 # 重试次数
+      batch-size: 16384 # 批处理大小
+      linger-ms: 5 # 延迟发送时间
+      buffer-memory: 33554432 # 缓冲区内存大小
     consumer:
-      group-id: kisesaki-blog-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      auto-offset-reset: earliest
-      max-poll-records: 500
+      group-id: kisesaki-blog-group # 消费者组ID
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer # 键反序列化器
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer # 值反序列化器
+      auto-offset-reset: earliest # 自动偏移重置策略
+      max-poll-records: 500 # 每次轮询最大记录数
       properties:
-        spring.json.trusted.packages: com.kisesaki.blog
+        spring.json.trusted.packages: com.kisesaki.blog # 信任的JSON包
 
   # ===== 邮件配置（生产环境）=====
   mail:
-    host: ${kisesaki.blog.email.smtp.host}
-    port: ${kisesaki.blog.email.smtp.port}
-    username: ${kisesaki.blog.email.smtp.username}
-    password: ${kisesaki.blog.email.smtp.password}
+    host: ${kisesaki.blog.email.smtp.host} # SMTP服务器主机
+    port: ${kisesaki.blog.email.smtp.port} # SMTP服务器端口
+    username: ${kisesaki.blog.email.smtp.username} # SMTP用户名
+    password: ${kisesaki.blog.email.smtp.password} # SMTP密码
     properties:
       mail:
         smtp:
-          auth: true
+          auth: true # 启用SMTP认证
           starttls:
-            enable: ${kisesaki.blog.email.tls.enabled}
-            required: ${kisesaki.blog.email.tls.required}
+            enable: ${kisesaki.blog.email.tls.enabled} # 启用STARTTLS
+            required: ${kisesaki.blog.email.tls.required} # 要求STARTTLS
 
   # ===== OAuth2 客户端配置 =====
   security:
@@ -86,50 +86,50 @@ spring:
       client:
         registration:
           github:
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
-            scope: user:email,read:user
+            client-id: ${GITHUB_CLIENT_ID} # GitHub OAuth2客户端ID（必须设置）
+            client-secret: ${GITHUB_CLIENT_SECRET} # GitHub OAuth2客户端密钥（必须设置）
+            scope: user:email,read:user # 请求的权限范围
           gitee:
-            client-id: ${GITEE_CLIENT_ID}
-            client-secret: ${GITEE_CLIENT_SECRET}
-            authorization-grant-type: authorization_code
-            redirect-uri: ${GITEE_REDIRECT_URI}
-            scope: user_info
+            client-id: ${GITEE_CLIENT_ID} # Gitee OAuth2客户端ID（必须设置）
+            client-secret: ${GITEE_CLIENT_SECRET} # Gitee OAuth2客户端密钥（必须设置）
+            authorization-grant-type: authorization_code # 授权类型
+            redirect-uri: ${GITEE_REDIRECT_URI} # 重定向URI（必须设置）
+            scope: user_info # 请求的权限范围
 
 # ===== 服务器生产环境配置 =====
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8080} # 服务器监听端口
   servlet:
-    context-path: /api
+    context-path: /api # Servlet上下文路径
   compression:
-    enabled: true
-    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
-    min-response-size: 1024
+    enabled: true # 启用响应压缩
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json # 压缩的MIME类型
+    min-response-size: 1024 # 最小压缩响应大小
 
 # ===== 生产环境监控配置 =====
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus # 暴露的管理端点
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: when-authorized # 健康检查端点显示详细信息
 
 # ===== 生产环境日志配置 =====
 logging:
   level:
-    root: WARN
-    com.kisesaki.blog: INFO
-    com.kisesaki.blog.notification: INFO # 邮件通知模块日志
-    org.springframework.security: WARN
-    org.springframework.mail: WARN # Spring Mail日志
+    root: WARN # 根日志级别
+    com.kisesaki.blog: INFO # 应用包日志级别
+    com.kisesaki.blog.notification: INFO # 邮件通知模块日志级别
+    org.springframework.security: WARN # Spring Security日志级别
+    org.springframework.mail: WARN # Spring Mail日志级别
   file:
-    name: /var/log/kisesaki-blog/app.log
+    name: /var/log/kisesaki-blog/app.log # 日志文件路径
   logback:
     rollingpolicy:
-      max-file-size: 100MB
-      max-history: 30
+      max-file-size: 100MB # 最大文件大小
+      max-history: 30 # 最大历史文件数
 
 # =================================================================
 # 生产环境自定义配置
@@ -139,43 +139,43 @@ logging:
 app:
   cors:
     # 生产环境更严格的CORS配置
-    allow-credentials: true
-    max-age: 86400 # 24小时
+    allow-credentials: true # 允许发送凭据
+    max-age: 86400 # 预检请求缓存时间（秒），24小时
     # 生产环境通常不需要额外的域名，仅使用主前端地址
 
 kisesaki:
   blog:
     # JWT 生产环境配置
     jwt:
-      secret: ${JWT_SECRET}
+      secret: ${JWT_SECRET} # JWT签名密钥（必须设置）
 
     # 前端应用配置（生产环境）
     frontend:
-      base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
+      base-url: ${FRONTEND_BASE_URL:http://localhost:3000} # 前端应用基础URL
 
     # 设备指纹安全配置（生产环境 - 增强安全性）
     security:
       device:
-        salt: ${DEVICE_SALT}
-        trust-client-fingerprint: ${TRUST_CLIENT_FINGERPRINT:false}
+        salt: ${DEVICE_SALT} # 设备指纹盐值（必须设置）
+        trust-client-fingerprint: ${TRUST_CLIENT_FINGERPRINT:false} # 是否信任客户端指纹（生产环境默认false）
 
     # 文件上传生产环境配置
     upload:
-      path: ${UPLOAD_PATH:/data/uploads}
-      base-url: ${FILE_BASE_URL:http://localhost:51073/api/files}
+      path: ${UPLOAD_PATH:/data/uploads} # 文件上传路径
+      base-url: ${FILE_BASE_URL:http://localhost:51073/api/files} # 文件访问基础URL
 
     # 邮件通知模块配置（生产环境）
     email:
       # SMTP服务器配置
       smtp:
-        host: ${MAIL_HOST:smtp.gmail.com}
-        port: ${MAIL_PORT:587}
-        username: ${MAIL_USERNAME}
-        password: ${MAIL_PASSWORD}
-        protocol: smtp
-        default-encoding: UTF-8
+        host: ${MAIL_HOST:smtp.gmail.com} # SMTP主机
+        port: ${MAIL_PORT:587} # SMTP端口
+        username: ${MAIL_USERNAME} # SMTP用户名（必须设置）
+        password: ${MAIL_PASSWORD} # SMTP密码（必须设置）
+        protocol: smtp # 协议
+        default-encoding: UTF-8 # 默认编码
 
       # TLS/SSL配置
       tls:
-        enabled: ${MAIL_TLS_ENABLED:true}
-        required: ${MAIL_TLS_REQUIRED:true}
+        enabled: ${MAIL_TLS_ENABLED:true} # 启用TLS
+        required: ${MAIL_TLS_REQUIRED:true} # 要求TLS

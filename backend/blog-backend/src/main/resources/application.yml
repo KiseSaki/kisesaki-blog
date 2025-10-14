@@ -6,42 +6,42 @@
 spring:
   # ===== 应用基础配置 =====
   application:
-    name: kisesaki-blog-backend
+    name: kisesaki-blog-backend # Spring Boot应用名称，用于服务发现和管理端点
 
   profiles:
-    active: dev # 默认激活开发环境
+    active: dev # 默认激活的Spring Profile，dev表示开发环境
 
   main:
-    allow-bean-definition-overriding: true
+    allow-bean-definition-overriding: true # 允许Bean定义覆盖，用于开发时的灵活性
 
   # ===== Web 相关配置 =====
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 50MB
+      max-file-size: 10MB # 单个文件上传的最大大小
+      max-request-size: 50MB # 整个multipart请求的最大大小
 
   # ===== Jackson 序列化配置 =====
   jackson:
-    time-zone: Asia/Shanghai
-    date-format: yyyy-MM-dd HH:mm:ss
-    default-property-inclusion: NON_NULL
+    time-zone: Asia/Shanghai # JSON序列化时的时区设置
+    date-format: yyyy-MM-dd HH:mm:ss # 日期格式化模式
+    default-property-inclusion: NON_NULL # 默认只序列化非null属性
     serialization:
-      write-dates-as-timestamps: false
+      write-dates-as-timestamps: false # 日期不以时间戳格式写入
 
   # ===== 国际化配置 =====
   messages:
-    basename: messages
-    encoding: UTF-8
-    fallback-to-system-locale: false
+    basename: messages # 消息资源文件的基础名称
+    encoding: UTF-8 # 消息文件的编码
+    fallback-to-system-locale: false # 不回退到系统locale
 
   # ===== JPA 通用配置 =====
   jpa:
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect # Hibernate方言，用于PostgreSQL数据库
         jdbc:
-          time_zone: Asia/Shanghai
-    open-in-view: false
+          time_zone: Asia/Shanghai # JDBC连接的时区
+    open-in-view: false # 禁用Open Session in View模式，避免N+1查询问题
 
   # ===== OAuth2 通用配置结构 =====
   security:
@@ -49,64 +49,64 @@ spring:
       client:
         provider:
           gitee:
-            authorization-uri: https://gitee.com/oauth/authorize
-            token-uri: https://gitee.com/oauth/token
-            user-info-uri: https://gitee.com/api/v5/user
-            user-name-attribute: login
+            authorization-uri: https://gitee.com/oauth/authorize # Gitee OAuth2授权端点
+            token-uri: https://gitee.com/oauth/token # Gitee OAuth2令牌端点
+            user-info-uri: https://gitee.com/api/v5/user # Gitee用户信息端点
+            user-name-attribute: login # 用户名属性名
 
   # ===== 邮件通用配置 =====
   mail:
-    protocol: ${kisesaki.blog.email.smtp.protocol:smtp}
-    default-encoding: ${kisesaki.blog.email.smtp.default-encoding:UTF-8}
+    protocol: ${kisesaki.blog.email.smtp.protocol:smtp} # 邮件协议，默认SMTP
+    default-encoding: ${kisesaki.blog.email.smtp.default-encoding:UTF-8} # 默认编码
     properties:
       mail:
         smtp:
-          auth: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
+          auth: true # 启用SMTP认证
+          connectiontimeout: 5000 # 连接超时时间（毫秒）
+          timeout: 5000 # 读取超时时间（毫秒）
+          writetimeout: 5000 # 写入超时时间（毫秒）
 
   # ===== 定时任务配置 =====
   task:
     scheduling:
       pool:
-        size: 2
+        size: 2 # 定时任务线程池大小
 
 # ===== 服务器配置 =====
 server:
-  port: 51073
+  port: 51073 # 服务器监听端口
   servlet:
-    context-path: /api
+    context-path: /api # Servlet上下文路径，所有API前缀
     encoding:
-      charset: UTF-8
-      enabled: true
-      force: true
+      charset: UTF-8 # 请求和响应的字符编码
+      enabled: true # 启用编码过滤器
+      force: true # 强制设置编码
 
 # ===== 监控配置 =====
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics # 暴露的管理端点
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: when-authorized # 健康检查端点显示详细信息
 
 # ===== CORS 跨域配置 =====
 app:
   cors:
-    allow-credentials: true
-    max-age: 3600
+    allow-credentials: true # 允许发送凭据（如cookies）
+    max-age: 3600 # 预检请求缓存时间（秒）
 
 # ===== 日志通用配置 =====
 logging:
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n" # 控制台日志格式
 
 # ===== 控制台输出配置 =====
 output:
   ansi:
-    enabled: ALWAYS
+    enabled: ALWAYS # 启用ANSI颜色输出
 
 # =================================================================
 # KiseSaki Blog 自定义配置
@@ -115,65 +115,65 @@ kisesaki:
   blog:
     # JWT 默认配置
     jwt:
-      expiration: ${JWT_EXPIRATION:86400000} # 24小时 (毫秒) - can be overridden by env
-      refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7天 (毫秒) - can be overridden by env
+      expiration: ${JWT_EXPIRATION:86400000} # JWT令牌过期时间（毫秒），默认24小时
+      refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 刷新令牌过期时间（毫秒），默认7天
 
     # 前端应用配置
     frontend:
-      base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
+      base-url: ${FRONTEND_BASE_URL:http://localhost:3000} # 前端应用的基础URL
 
     # 设备指纹安全配置
     security:
       device:
-        salt: ${DEVICE_SALT:kisesaki-blog-device-salt-2025}
-        trust-client-fingerprint: true
+        salt: ${DEVICE_SALT:kisesaki-blog-device-salt-2025} # 设备指纹生成盐值
+        trust-client-fingerprint: true # 是否信任客户端指纹
 
     # 文件上传默认配置
     upload:
-      max-size: 10MB
-      allowed-types:
-        - image/jpeg
-        - image/png
-        - image/gif
-        - image/webp
+      max-size: 10MB # 文件上传最大大小
+      allowed-types: # 允许的文件类型列表
+        - image/jpeg # JPEG图像格式
+        - image/png # PNG图像格式
+        - image/gif # GIF图像格式
+        - image/webp # WebP图像格式
 
     # 缓存默认配置
     cache:
-      default-ttl: 3600 # 1小时 (秒)
-      post-ttl: 1800 # 30分钟 (秒)
-      category-ttl: 7200 # 2小时 (秒)
+      default-ttl: 3600 # 默认缓存TTL（秒），1小时
+      post-ttl: 1800 # 文章缓存TTL（秒），30分钟
+      category-ttl: 7200 # 分类缓存TTL（秒），2小时
 
     # 邮件通知模块配置
     email:
       # SMTP服务器配置（通用）
       smtp:
-        protocol: smtp
-        default-encoding: UTF-8
+        protocol: smtp # SMTP协议
+        default-encoding: UTF-8 # 默认编码
 
       # TLS/SSL配置（通用）
       tls:
-        enabled: true
-        required: true
+        enabled: true # 启用TLS
+        required: true # 要求TLS
 
       # 邮件模板配置
       templates:
-        enabled: true
-        cache-enabled: true
-        cache-size: 100
-        cache-expire-minutes: 30
+        enabled: true # 启用邮件模板
+        cache-enabled: true # 启用模板缓存
+        cache-size: 100 # 缓存大小
+        cache-expire-minutes: 30 # 缓存过期时间（分钟）
 
       # 异步发送配置
       async:
-        enabled: true
-        core-pool-size: 2
-        max-pool-size: 5
-        queue-capacity: 100
-        thread-name-prefix: email-task-
+        enabled: true # 启用异步发送
+        core-pool-size: 2 # 核心线程池大小
+        max-pool-size: 5 # 最大线程池大小
+        queue-capacity: 100 # 队列容量
+        thread-name-prefix: email-task- # 线程名前缀
 
       # 重试配置
       retry:
-        enabled: true
-        max-attempts: 3
-        initial-delay: 2000
-        multiplier: 2.0
-        max-delay: 10000
+        enabled: true # 启用重试
+        max-attempts: 3 # 最大重试次数
+        initial-delay: 2000 # 初始延迟（毫秒）
+        multiplier: 2.0 # 延迟倍数
+        max-delay: 10000 # 最大延迟（毫秒）

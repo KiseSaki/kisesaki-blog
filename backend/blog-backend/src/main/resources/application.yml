@@ -72,6 +72,21 @@ spring:
       pool:
         size: 2 # 定时任务线程池大小
 
+  # ===== Kafka 通用配置 =====
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer # 键序列化器
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer # 值序列化器
+      acks: all # 确认模式
+      retries: 3 # 重试次数
+    consumer:
+      group-id: kisesaki-blog-group # 消费者组ID
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer # 键反序列化器
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer # 值反序列化器
+      auto-offset-reset: earliest # 自动偏移重置策略
+      properties:
+        spring.json.trusted.packages: com.kisesaki.blog # 信任的JSON包
+
 # ===== 服务器配置 =====
 server:
   port: 51073 # 服务器监听端口

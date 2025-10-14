@@ -1,4 +1,4 @@
-package com.kisesaki.blog.notification.config;
+package com.kisesaki.blog.notification.config.email;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 邮件异步处理配置
- * 
+ *
  * @author KiseSaki
  */
 @Slf4j

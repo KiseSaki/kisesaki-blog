@@ -1,4 +1,4 @@
-package com.kisesaki.blog.notification.config;
+package com.kisesaki.blog.notification.config.email;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 邮件模板预加载监听器
  * 在应用启动时预加载常用邮件模板到内存中
- * 
+ *
  * @author KiseSaki
  */
 @Slf4j
@@ -86,7 +86,7 @@ public class EmailTemplatePreloadListener {
 
     /**
      * 从缓存获取模板内容
-     * 
+     *
      * @param templatePath 模板路径
      * @return 模板内容
      */
@@ -96,7 +96,7 @@ public class EmailTemplatePreloadListener {
 
     /**
      * 检查模板是否已缓存
-     * 
+     *
      * @param templatePath 模板路径
      * @return 是否已缓存
      */
@@ -114,7 +114,7 @@ public class EmailTemplatePreloadListener {
 
     /**
      * 手动缓存模板
-     * 
+     *
      * @param templatePath 模板路径
      * @param content      模板内容
      */
@@ -127,7 +127,7 @@ public class EmailTemplatePreloadListener {
 
     /**
      * 加载模板文件内容
-     * 
+     *
      * @param templatePath 模板路径
      * @return 模板内容
      * @throws IOException IO异常
@@ -145,7 +145,7 @@ public class EmailTemplatePreloadListener {
 
     /**
      * 获取缓存统计信息
-     * 
+     *
      * @return 缓存大小
      */
     public int getCacheSize() {

@@ -12,7 +12,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.kisesaki.blog.notification.config.EmailConfigurationProperties;
+import com.kisesaki.blog.notification.config.email.EmailConfigurationProperties;
 import com.kisesaki.blog.notification.dto.request.EmailSendRequestDto;
 import com.kisesaki.blog.notification.dto.response.EmailSendResponseDto;
 import com.kisesaki.blog.notification.enums.EmailStatus;
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 邮件服务
- * 
+ *
  * @author KiseSaki
  */
 @Service
@@ -37,7 +37,7 @@ public class EmailService {
 
     /**
      * 发送邮件
-     * 
+     *
      * @param request 邮件发送请求
      * @return 邮件发送响应
      */
@@ -80,7 +80,7 @@ public class EmailService {
 
     /**
      * 异步发送邮件
-     * 
+     *
      * @param request  邮件发送请求
      * @param response 邮件发送响应
      * @return 异步结果
@@ -102,7 +102,7 @@ public class EmailService {
 
     /**
      * 同步发送邮件
-     * 
+     *
      * @param request  邮件发送请求
      * @param response 邮件发送响应
      */
@@ -152,7 +152,7 @@ public class EmailService {
 
     /**
      * 准备邮件内容
-     * 
+     *
      * @param request 邮件发送请求
      * @return 邮件内容
      */
@@ -176,7 +176,7 @@ public class EmailService {
 
     /**
      * 创建MIME邮件消息
-     * 
+     *
      * @param request 邮件发送请求
      * @param content 邮件内容
      * @return MIME消息
@@ -213,7 +213,7 @@ public class EmailService {
 
     /**
      * 生成邮件ID
-     * 
+     *
      * @return 邮件ID
      */
     private String generateEmailId() {

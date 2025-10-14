@@ -1,4 +1,4 @@
-package com.kisesaki.blog.notification.config;
+package com.kisesaki.blog.notification.config.email;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

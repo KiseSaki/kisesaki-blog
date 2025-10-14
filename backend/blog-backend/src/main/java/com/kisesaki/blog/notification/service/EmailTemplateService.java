@@ -15,8 +15,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
-import com.kisesaki.blog.notification.config.EmailConfigurationProperties;
-import com.kisesaki.blog.notification.config.EmailTemplatePreloadListener;
+import com.kisesaki.blog.notification.config.email.EmailConfigurationProperties;
+import com.kisesaki.blog.notification.config.email.EmailTemplatePreloadListener;
 import com.kisesaki.blog.notification.dto.EmailTemplate;
 import com.kisesaki.blog.notification.enums.EmailType;
 
@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 邮件模板服务
- * 
+ *
  * @author KiseSaki
  */
 @Slf4j
@@ -55,7 +55,7 @@ public class EmailTemplateService {
 
     /**
      * 根据邮件类型处理模板
-     * 
+     *
      * @param emailType 邮件类型
      * @param variables 模板变量
      * @param locale    语言环境
@@ -69,7 +69,7 @@ public class EmailTemplateService {
 
     /**
      * 根据模板路径处理模板
-     * 
+     *
      * @param templatePath 模板路径
      * @param variables    模板变量
      * @param locale       语言环境
@@ -102,7 +102,7 @@ public class EmailTemplateService {
 
     /**
      * 获取模板内容
-     * 
+     *
      * @param templatePath 模板路径
      * @return 模板内容
      * @throws RuntimeException 模板处理异常
@@ -133,7 +133,7 @@ public class EmailTemplateService {
 
     /**
      * 验证模板语法
-     * 
+     *
      * @param templateContent 模板内容
      * @param sampleVariables 示例变量
      * @return 是否有效
@@ -162,7 +162,7 @@ public class EmailTemplateService {
 
     /**
      * 获取模板元数据
-     * 
+     *
      * @param emailType 邮件类型
      * @return 模板元数据
      */
@@ -197,7 +197,7 @@ public class EmailTemplateService {
 
     /**
      * 预热模板缓存
-     * 
+     *
      * @param templatePaths 要预热的模板路径列表
      */
     public void warmupTemplateCache(String... templatePaths) {
@@ -213,7 +213,7 @@ public class EmailTemplateService {
 
     /**
      * 替换模板变量
-     * 
+     *
      * @param template  模板内容
      * @param variables 变量映射
      * @return 替换后的内容
@@ -248,7 +248,7 @@ public class EmailTemplateService {
 
     /**
      * 从文件系统加载模板
-     * 
+     *
      * @param templatePath 模板路径
      * @return 模板内容
      * @throws IOException IO异常
@@ -266,7 +266,7 @@ public class EmailTemplateService {
 
     /**
      * 添加通用模板变量
-     * 
+     *
      * @param variables 变量映射
      */
     private void addCommonVariables(Map<String, Object> variables) {

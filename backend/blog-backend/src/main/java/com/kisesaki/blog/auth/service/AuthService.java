@@ -35,7 +35,7 @@ import com.kisesaki.blog.auth.security.jwt.RefreshTokenService;
 import com.kisesaki.blog.auth.security.user.CustomUserDetailsService;
 import com.kisesaki.blog.common.enums.ErrorCode;
 import com.kisesaki.blog.common.exception.BusinessException;
-import com.kisesaki.blog.notification.event.EmailEventPublisher;
+import com.kisesaki.blog.notification.kafka.EmailKafkaProducer;
 import com.kisesaki.blog.redis.RedisService;
 import com.kisesaki.blog.user.Keys.UserKey;
 import com.kisesaki.blog.user.entity.User;
@@ -65,7 +65,7 @@ public class AuthService {
     private final ApplicationEventPublisher eventPublisher;
     private final RedisService RedisService;
     private final RedisService redisService;
-    private final EmailEventPublisher emailEventPublisher;
+    private final EmailKafkaProducer emailKafkaProducer;
     private final RoleMapper roleMapper;
     private final UserRoleService userRoleService;
 
@@ -121,7 +121,7 @@ public class AuthService {
     public LoginResponseDto login(LoginRequestDto loginRequestDto, HttpServletRequest request) {
         // 执行认证
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
+            new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword()));
 
         // 认证信息添加到 SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -157,15 +157,15 @@ public class AuthService {
         String email = registerRequestDto.getEmail();
 
         if (userMapper.selectCount(new LambdaQueryWrapper<User>()
-                .eq(User::getUsername, username)
-                .ne(User::getStatus, "deleted")) > 0) {
+            .eq(User::getUsername, username)
+            .ne(User::getStatus, "deleted")) > 0) {
             log.warn("注册失败，用户名已存在：{}", username);
             throw BusinessException.of(ErrorCode.USERNAME_ALREADY_EXISTS, "用户名已存在");
         }
 
         if (userMapper.selectCount(new LambdaQueryWrapper<User>()
-                .eq(User::getEmail, email)
-                .ne(User::getStatus, "deleted")) > 0) {
+            .eq(User::getEmail, email)
+            .ne(User::getStatus, "deleted")) > 0) {
             log.warn("注册失败，邮箱已被占用：{}", email);
             throw BusinessException.of(ErrorCode.EMAIL_ALREADY_EXISTS, "邮箱已被占用");
         }
@@ -189,10 +189,10 @@ public class AuthService {
 
             // 发送欢迎邮件
             UserRegistrationEvent event = new UserRegistrationEvent(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    LocalDateTime.now());
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                LocalDateTime.now());
             eventPublisher.publishEvent(event);
             log.info("用户 {} 注册完成，ID: {}", user.getUsername(), user.getId());
             return user.getId().toString();
@@ -207,8 +207,8 @@ public class AuthService {
      */
     public void resendVerificationEmail(Long userId) {
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getId, userId)
-                .ne(User::getStatus, "deleted"));
+            .eq(User::getId, userId)
+            .ne(User::getStatus, "deleted"));
         if (user == null) {
             log.warn("重新发送验证邮件失败，邮箱未注册");
             throw BusinessException.of(ErrorCode.USER_NOT_FOUND, "邮箱未注册");
@@ -227,11 +227,11 @@ public class AuthService {
             RedisService.expire(redisKey, 24 * 60 * 60); // 24小时过期
 
             // 发送验证邮件
-            emailEventPublisher.publishUserRegistrationEvent(
-                    user.getEmail(),
-                    user.getId(),
-                    user.getUsername(),
-                    emailToken);
+            emailKafkaProducer.publishUserRegistrationEvent(
+                user.getEmail(),
+                user.getId(),
+                user.getUsername(),
+                emailToken);
 
             log.info("验证邮件已重新发送至");
         } catch (Exception e) {
@@ -296,7 +296,7 @@ public class AuthService {
      * @return 新的访问令牌
      */
     public LoginResponseDto refreshToken(RefreshTokenRequestDto refreshTokenRequestDto,
-            HttpServletRequest request) {
+                                         HttpServletRequest request) {
         String refreshToken = refreshTokenRequestDto.getRefreshToken();
         String deviceId = refreshTokenRequestDto.getDeviceId();
 
@@ -321,7 +321,7 @@ public class AuthService {
         // 加载用户详情
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-                userDetails.getAuthorities());
+            userDetails.getAuthorities());
 
         String newAccessToken = jwtTokenProvider.createAccessToken(authentication);
         long expiresIn = jwtExpiration / 1000;
@@ -344,7 +344,7 @@ public class AuthService {
      * @return 登出结果
      */
     public void logout(String username, String refreshToken, String deviceId,
-            HttpServletRequest request) {
+                       HttpServletRequest request) {
         // 如果提供了设备ID，需要验证设备指纹
         if (deviceId != null && !validateDeviceFingerprint(request, username, deviceId)) {
             log.warn("用户 {} 登出时设备指纹验证失败，设备: {}", username, formatDeviceIdForLog(deviceId));
@@ -428,7 +428,7 @@ public class AuthService {
      * @return 修改结果
      */
     public void changePassword(String username, ChangePasswordRequestDto changePasswordRequestDto,
-            HttpServletRequest request) {
+                               HttpServletRequest request) {
         String oldPassword = changePasswordRequestDto.getOldPassword();
         String newPassword = changePasswordRequestDto.getNewPassword();
 
@@ -437,8 +437,8 @@ public class AuthService {
         }
 
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getUsername, username)
-                .ne(User::getStatus, "deleted"));
+            .eq(User::getUsername, username)
+            .ne(User::getStatus, "deleted"));
         if (user == null) {
             throw BusinessException.of(ErrorCode.USER_NOT_FOUND, "用户不存在");
         }
@@ -458,12 +458,12 @@ public class AuthService {
             // 修改密码后，删除所有刷新令牌，强制重新登录
             refreshTokenService.deleteAllRefreshTokens(username);
             // 发送密码修改通知邮件
-            emailEventPublisher.publishPasswordChangedEvent(
-                    user.getEmail(),
-                    user.getId(),
-                    user.getUsername(),
-                    String.valueOf(LocalDateTime.now()),
-                    request.getRemoteAddr());
+            emailKafkaProducer.publishPasswordChangedEvent(
+                user.getEmail(),
+                user.getId(),
+                user.getUsername(),
+                String.valueOf(LocalDateTime.now()),
+                request.getRemoteAddr());
 
             log.info("用户 {} 修改密码成功", username);
         } catch (Exception e) {
@@ -481,8 +481,8 @@ public class AuthService {
     public void forgotPassword(ForgotPasswordRequestDto forgotPasswordRequestDto) {
         String email = forgotPasswordRequestDto.getEmail();
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getEmail, email)
-                .ne(User::getStatus, "deleted"));
+            .eq(User::getEmail, email)
+            .ne(User::getStatus, "deleted"));
         if (user == null) {
             log.warn("密码重置请求失败，邮箱未注册：{}", email);
             throw BusinessException.of(ErrorCode.USER_NOT_FOUND, "邮箱未注册");
@@ -500,11 +500,11 @@ public class AuthService {
             RedisService.hSet(redisKey, "userId", user.getId());
             RedisService.expire(redisKey, 15 * 60); // 15分钟过期
 
-            emailEventPublisher.publishPasswordResetEvent(
-                    user.getEmail(),
-                    user.getId(),
-                    user.getUsername(),
-                    resetToken);
+            emailKafkaProducer.publishPasswordResetEvent(
+                user.getEmail(),
+                user.getId(),
+                user.getUsername(),
+                resetToken);
 
             log.info("密码重置邮件已发送至：{}", email);
         } catch (Exception e) {
@@ -532,8 +532,8 @@ public class AuthService {
 
         Long userId = (Long) resetData.get("userId");
         User user = userMapper.selectOne(new LambdaQueryWrapper<User>()
-                .eq(User::getId, userId)
-                .ne(User::getStatus, "deleted"));
+            .eq(User::getId, userId)
+            .ne(User::getStatus, "deleted"));
         if (user == null) {
             log.error("密码重置失败，用户不存在，用户ID: {}", userId);
             throw BusinessException.of(ErrorCode.USER_NOT_FOUND, "用户不存在");
@@ -591,7 +591,7 @@ public class AuthService {
         try {
             // 查找 GUEST 角色
             Role guestRole = roleMapper.selectOne(new LambdaQueryWrapper<Role>()
-                    .eq(Role::getName, "GUEST"));
+                .eq(Role::getName, "GUEST"));
 
             if (guestRole != null) {
                 userRoleService.assignRoleToUser(userId, guestRole.getId());
@@ -613,9 +613,9 @@ public class AuthService {
         try {
             // 查找 GUEST 和 USER 角色
             Role guestRole = roleMapper.selectOne(new LambdaQueryWrapper<Role>()
-                    .eq(Role::getName, "GUEST"));
+                .eq(Role::getName, "GUEST"));
             Role userRole = roleMapper.selectOne(new LambdaQueryWrapper<Role>()
-                    .eq(Role::getName, "USER"));
+                .eq(Role::getName, "USER"));
 
             if (guestRole != null && userRole != null) {
                 // 移除 GUEST 角色

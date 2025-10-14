@@ -1,0 +1,15 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    # 开发环境使用测试邮箱
+    username: your-dev-email@gmail.com
+    password: your-dev-password
+
+logging:
+  level:
+    com.kisesaki.services.email: DEBUG
+    org.springframework.kafka: DEBUG

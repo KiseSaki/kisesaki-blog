@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>内容审核 - KiseSaki博客</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      .container {
+        background: white;
+        border-radius: 10px;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .logo {
+        font-size: 32px;
+        font-weight: bold;
+        color: #ef4444;
+        margin-bottom: 10px;
+      }
+      .button {
+        display: inline-block;
+        background: #ef4444;
+        color: white;
+        padding: 12px 30px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 500;
+        margin: 10px 0;
+      }
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        font-size: 14px;
+        color: #6b7280;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo">⚠️ KiseSaki博客</div>
+        <h1>内容审核通知</h1>
+      </div>
+
+      <div class="content">
+        <p>尊敬的审核员 <strong>${moderatorName}</strong>，</p>
+        <p>有新的内容需要您审核。</p>
+
+        <p><strong>内容类型：</strong> ${contentType}</p>
+        <p><strong>内容标题：</strong> ${contentTitle}</p>
+        <p><strong>作者：</strong> ${authorName}</p>
+        <p><strong>举报原因：</strong> ${reportReason}</p>
+
+        <p style="text-align: center">
+          <a href="${moderationUrl}" class="button">立即审核</a>
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>© 2024 KiseSaki博客. 保留所有权利。</p>
+      </div>
+    </div>
+  </body>
+</html>

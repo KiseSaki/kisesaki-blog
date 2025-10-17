@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>本周精选 - KiseSaki博客</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      .container {
+        background: white;
+        border-radius: 10px;
+        padding: 40px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin: -40px -40px 30px -40px;
+      }
+      .logo {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .digest-title {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+      .period {
+        font-size: 14px;
+        opacity: 0.9;
+      }
+      .content {
+        margin-bottom: 30px;
+      }
+      .article-list {
+        margin: 20px 0;
+      }
+      .article-item {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 15px 0;
+        border-left: 4px solid #6366f1;
+      }
+      .article-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 10px;
+      }
+      .article-meta {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 10px;
+      }
+      .article-excerpt {
+        color: #4b5563;
+        margin-bottom: 10px;
+      }
+      .read-more {
+        display: inline-block;
+        color: #6366f1;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .stats-box {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin: 20px 0;
+      }
+      .stat-item {
+        background: #f3f4f6;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .stat-number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #6366f1;
+      }
+      .stat-label {
+        font-size: 14px;
+        color: #6b7280;
+        margin-top: 5px;
+      }
+      .button {
+        display: inline-block;
+        background: #6366f1;
+        color: white;
+        padding: 12px 30px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 500;
+        margin: 10px 0;
+      }
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        font-size: 14px;
+        color: #6b7280;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo">📰 KiseSaki博客</div>
+        <h1 class="digest-title">本周精选内容</h1>
+        <div class="period">${weekStartDate} - ${weekEndDate}</div>
+      </div>
+
+      <div class="content">
+        <p>亲爱的 <strong>${userDisplayName}</strong>，</p>
+
+        <p>这是您本周的博客精选内容摘要，包含最热门的文章和社区动态。</p>
+
+        <h3>📊 本周数据</h3>
+        <div class="stats-box">
+          <div class="stat-item">
+            <div class="stat-number">${totalArticles}</div>
+            <div class="stat-label">新文章</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">${totalComments}</div>
+            <div class="stat-label">新评论</div>
+          </div>
+        </div>
+
+        <h3>🔥 热门文章</h3>
+        <div class="article-list">
+          <!-- 这里可以动态插入文章列表 -->
+          <div class="article-item">
+            <div class="article-title">示例文章标题</div>
+            <div class="article-meta">
+              作者：张三 | 发布于：2025-01-10 | 浏览：1,234
+            </div>
+            <div class="article-excerpt">这是文章的简要摘要内容...</div>
+            <a href="#" class="read-more">阅读全文 →</a>
+          </div>
+        </div>
+
+        <p style="text-align: center">
+          <a href="${blogUrl}" class="button">访问博客查看更多</a>
+        </p>
+
+        <p style="font-size: 14px; color: #6b7280">
+          如果您不想继续接收周报邮件，可以在<a
+            href="${blogUrl}/user/settings/notifications"
+            style="color: #6366f1"
+            >账户设置</a
+          >中取消订阅。
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>感谢您对KiseSaki博客的支持！</p>
+        <p>
+          <a href="${blogUrl}" style="color: #6366f1">访问博客</a> |
+          <a href="${blogUrl}/unsubscribe" style="color: #6366f1">取消订阅</a>
+        </p>
+        <p style="margin-top: 20px; font-size: 12px">
+          此邮件由系统自动发送，请勿回复。<br />
+          © 2024 KiseSaki博客. 保留所有权利。
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

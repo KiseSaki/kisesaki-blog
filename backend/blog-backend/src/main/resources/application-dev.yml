@@ -6,79 +6,60 @@
 spring:
   # ===== 数据库配置 =====
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/blog}
-    username: ${DB_USERNAME:kisesaki}
-    password: ${DB_PASSWORD:password}
-    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/blog} # 数据库连接URL，支持环境变量覆盖
+    username: ${DB_USERNAME:kisesaki} # 数据库用户名
+    password: ${DB_PASSWORD:password} # 数据库密码
+    driver-class-name: org.postgresql.Driver # PostgreSQL JDBC驱动类名
     hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
-      idle-timeout: 300000
-      max-lifetime: 1200000
-      connection-timeout: 20000
+      minimum-idle: 5 # Hikari连接池最小空闲连接数
+      maximum-pool-size: 20 # 最大连接池大小
+      idle-timeout: 300000 # 连接空闲超时时间（毫秒）
+      max-lifetime: 1200000 # 连接最大生命周期（毫秒）
+      connection-timeout: 20000 # 连接超时时间（毫秒）
 
   # ===== JPA 开发环境配置 =====
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: update # 开发环境自动更新数据库表结构
+    show-sql: true # 显示SQL语句，便于调试
     properties:
       hibernate:
-        format_sql: true
+        format_sql: true # 格式化SQL输出
 
   # ===== Redis 配置 =====
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      database: ${REDIS_DATABASE:0}
-      password: ${REDIS_PASSWORD:}
-      timeout: 5000ms
+      host: ${REDIS_HOST:localhost} # Redis服务器主机地址
+      port: ${REDIS_PORT:6379} # Redis服务器端口
+      database: ${REDIS_DATABASE:0} # Redis数据库索引
+      password: ${REDIS_PASSWORD:} # Redis密码（开发环境通常为空）
+      timeout: 5000ms # 连接超时时间
       lettuce:
         pool:
-          max-active: 20
-          max-idle: 10
-          min-idle: 5
-          max-wait: 2000ms
+          max-active: 20 # 最大活跃连接数
+          max-idle: 10 # 最大空闲连接数
+          min-idle: 5 # 最小空闲连接数
+          max-wait: 2000ms # 获取连接最大等待时间
 
   # ===== Kafka 配置 =====
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    security:
-      protocol: SASL_PLAINTEXT
-    properties:
-      sasl:
-        mechanism: PLAIN
-        jaas:
-          config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USERNAME:admin}" password="${KAFKA_PASSWORD:}";
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      acks: all
-      retries: 3
-    consumer:
-      group-id: kisesaki-blog-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      auto-offset-reset: earliest
-      properties:
-        spring.json.trusted.packages: com.kisesaki.blog
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092} # Kafka引导服务器地址
 
-  # ===== 邮件配置（开发环境）=====
+  # ===== 邮件配置(开发环境)=====
   mail:
-    host: ${kisesaki.blog.email.smtp.host}
-    port: ${kisesaki.blog.email.smtp.port}
-    username: ${kisesaki.blog.email.smtp.username}
-    password: ${kisesaki.blog.email.smtp.password}
+    host: ${kisesaki.blog.email.smtp.host} # SMTP服务器主机
+    port: ${kisesaki.blog.email.smtp.port} # SMTP服务器端口
+    username: ${kisesaki.blog.email.smtp.username} # SMTP用户名
+    password: ${kisesaki.blog.email.smtp.password} # SMTP密码
     properties:
       mail:
         smtp:
-          auth: true
+          auth: true # 启用SMTP认证
           starttls:
-            enable: ${kisesaki.blog.email.tls.enabled}
-            required: ${kisesaki.blog.email.tls.required}
+            enable: ${kisesaki.blog.email.tls.enabled} # 启用STARTTLS
+            required: ${kisesaki.blog.email.tls.required} # 要求STARTTLS
           ssl:
-            enable: true
+            enable: true # 启用SSL
 
   # ===== OAuth2 客户端配置 =====
   security:
@@ -86,29 +67,29 @@ spring:
       client:
         registration:
           github:
-            client-id: ${GITHUB_CLIENT_ID:your-github-client-id}
-            client-secret: ${GITHUB_CLIENT_SECRET:your-github-client-secret}
-            scope: user:email,read:user
+            client-id: ${GITHUB_CLIENT_ID:your-github-client-id} # GitHub OAuth2客户端ID
+            client-secret: ${GITHUB_CLIENT_SECRET:your-github-client-secret} # GitHub OAuth2客户端密钥
+            scope: user:email,read:user # 请求的权限范围
           gitee:
-            client-id: ${GITEE_CLIENT_ID:your-gitee-client-id}
-            client-secret: ${GITEE_CLIENT_SECRET:your-gitee-client-secret}
-            authorization-grant-type: authorization_code
-            redirect-uri: ${GITEE_REDIRECT_URI:http://localhost:3000/auth/gitee/callback}
-            scope: user_info
+            client-id: ${GITEE_CLIENT_ID:your-gitee-client-id} # Gitee OAuth2客户端ID
+            client-secret: ${GITEE_CLIENT_SECRET:your-gitee-client-secret} # Gitee OAuth2客户端密钥
+            authorization-grant-type: authorization_code # 授权类型
+            redirect-uri: ${GITEE_REDIRECT_URI:http://localhost:3000/auth/gitee/callback} # 重定向URI
+            scope: user_info # 请求的权限范围
 
 # ===== 开发环境日志配置 =====
 logging:
   level:
-    root: WARN
-    com.kisesaki.blog: DEBUG
+    root: WARN # 根日志级别
+    com.kisesaki.blog: DEBUG # 应用包调试级别
     com.kisesaki.blog.notification: DEBUG # 邮件通知模块调试日志
-    org.springframework.security: DEBUG
-    org.springframework.mail: INFO # Spring Mail日志
-    org.springframework.retry: DEBUG # 重试机制日志
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: DEBUG # Spring Security调试级别
+    org.springframework.mail: INFO # Spring Mail日志级别
+    org.springframework.retry: DEBUG # 重试机制日志级别
+    org.hibernate.SQL: DEBUG # Hibernate SQL调试级别
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Hibernate参数绑定跟踪级别
   file:
-    name: ./logs/kisesaki-blog-dev.log
+    name: ./logs/kisesaki-blog-dev.log # 日志文件路径
 
 # =================================================================
 # 开发环境自定义配置
@@ -118,41 +99,41 @@ logging:
 app:
   cors:
     # 开发环境额外允许的域名（Vite开发服务器默认端口）
-    additional-origins: http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,http://192.168.105.173:3000
+    additional-origins: http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,http://192.168.105.173:3000 # 额外允许的CORS源
 
 kisesaki:
   blog:
     # JWT 开发环境配置
     jwt:
-      secret: ${JWT_SECRET:kisesaki-blog-jwt-secret-key-for-development-only}
+      secret: ${JWT_SECRET:kisesaki-blog-jwt-secret-key-for-development-only} # JWT签名密钥
 
     # 前端应用配置（开发环境）
     frontend:
-      base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
+      base-url: ${FRONTEND_BASE_URL:http://localhost:3000} # 前端应用基础URL
 
     # 设备指纹安全配置（开发环境）
     security:
       device:
-        salt: ${DEVICE_SALT:kisesaki-blog-device-salt-dev-2025}
-        trust-client-fingerprint: ${TRUST_CLIENT_FINGERPRINT:true}
+        salt: ${DEVICE_SALT:kisesaki-blog-device-salt-dev-2025} # 设备指纹盐值
+        trust-client-fingerprint: ${TRUST_CLIENT_FINGERPRINT:true} # 是否信任客户端指纹
 
     # 文件上传开发环境配置
     upload:
-      path: ${UPLOAD_PATH:./uploads}
-      base-url: ${FILE_BASE_URL:http://localhost:51073/api/files}
+      path: ${UPLOAD_PATH:./uploads} # 文件上传路径
+      base-url: ${FILE_BASE_URL:http://localhost:51073/api/files} # 文件访问基础URL
 
     # 邮件通知模块配置（开发环境）
     email:
       # SMTP服务器配置
       smtp:
-        host: ${MAIL_HOST:smtp.zoho.com}
-        port: ${MAIL_PORT:465}
-        username: ${MAIL_USERNAME:your-email@example.com}
-        password: ${MAIL_PASSWORD:your-app-password}
-        protocol: smtp
-        default-encoding: UTF-8
+        host: ${MAIL_HOST:smtp.zoho.com} # SMTP主机
+        port: ${MAIL_PORT:465} # SMTP端口
+        username: ${MAIL_USERNAME:your-email@example.com} # SMTP用户名
+        password: ${MAIL_PASSWORD:your-app-password} # SMTP密码
+        protocol: smtp # 协议
+        default-encoding: UTF-8 # 默认编码
 
       # TLS/SSL配置
       tls:
-        enabled: ${MAIL_TLS_ENABLED:true}
-        required: ${MAIL_TLS_REQUIRED:true}
+        enabled: ${MAIL_TLS_ENABLED:true} # 启用TLS
+        required: ${MAIL_TLS_REQUIRED:true} # 要求TLS

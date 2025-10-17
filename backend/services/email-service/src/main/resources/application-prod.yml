@@ -1,0 +1,19 @@
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
+  thymeleaf:
+    cache: true
+
+logging:
+  level:
+    com.kisesaki.services.email: INFO
+    org.springframework.kafka: WARN
+  file:
+    name: /var/log/email-service/email-service.log
